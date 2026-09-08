@@ -12,6 +12,36 @@ struct WritingLesson: Identifiable, Sendable {
     let scaffold: LocalizedStringResource
     let wordBank: [LocalizedStringResource]
     let systemImage: String
+    /// Rough time to write the exercise, shown on the hero card and widget tile.
+    let estimatedMinutes: Int
+}
+
+/// One `wordBank` entry split into its two halves, for the Ordkort cards.
+struct VocabularyEntry: Identifiable, Hashable, Sendable {
+    let id: String
+    let italian: String
+    let swedish: String
+}
+
+extension WritingLesson {
+    /// `"vorrei = jag skulle vilja ha"` becomes `vorrei` / `jag skulle vilja ha`.
+    var vocabulary: [VocabularyEntry] {
+        wordBank.enumerated().compactMap { index, word in
+            let text = String(localized: word)
+            let halves = text.components(separatedBy: "=")
+            guard halves.count == 2 else { return nil }
+            return VocabularyEntry(
+                id: "\(id)-\(index)",
+                italian: halves[0].trimmingCharacters(in: .whitespaces),
+                swedish: halves[1].trimmingCharacters(in: .whitespaces)
+            )
+        }
+    }
+
+    /// The Italian halves alone, used as chips on the hero card.
+    var promptChips: [String] {
+        vocabulary.prefix(3).map(\.italian)
+    }
 }
 
 enum LessonCatalog {
@@ -27,7 +57,8 @@ enum LessonCatalog {
             modelPrompt: "Write 2–4 short sentences. Say hello, give your name, say where you live, and mention one thing you like.",
             scaffold: "Ciao! Mi chiamo … Abito a … Mi piace …",
             wordBank: ["ciao = hej", "mi chiamo = jag heter", "abito a = jag bor i", "mi piace = jag tycker om"],
-            systemImage: "hand.wave.fill"
+            systemImage: "hand.wave.fill",
+            estimatedMinutes: 4
         ),
         WritingLesson(
             id: "family-friend",
@@ -40,7 +71,8 @@ enum LessonCatalog {
             modelPrompt: "Write 3–5 sentences about a friend or family member. Give their name, describe what they are like, and mention something they like.",
             scaffold: "Si chiama … È … Ha … Gli/Le piace …",
             wordBank: ["simpatico/a = trevlig", "gentile = snäll", "ha = har", "gli/le piace = han/hon tycker om"],
-            systemImage: "person.2.fill"
+            systemImage: "person.2.fill",
+            estimatedMinutes: 5
         ),
         WritingLesson(
             id: "morning-routine",
@@ -53,7 +85,8 @@ enum LessonCatalog {
             modelPrompt: "Write 3–5 sentences about your morning. Say when you wake up, what you eat or drink, and what you do next.",
             scaffold: "Mi sveglio alle … Poi … Faccio colazione … Dopo …",
             wordBank: ["mi sveglio = jag vaknar", "poi = sedan", "faccio colazione = jag äter frukost", "vado = jag går/åker"],
-            systemImage: "sunrise.fill"
+            systemImage: "sunrise.fill",
+            estimatedMinutes: 5
         ),
         WritingLesson(
             id: "at-the-cafe",
@@ -66,7 +99,8 @@ enum LessonCatalog {
             modelPrompt: "Write a short café dialogue. Order a drink and something to eat, then ask how much it costs.",
             scaffold: "Buongiorno. Vorrei … per favore. Quanto costa? Grazie!",
             wordBank: ["vorrei = jag skulle vilja ha", "un caffè = en kaffe", "per favore = tack/är du snäll", "quanto costa? = vad kostar det?"],
-            systemImage: "cup.and.saucer.fill"
+            systemImage: "cup.and.saucer.fill",
+            estimatedMinutes: 5
         ),
         WritingLesson(
             id: "grocery-list",
@@ -79,7 +113,8 @@ enum LessonCatalog {
             modelPrompt: "Write 3–5 sentences about what you need to buy for dinner. Include at least one quantity and one question for a shop assistant.",
             scaffold: "Devo comprare … Vorrei un chilo di … Dove sono …?",
             wordBank: ["devo comprare = jag måste köpa", "un chilo di = ett kilo", "del pane = lite bröd", "dove sono? = var finns de?"],
-            systemImage: "basket.fill"
+            systemImage: "basket.fill",
+            estimatedMinutes: 5
         ),
         WritingLesson(
             id: "weekend-plans",
@@ -92,7 +127,8 @@ enum LessonCatalog {
             modelPrompt: "Write 4–6 sentences about your weekend plans. Say where you are going, who you are going with, and what you want to do.",
             scaffold: "Questo fine settimana … Vado a … con … Voglio …",
             wordBank: ["questo fine settimana = i helgen", "vado a = jag åker till", "con = med", "voglio = jag vill"],
-            systemImage: "calendar.badge.clock"
+            systemImage: "calendar.badge.clock",
+            estimatedMinutes: 6
         ),
         WritingLesson(
             id: "favorite-place",
@@ -105,7 +141,8 @@ enum LessonCatalog {
             modelPrompt: "Write 4–6 sentences about a place you like. Say where it is, what it looks like, and what you usually do there.",
             scaffold: "Il mio posto preferito è … Si trova … È … Mi piace perché …",
             wordBank: ["si trova = den ligger", "bello/a = vacker", "tranquillo/a = lugn", "perché = eftersom"],
-            systemImage: "mappin.and.ellipse"
+            systemImage: "mappin.and.ellipse",
+            estimatedMinutes: 6
         ),
         WritingLesson(
             id: "send-invitation",
@@ -118,7 +155,8 @@ enum LessonCatalog {
             modelPrompt: "Write a short message inviting a friend to an activity. Suggest a day, time, and place, then ask whether they can come.",
             scaffold: "Ciao …! Vuoi …? Ci vediamo … alle … Puoi venire?",
             wordBank: ["vuoi? = vill du?", "ci vediamo = vi ses", "alle sette = klockan sju", "puoi venire? = kan du komma?"],
-            systemImage: "envelope.open.fill"
+            systemImage: "envelope.open.fill",
+            estimatedMinutes: 4
         )
     ]
 }

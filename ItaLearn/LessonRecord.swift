@@ -15,6 +15,8 @@ final class LessonRecord {
     var strengths: [String]
     var nextSteps: [String]
     var score: Int
+    var ruleTitle: String = ""
+    var ruleExplanation: String = ""
 
     init(
         id: UUID = UUID(),
@@ -28,7 +30,9 @@ final class LessonRecord {
         summary: String,
         strengths: [String],
         nextSteps: [String],
-        score: Int
+        score: Int,
+        ruleTitle: String = "",
+        ruleExplanation: String = ""
     ) {
         self.id = id
         self.completedAt = completedAt
@@ -42,5 +46,7 @@ final class LessonRecord {
         self.strengths = strengths
         self.nextSteps = nextSteps
         self.score = score
+        self.ruleTitle = ruleTitle
+        self.ruleExplanation = ruleExplanation
     }
 }

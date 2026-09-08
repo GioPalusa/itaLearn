@@ -13,14 +13,25 @@ struct LessonHistoryView: View {
                     systemImage: "books.vertical",
                     description: Text("Gör din första skrivövning så visas sammanfattningen här.")
                 )
+                .italearnCanvas()
             } else {
-                List(lessons) { lesson in
-                    NavigationLink {
-                        LessonRecordDetail(record: lesson)
-                    } label: {
-                        LessonRecordRow(record: lesson)
+                ScrollView {
+                    LazyVStack(spacing: 12) {
+                        ForEach(lessons) { lesson in
+                            NavigationLink {
+                                LessonRecordDetail(record: lesson)
+                            } label: {
+                                LessonRecordRow(record: lesson)
+                            }
+                            .buttonStyle(.plain)
+                        }
                     }
+                    .frame(maxWidth: 720)
+                    .padding(.horizontal, 16)
+                    .padding(.bottom, 24)
+                    .frame(maxWidth: .infinity)
                 }
+                .italearnCanvas()
             }
         }
         .navigationTitle("Mitt lärande")
@@ -34,21 +45,30 @@ private struct LessonRecordRow: View {
         VStack(alignment: .leading, spacing: 6) {
             HStack {
                 Text(record.lessonTitle)
-                    .font(.headline)
+                    .font(.il(17, .semibold))
+                    .foregroundStyle(ItaLearn.ink)
                 Spacer()
                 Text("\(record.score)/5")
-                    .font(.caption.bold().monospacedDigit())
-                    .foregroundStyle(.orange)
+                    .font(.ilMono(13))
+                    .monospacedDigit()
+                    .foregroundStyle(ItaLearn.deepGreen)
+                    .padding(.horizontal, 9)
+                    .padding(.vertical, 4)
+                    .background(ItaLearn.green.opacity(0.14), in: .capsule)
             }
+
             Text(record.summary)
-                .font(.subheadline)
-                .foregroundStyle(.secondary)
+                .font(.il(15))
+                .foregroundStyle(ItaLearn.inkSecondary)
                 .lineLimit(2)
+                .multilineTextAlignment(.leading)
+
             Text(record.completedAt, format: .dateTime.day().month(.wide).year())
-                .font(.caption)
-                .foregroundStyle(.tertiary)
+                .font(.il(12))
+                .foregroundStyle(ItaLearn.inkQuaternary)
         }
-        .padding(.vertical, 4)
+        .italearnCard()
+        .accessibilityElement(children: .combine)
     }
 }
 
@@ -56,27 +76,62 @@ private struct LessonRecordDetail: View {
     let record: LessonRecord
 
     var body: some View {
-        List {
-            Section("Ditt svar") {
-                Text(record.attempt)
-            }
+        ScrollView {
+            VStack(alignment: .leading, spacing: 14) {
+                section("Rättat i din text") {
+                    Text(
+                        CorrectionDiff.attributedText(
+                            original: record.attempt,
+                            corrected: record.correctedItalian
+                        )
+                    )
+                    .font(.il(17))
+                    .lineSpacing(8)
+                    .textSelection(.enabled)
+                    .accessibilityLabel("Rättad text: \(record.correctedItalian)")
+                }
 
-            Section("Naturlig rättning") {
-                Text(record.correctedItalian)
-            }
+                if !record.ruleTitle.isEmpty {
+                    section(LocalizedStringKey(record.ruleTitle)) {
+                        Text(record.ruleExplanation)
+                            .font(.il(15))
+                            .foregroundStyle(ItaLearn.inkSecondary)
+                    }
+                }
 
-            Section("Lektionssammanfattning") {
-                Text(record.summary)
-            }
+                section("Lektionssammanfattning") {
+                    Text(record.summary)
+                        .font(.il(15))
+                        .foregroundStyle(ItaLearn.inkSecondary)
+                }
 
-            Section("Styrkor") {
-                ForEach(record.strengths, id: \.self) { Text($0) }
-            }
+                section("Det här fungerar redan") {
+                    FeedbackList(items: record.strengths, color: ItaLearn.green)
+                }
 
-            Section("Nästa steg") {
-                ForEach(record.nextSteps, id: \.self) { Text($0) }
+                section("Prova nästa gång") {
+                    FeedbackList(items: record.nextSteps, color: ItaLearn.magenta)
+                }
             }
+            .frame(maxWidth: 720)
+            .padding(.horizontal, 16)
+            .padding(.bottom, 24)
+            .frame(maxWidth: .infinity)
         }
+        .italearnCanvas()
         .navigationTitle(record.lessonTitle)
+    }
+
+    private func section(
+        _ title: LocalizedStringKey,
+        @ViewBuilder content: () -> some View
+    ) -> some View {
+        VStack(alignment: .leading, spacing: 10) {
+            Text(title)
+                .font(.il(15, .semibold))
+                .foregroundStyle(ItaLearn.ink)
+            content()
+        }
+        .italearnCard()
     }
 }
