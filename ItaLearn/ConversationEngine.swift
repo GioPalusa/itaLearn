@@ -131,7 +131,8 @@ final class LessonSpeechInput {
             mode: .spokenAudio,
             options: [.defaultToSpeaker, .allowBluetoothHFP, .duckOthers]
         )
-        try audioSession.setActive(true, options: .notifyOthersOnDeactivation)
+        // Activating synchronously blocks the main thread; the async form does not.
+        try await audioSession.activate(options: [])
 #endif
 
         let engine = AVAudioEngine()
@@ -202,7 +203,7 @@ final class LessonSpeechInput {
         converter = nil
 
 #if os(iOS) || os(visionOS)
-        try? AVAudioSession.sharedInstance().setActive(false, options: .notifyOthersOnDeactivation)
+        _ = try? await AVAudioSession.sharedInstance().deactivate(options: .notifyOthersOnDeactivation)
 #endif
     }
 

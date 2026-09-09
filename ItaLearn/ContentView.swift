@@ -23,17 +23,7 @@ struct ContentView: View {
             } else if store.state.activePlan == nil {
                 NavigationStack { AdaptiveChatView(mode: .assessment) }
             } else {
-                TabView {
-                    Tab("Min studieplan", systemImage: "point.topleft.down.to.point.bottomright.curvepath") {
-                        NavigationStack { LearningPathView() }
-                    }
-                    Tab("Samtal", systemImage: "bubble.left.and.bubble.right") {
-                        NavigationStack { CurrentLessonView() }
-                    }
-                    Tab("Mitt lärande", systemImage: "books.vertical") {
-                        NavigationStack { LearningProgressView() }
-                    }
-                }
+                MainTabs()
             }
         }
         .environment(store)
@@ -42,6 +32,26 @@ struct ContentView: View {
         .task {
             store.load(container: modelContext.container)
             await access.load()
+        }
+    }
+}
+
+
+private struct MainTabs: View {
+    enum Section: Hashable { case plan, conversation, progress }
+    @State private var selection: Section = .plan
+
+    var body: some View {
+        TabView(selection: $selection) {
+            Tab("Min studieplan", systemImage: "point.topleft.down.to.point.bottomright.curvepath", value: .plan) {
+                NavigationStack { LearningPathView() }
+            }
+            Tab("Samtal", systemImage: "bubble.left.and.bubble.right", value: .conversation) {
+                NavigationStack { CurrentLessonView() }
+            }
+            Tab("Mitt lärande", systemImage: "books.vertical", value: .progress) {
+                NavigationStack { LearningProgressView() }
+            }
         }
     }
 }

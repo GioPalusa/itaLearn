@@ -4,6 +4,9 @@
     "" : {
 
     },
+    "· %lld min" : {
+
+    },
     "\"Artigheten sitter. Nästa steg: fråga om priset.\"" : {
 
     },
@@ -13,15 +16,40 @@
     "\"Snyggt! Artigheten är i hamn — nu kör vi på priserna!\"" : {
 
     },
-    "%@, %@" : {
+    "/%lld" : {
+
+    },
+    "%@ TILL MÅLET" : {
+
+    },
+    "%@ tipsar: %@" : {
       "localizations" : {
         "sv" : {
           "stringUnit" : {
             "state" : "new",
-            "value" : "%1$@, %2$@"
+            "value" : "%1$@ tipsar: %2$@"
           }
         }
       }
+    },
+    "%@, lägg till ord" : {
+
+    },
+    "%@, plats %lld, ta bort ord" : {
+      "localizations" : {
+        "sv" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "%1$@, plats %2$lld, ta bort ord"
+          }
+        }
+      }
+    },
+    "%@, redan använt" : {
+
+    },
+    "%@s bedömning" : {
+
     },
     "%lld" : {
 
@@ -69,7 +97,16 @@
         }
       }
     },
+    "%lld av 100" : {
+
+    },
     "%lld lektioner kvar på nivån." : {
+
+    },
+    "%lld min" : {
+
+    },
+    "%lld min · skriva" : {
 
     },
     "%lld ord" : {
@@ -87,6 +124,9 @@
     "Alla\nordkort" : {
 
     },
+    "Alla %lld" : {
+
+    },
     "Alla lektioner på den här nivån är klara." : {
 
     },
@@ -99,10 +139,28 @@
     "Ändra mitt svar" : {
 
     },
+    "Använd den här planen igen" : {
+
+    },
     "Använd din egen OpenAI API-nyckel. Samtalen debiteras ditt API-konto." : {
 
     },
     "Appen begär inte att OpenAI sparar en konversation. OpenAI kan ändå behålla API-data enligt sina datavillkor." : {
+
+    },
+    "Återställ din plan" : {
+
+    },
+    "Återställ plan från senaste kunskapskoll" : {
+
+    },
+    "Återställ planen" : {
+
+    },
+    "av %lld" : {
+
+    },
+    "Avbryt" : {
 
     },
     "Avklarade lektioner" : {
@@ -117,7 +175,7 @@
     "Avsluta rundan" : {
 
     },
-    "Baserad på skriftliga svar, inte ett formellt CEFR-prov." : {
+    "Be Milo om en ledtråd" : {
 
     },
     "bello/a = vacker" : {
@@ -144,6 +202,9 @@
     "Börja lära med Milo" : {
 
     },
+    "Börja lektion %lld" : {
+
+    },
     "Börja om meningen" : {
 
     },
@@ -162,10 +223,16 @@
     "Bygg meningen" : {
 
     },
-    "BYGG PÅ ITALIENSKA" : {
+    "Bygg om planen från din senaste kunskapskoll? Den nuvarande planen sparas i arkivet och dina avklarade lektioner följer med." : {
 
     },
     "Byt OpenAI API-nyckel" : {
+
+    },
+    "Byt plan" : {
+
+    },
+    "Byt till den här planen? Din nuvarande plan arkiveras." : {
 
     },
     "ci vediamo = vi ses" : {
@@ -207,6 +274,9 @@
     "Det här har du tränat" : {
 
     },
+    "Det här kan du" : {
+
+    },
     "Det kunde jag" : {
 
     },
@@ -216,13 +286,13 @@
     "devo comprare = jag måste köpa" : {
 
     },
+    "Diktera på italienska" : {
+
+    },
     "Din första lektion. Vi börjar lugnt och bygger vidare på den nästa gång." : {
 
     },
     "DIN ITALIENSKA · %@" : {
-
-    },
-    "Din italienska mening…" : {
 
     },
     "Din kunskapskoll" : {
@@ -240,6 +310,9 @@
     "Din lärare tar med sig ditt förra nästa steg: %@" : {
 
     },
+    "Din nuvarande plan arkiveras när du byter, så du kan gå tillbaka igen. Avklarade lektioner och sparade samtal följer med varje plan." : {
+
+    },
     "Din nya studieplan är klar" : {
 
     },
@@ -249,19 +322,26 @@
     "Din rutt genom %@" : {
 
     },
-    "Din senaste uppskattade nivå: %@" : {
-
+    "Din senaste kunskapskoll gav %lld lektioner, men din aktiva plan har %lld. Du kan bygga om planen från kunskapskollen." : {
+      "localizations" : {
+        "sv" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "Din senaste kunskapskoll gav %1$lld lektioner, men din aktiva plan har %2$lld. Du kan bygga om planen från kunskapskollen."
+          }
+        }
+      }
     },
     "Din studieplan, dina kunskapskollar och samtal sparas lokalt. För varje svar skickar appen bara den aktuella lektionen, en kort lärandesammanfattning och de senaste meddelandena till OpenAI. Kunskapskollen använder sina sex svar och din nuvarande plan." : {
 
     },
-    "Din väg framåt" : {
+    "Dina avklarade lektioner ligger kvar och går att repetera." : {
 
     },
     "Dina framsteg är sparade. Du kan gå vidare." : {
 
     },
-    "Dina framsteg är sparade. Du kan spela igen när du vill." : {
+    "Dina framsteg är sparade. Vill du ha nya meningar på samma lektion kan %@ skapa fler." : {
 
     },
     "Dina markeringar är sparade. Repetera gärna de ord du vill befästa." : {
@@ -291,19 +371,19 @@
     "dove sono? = var finns de?" : {
 
     },
-    "Dra orden till meningen eller tryck på dem. Dra till ett annat ord för att placera framför det." : {
+    "Dra ett ord till en plats, eller tryck för att lägga sist." : {
 
     },
     "DU ÄR HÄR" : {
 
     },
-    "Du har arbetat igenom din plan!" : {
+    "Du har klarat hela planen" : {
 
     },
     "En liten rättning" : {
 
     },
-    "En ny kunskapskoll kan ge dig en uppdaterad plan eller rekommendera att du fortsätter på din nuvarande väg. Dina tidigare studier sparas." : {
+    "En ny kunskapskoll kan ge en uppdaterad plan. Dina tidigare studier sparas." : {
 
     },
     "En person du känner" : {
@@ -318,10 +398,13 @@
     "faccio colazione = jag äter frukost" : {
 
     },
+    "Farlig zon" : {
+
+    },
     "Fastnar du? Be mig om en ledtråd, så provar vi igen." : {
 
     },
-    "Flytta först" : {
+    "Föreslå andra vägar" : {
 
     },
     "Försök igen" : {
@@ -330,13 +413,10 @@
     "FÖRSÖK IGEN · DU FÅR HJÄLP PÅ VÄGEN" : {
 
     },
-    "Försök komma på svaret innan du vänder kortet." : {
+    "Fortsätt lektion %lld" : {
 
     },
     "Fortsätt min kunskapskoll" : {
-
-    },
-    "Fortsätt öva" : {
 
     },
     "Fortsätt öva med Milo" : {
@@ -346,6 +426,9 @@
 
     },
     "FRÅGA %lld AV 6 · TA DET I DIN TAKT" : {
+
+    },
+    "Framsteg" : {
 
     },
     "Framstegspoäng %lld av 5" : {
@@ -358,15 +441,6 @@
 
     },
     "Gör din första skrivövning så visas sammanfattningen här." : {
-
-    },
-    "Gör en ny kunskapskoll för att hitta nästa steg." : {
-
-    },
-    "Gör föregående lektioner först" : {
-
-    },
-    "Granska texten innan du skickar den." : {
 
     },
     "Granskar …" : {
@@ -382,6 +456,9 @@
 
     },
     "Helgplaner" : {
+
+    },
+    "HISTORIK" : {
 
     },
     "HUR SÄGER DU?" : {
@@ -444,6 +521,9 @@
     "Klar" : {
 
     },
+    "Klar · repetera när du vill" : {
+
+    },
     "Klarar mig" : {
 
     },
@@ -456,17 +536,10 @@
     "Kontrollera igen" : {
 
     },
-    "Kort %lld av %lld" : {
-      "localizations" : {
-        "sv" : {
-          "stringUnit" : {
-            "state" : "new",
-            "value" : "Kort %1$lld av %2$lld"
-          }
-        }
-      }
-    },
     "Korta övningar för dig som precis har börjat. Din tidigare återkoppling följer med så att varje lektion kan bygga vidare på den förra." : {
+
+    },
+    "KUNDE" : {
 
     },
     "Kunde inte öppna dina studier" : {
@@ -475,13 +548,31 @@
     "Kunskapskollar" : {
 
     },
+    "Lägg först" : {
+
+    },
+    "Lägg till din OpenAI API-nyckel i Inställningar för att fortsätta planen." : {
+
+    },
+    "Lägg till din OpenAI API-nyckel i Inställningar för att skapa fler meningar." : {
+
+    },
+    "Lägg till din OpenAI API-nyckel i Inställningar för att skapa fler övningar." : {
+
+    },
     "Lägg till din OpenAI API-nyckel i Inställningar." : {
+
+    },
+    "Lägger till det du säger i textrutan" : {
+
+    },
+    "Läs mer" : {
 
     },
     "Läs upp" : {
 
     },
-    "Låst" : {
+    "Låst tills lektionen före är klar" : {
 
     },
     "Lek och repetera" : {
@@ -535,18 +626,14 @@
     "Lyssna" : {
 
     },
+    "Lyssna och tala har inte testats i kunskapskollen — de staplarna är en försiktig gissning." : {
+
+    },
     "Lyssna på Milos italienska" : {
 
     },
-    "Mening %lld av %lld" : {
-      "localizations" : {
-        "sv" : {
-          "stringUnit" : {
-            "state" : "new",
-            "value" : "Mening %1$lld av %2$lld"
-          }
-        }
-      }
+    "MER ÖVNING" : {
+
     },
     "mi chiamo = jag heter" : {
 
@@ -575,6 +662,9 @@
     "Milo funderar på din kunskapskoll…" : {
 
     },
+    "Milo funderar på vad du behöver…" : {
+
+    },
     "Milo funderar…" : {
 
     },
@@ -584,13 +674,34 @@
     "Milo hjälper dig att öva, rätta och prova igen. Anpassa tonen så att den passar dig." : {
 
     },
+    "Milo planerar dina tio lektioner…" : {
+
+    },
+    "Milo skapar fler övningar…" : {
+
+    },
     "Milo skapar ordkort och meningar utifrån lektionen och dina senaste svar. Detta använder ditt OpenAI API-konto." : {
 
     },
     "Milo skapar ordkort och meningar…" : {
 
     },
+    "Milo skriver nya meningar…" : {
+
+    },
+    "Milo skriver nya ordkort och meningar på samma lektion och undviker dem du redan har." : {
+
+    },
+    "Milo tittar på din mening…" : {
+
+    },
     "Milo tittar på din text…" : {
+
+    },
+    "Milo utgår från den här lektionen och undviker meningar du redan har. Detta använder ditt OpenAI API-konto." : {
+
+    },
+    "MILOS VAL" : {
 
     },
     "min" : {
@@ -614,10 +725,16 @@
     "Nästa mening" : {
 
     },
+    "Nästa steg" : {
+
+    },
     "Nästan — prova igen" : {
 
     },
     "Nivån anpassas efter din senaste kunskapskoll. Du kan göra en ny från Min studieplan." : {
+
+    },
+    "NU" : {
 
     },
     "Ny studieplan" : {
@@ -630,9 +747,6 @@
 
     },
     "Nyckeln sparas i Nyckelringen på den här enheten. Dina meddelanden och relevant lärandehistorik skickas till OpenAI när du ber Milo om ett svar. Studieplanen och samtalen sparas lokalt i appen." : {
-
-    },
-    "Om din bedömning" : {
 
     },
     "OpenAI" : {
@@ -668,10 +782,16 @@
     "Ordkorten hjälper dig att minnas. Prova några efter lektionen." : {
 
     },
+    "Öva" : {
+
+    },
     "Öva från hemskärmen" : {
 
     },
     "Öva igen" : {
+
+    },
+    "ÖVA IGEN" : {
 
     },
     "ÖVA ITALIENSKA · ETT STEG I TAGET" : {
@@ -710,6 +830,9 @@
     "Presentera dig" : {
 
     },
+    "Prova %@ härnäst — ordet är markerat nedan." : {
+
+    },
     "Prova en gång till" : {
 
     },
@@ -726,6 +849,15 @@
 
     },
     "questo fine settimana = i helgen" : {
+
+    },
+    "Radera alla mina studier" : {
+
+    },
+    "Radera alla studier och börja om? Allt du har gjort tas bort permanent." : {
+
+    },
+    "Radera allt" : {
 
     },
     "Rak" : {
@@ -752,6 +884,12 @@
     "Så hanterar OpenAI API-data" : {
 
     },
+    "Så ser din italienska ut" : {
+
+    },
+    "SÄG DET PÅ ITALIENSKA" : {
+
+    },
     "Säg gärna att du inte vet. Då hittar vi en bra plats att börja." : {
 
     },
@@ -770,6 +908,15 @@
     "simpatico/a = trevlig" : {
 
     },
+    "Skapa 10 lektioner" : {
+
+    },
+    "Skapa fler meningar" : {
+
+    },
+    "Skapa fler övningar" : {
+
+    },
     "Skapa mina övningar" : {
 
     },
@@ -777,6 +924,9 @@
 
     },
     "Skicka svar" : {
+
+    },
+    "Skriftligt underlag från %@ · inte ett CEFR-prov" : {
 
     },
     "Skriv 2–4 korta meningar. Säg hej, vad du heter, var du bor och en sak du tycker om." : {
@@ -839,10 +989,13 @@
     "Spela en gång till" : {
 
     },
-    "Spela igen" : {
+    "Spela igen från början" : {
 
     },
     "Starta om appen och kontrollera ledigt lagringsutrymme. Dina sparade data har inte raderats." : {
+
+    },
+    "Svep vänster för att öva igen, höger för känt." : {
 
     },
     "Ta bort API-nyckeln" : {
@@ -854,13 +1007,16 @@
     "Ta bort nyckeln från den här enheten? Dina studier finns kvar." : {
 
     },
-    "Tala italienska" : {
-
-    },
     "Taligenkänning är inte tillgänglig här. Du kan skriva i stället." : {
 
     },
+    "Tar bort din studieplan, alla lektioner, samtal, övningar och kunskapskollar från den här enheten och börjar om från början. Din API-nyckel påverkas inte. Det går inte att ångra." : {
+
+    },
     "Testa mina kunskaper igen" : {
+
+    },
+    "Texten hamnar i rutan — granska den innan du skickar." : {
 
     },
     "Texten skickas till OpenAI. Återkopplingen sparas lokalt." : {
@@ -869,13 +1025,16 @@
     "Tidigare skrivövningar" : {
 
     },
+    "Tidigare studieplaner" : {
+
+    },
     "Till min studieplan" : {
 
     },
     "Tillbaka" : {
 
     },
-    "Tillgänglig" : {
+    "Tom plats %lld" : {
 
     },
     "Ton" : {
@@ -891,6 +1050,15 @@
 
     },
     "un chilo di = ett kilo" : {
+
+    },
+    "Uppskattat från dina skriftliga svar, %@" : {
+
+    },
+    "Uppskattat från dina skriftliga svar." : {
+
+    },
+    "Vad ska jag öva härnäst?" : {
 
     },
     "vado = jag går/åker" : {

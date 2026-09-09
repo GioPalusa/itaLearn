@@ -130,12 +130,14 @@ nonisolated enum LearningSchema {
             "profile": object([
                 "nativeLanguage": choice(["sv"]), "targetLanguage": choice(["it"]),
                 "cefr": choice(["pre-A1", "A1", "A2", "B1", "B2", "C1", "C2"]),
-                "goal": string, "strengths": array(string), "focusAreas": array(string)
+                "goal": string, "strengths": array(string), "focusAreas": array(string),
+                "skills": object(["reading": integer, "writing": integer,
+                                  "listening": integer, "speaking": integer])
             ]),
             "lessons": array(object([
                 "id": string, "title": string, "summary": string, "objectives": array(string),
                 "prerequisites": array(string), "vocabulary": array(string), "scenario": string,
-                "successCriteria": array(string)
+                "successCriteria": array(string), "estimatedMinutes": integer
             ]))
         ])
     }
@@ -153,6 +155,24 @@ nonisolated extension LearningSchema {
     static var wrapUp: [String: Any] {
         object(["summary": string, "strengths": array(string), "nextSteps": array(string),
                 "demonstratedObjectives": array(integer), "readyToAdvance": boolean])
+    }
+    static var planDirections: [String: Any] {
+        object([
+            "recommended": string,
+            "options": array(object([
+                "id": string, "title": string, "rationale": string, "consolidates": boolean
+            ]))
+        ])
+    }
+    static var planExtension: [String: Any] {
+        object(["lessons": array(object([
+            "id": string, "title": string, "summary": string, "objectives": array(string),
+            "prerequisites": array(string), "vocabulary": array(string), "scenario": string,
+            "successCriteria": array(string), "estimatedMinutes": integer
+        ]))])
+    }
+    static var hint: [String: Any] {
+        object(["encouragement": string, "hint": string, "nextWord": string])
     }
     static var practice: [String: Any] {
         object([

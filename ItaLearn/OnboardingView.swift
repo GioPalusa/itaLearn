@@ -13,6 +13,7 @@ struct OnboardingView: View {
                     APIKeyForm(isOnboarding: true)
                 }
                 .padding(24)
+                .padding(.bottom, 32)
                 .frame(maxWidth: 700)
                 .frame(maxWidth: .infinity)
             }

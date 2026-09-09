@@ -94,6 +94,126 @@ final class LearningStore {
         return next.id
     }
 
+    /// Clears every study: plans, lessons, sessions, practice and assessments.
+    ///
+    /// The API key is deliberately left alone; removing it is a separate action.
+    func wipeAllStudies() throws {
+        guard let context, isLoaded else { throw LearningValidationError.invalidResponse }
+        try update { $0 = LearningState() }
+        // Writing exercises predate the plan and live in their own model.
+        try? context.delete(model: LessonRecord.self)
+        try? context.save()
+    }
+
+    /// The newest saved assessment that actually carried a plan, if any.
+    var restorableAssessment: SavedAssessment? {
+        state.assessments.last { !$0.result.lessons.isEmpty }
+    }
+
+    /// Rebuilds the active plan from the last assessment that produced one.
+    ///
+    /// Saved assessments keep the full lesson list, so a plan that was replaced or
+    /// lost can be reconstructed without asking the learner to redo a kunskapskoll.
+    /// Completion is recovered from finished sessions rather than the replaced plan.
+    func restorePlanFromLatestAssessment() throws {
+        guard let assessment = restorableAssessment else { throw LearningValidationError.invalidResponse }
+        try update { state in
+            var plan = LearningPlan(
+                createdAt: assessment.createdAt,
+                profile: assessment.result.profile,
+                lessons: assessment.result.lessons
+            )
+            let lessonIDs = Set(plan.lessons.map(\.id))
+            let finished = state.sessions.filter { $0.isComplete }.map(\.lessonID)
+            plan.completedLessonIDs = Set(finished).intersection(lessonIDs)
+                .union(state.activePlan?.completedLessonIDs.intersection(lessonIDs) ?? [])
+
+            if let current = state.activePlan, current.id != plan.id {
+                state.archivedPlans.append(current)
+            }
+            // Sessions point at a plan id, so re-home them onto the restored plan.
+            for index in state.sessions.indices where lessonIDs.contains(state.sessions[index].lessonID) {
+                state.sessions[index].planID = plan.id
+            }
+            state.activePlan = plan
+        }
+    }
+
+    /// Makes an archived plan active again, archiving whatever is active now.
+    ///
+    /// Sessions keep pointing at their own plan, so returning to an older path
+    /// restores its lessons and its finished work together.
+    func activateArchivedPlan(id: UUID) throws {
+        try update { state in
+            guard let position = state.archivedPlans.firstIndex(where: { $0.id == id }) else {
+                throw LearningValidationError.invalidResponse
+            }
+            var restored = state.archivedPlans.remove(at: position)
+            restored.archivedAt = nil
+            if var current = state.activePlan {
+                current.archivedAt = .now
+                state.archivedPlans.append(current)
+            }
+            state.activePlan = restored
+        }
+    }
+
+    /// Mutates one session's saved practice, so a round can resume exactly where it stopped.
+    func updatePractice(sessionID: UUID, _ change: (inout PracticeProgress) -> Void) throws {
+        try update { state in
+            guard let index = state.sessions.firstIndex(where: { $0.id == sessionID }),
+                  state.sessions[index].practice != nil else { throw LearningValidationError.invalidResponse }
+            change(&state.sessions[index].practice!)
+        }
+    }
+
+    /// Rolls every past sitting up into one entry per lesson.
+    ///
+    /// Sessions are already kept forever; this turns them into the compact record the
+    /// teacher and practice prompts can actually use, newest lessons last and bounded
+    /// so the request stays small.
+    func learningHistory(excluding sessionID: UUID? = nil, limit: Int = 8) -> [LessonHistoryEntry] {
+        let plans = ([state.activePlan].compactMap { $0 } + state.archivedPlans)
+        let titles = Dictionary(
+            plans.flatMap(\.lessons).map { ($0.id, $0.title) },
+            uniquingKeysWith: { first, _ in first }
+        )
+
+        var order: [String] = []
+        var grouped: [String: [LessonSession]] = [:]
+        for session in state.sessions where session.id != sessionID {
+            if grouped[session.lessonID] == nil { order.append(session.lessonID) }
+            grouped[session.lessonID, default: []].append(session)
+        }
+
+        let entries = order.compactMap { lessonID -> LessonHistoryEntry? in
+            guard let sessions = grouped[lessonID], let newest = sessions.last else { return nil }
+            let practice = sessions.compactMap(\.practice).last
+            let stumbled = practice.map { progress in
+                progress.pack.puzzles
+                    .filter { (progress.puzzleAttempts?[$0.id] ?? 0) > 1 }
+                    .map(\.swedish)
+                    .prefix(3)
+                    .map { String($0.prefix(120)) }
+            } ?? []
+
+            return LessonHistoryEntry(
+                lessonID: lessonID,
+                lessonTitle: titles[lessonID] ?? lessonID,
+                attempts: sessions.count,
+                retries: sessions.reduce(0) { $0 + ($1.retryCount ?? 0) },
+                completed: sessions.contains(where: \.isComplete),
+                lastSummary: String((newest.wrapUp?.summary ?? newest.memory).prefix(600)),
+                strengths: (newest.wrapUp?.strengths ?? []).prefix(3).map { String($0.prefix(200)) },
+                nextSteps: (newest.wrapUp?.nextSteps ?? []).prefix(3).map { String($0.prefix(200)) },
+                practiceSolved: practice?.solvedPuzzleIDs.count ?? 0,
+                practiceTotal: practice?.pack.puzzles.count ?? 0,
+                stumbledOn: Array(stumbled)
+            )
+        }
+        return Array(entries.suffix(limit))
+    }
+
     func lessonContext(sessionID: UUID, settings: TutorSettings) throws -> LessonContext {
         guard let session = state.sessions.first(where: { $0.id == sessionID }),
               let plan = ([state.activePlan].compactMap { $0 } + state.archivedPlans).first(where: { $0.id == session.planID }),
@@ -103,7 +223,8 @@ final class LearningStore {
                              memory: session.memory, achievedObjectives: session.achievedObjectives.sorted(),
                              awaitingRetry: session.requiresRetry, tone: settings.tone.modelInstruction,
                              correctsSpelling: settings.correctsSpelling,
-                             turnsRemaining: max(0, LessonSession.answerBudget - session.answerCount))
+                             turnsRemaining: max(0, LessonSession.answerBudget - session.answerCount),
+                             history: learningHistory(excluding: sessionID))
     }
 
 }
@@ -147,7 +268,8 @@ final class LearningChat {
                 messages: interview.messages,
                 questionNumber: interview.answeredCount + 1,
                 currentPlan: store.state.activePlan,
-                recentLearningMemory: store.state.sessions.suffix(6).map(\.memory)
+                recentLearningMemory: store.state.sessions.suffix(6).map(\.memory),
+                lessonHistory: store.learningHistory()
             )
             if interview.answeredCount < AssessmentSession.questionCount {
                 let question = try await self.service.question(context)
@@ -201,7 +323,8 @@ final class LearningChat {
                 memory: session.memory, achievedObjectives: session.achievedObjectives.sorted(),
                 awaitingRetry: session.requiresRetry, tone: settings.tone.modelInstruction,
                 correctsSpelling: settings.correctsSpelling,
-                turnsRemaining: max(0, LessonSession.answerBudget - session.answerCount - (session.pendingAnswer == nil ? 0 : 1))
+                turnsRemaining: max(0, LessonSession.answerBudget - session.answerCount - (session.pendingAnswer == nil ? 0 : 1)),
+                history: store.learningHistory(excluding: sessionID)
             )
             let reply = try await self.service.teach(context)
             try Task.checkCancellation()
@@ -249,6 +372,111 @@ final class LearningChat {
                 guard let index = state.sessions.firstIndex(where: { $0.id == sessionID }) else { throw LearningValidationError.invalidResponse }
                 state.sessions[index].practice = PracticeProgress(pack: pack)
             }
+        }
+    }
+
+    /// Asks Milo for help on the sentence the learner is stuck on, and saves it with the puzzle.
+    func requestHint(store: LearningStore, sessionID: UUID, settings: TutorSettings,
+                     puzzle: SentencePuzzle, attempt: [String]) {
+        guard !isWorking else { return }
+        run {
+            guard let session = store.state.sessions.first(where: { $0.id == sessionID }),
+                  let practice = session.practice,
+                  let plan = ([store.state.activePlan].compactMap { $0 } + store.state.archivedPlans)
+                      .first(where: { $0.id == session.planID }) else {
+                throw LearningValidationError.invalidResponse
+            }
+            let context = PuzzleHintContext(
+                swedish: puzzle.swedish, words: puzzle.words, answers: puzzle.answers,
+                attempt: attempt, attemptCount: practice.attempts(for: puzzle.id),
+                explanation: puzzle.explanation, cefr: plan.profile.cefr,
+                tone: settings.tone.modelInstruction
+            )
+            let hint = try await self.service.hint(context)
+            try Task.checkCancellation()
+            try hint.validate(words: puzzle.words)
+            try store.updatePractice(sessionID: sessionID) { progress in
+                progress.puzzleHints = (progress.puzzleHints ?? [:]).merging([puzzle.id: hint]) { _, new in new }
+            }
+        }
+    }
+
+    /// Generates another round of practice for the same lesson and appends what is new.
+    func extendPractice(store: LearningStore, sessionID: UUID, settings: TutorSettings) {
+        guard !isWorking, let practice = store.state.sessions.first(where: { $0.id == sessionID })?.practice else { return }
+        run {
+            let lessonContext = try store.lessonContext(sessionID: sessionID, settings: settings)
+            let solved = practice.pack.puzzles.filter { practice.solvedPuzzleIDs.contains($0.id) }
+            let unsolved = practice.pack.puzzles.filter { !practice.solvedPuzzleIDs.contains($0.id) }
+            let context = PracticeExtensionContext(
+                lesson: lessonContext,
+                existingPuzzlePrompts: practice.pack.puzzles.map(\.swedish),
+                existingFlashcardCues: practice.pack.flashcards.map(\.swedish),
+                solvedPuzzlePrompts: solved.map(\.swedish),
+                unsolvedPuzzlePrompts: unsolved.map(\.swedish)
+            )
+            let pack = try await self.service.morePractice(context)
+            try Task.checkCancellation()
+            try pack.validate()
+            try store.updatePractice(sessionID: sessionID) { progress in
+                progress.pack.append(pack)
+            }
+        }
+    }
+
+    /// Milo's suggested ways forward, once the learner has finished the plan.
+    private(set) var directions: PlanDirections?
+
+    func clearDirections() { directions = nil }
+
+    /// Asks Milo which areas to practise next, based on how the plan actually went.
+    func suggestDirections(store: LearningStore, settings: TutorSettings) {
+        guard !isWorking, let plan = store.state.activePlan else { return }
+        run {
+            let open = plan.lessons.filter { !plan.completedLessonIDs.contains($0.id) }
+            let context = PlanExtensionContext(
+                profile: plan.profile,
+                existingLessons: plan.lessons,
+                history: store.learningHistory(),
+                unfinishedLessonTitles: open.map(\.title),
+                direction: nil
+            )
+            let suggested = try await self.service.planDirections(context)
+            try Task.checkCancellation()
+            try suggested.validate()
+            self.directions = suggested
+        }
+    }
+
+    /// Appends the next lessons to the current plan, built from the finished ones.
+    ///
+    /// The plan grows rather than being replaced, so completed lessons stay in place
+    /// and remain open for revisiting.
+    func extendPlan(store: LearningStore, settings: TutorSettings, direction: PlanDirection? = nil) {
+        guard !isWorking, let plan = store.state.activePlan else { return }
+        run {
+            let done = plan.lessons.filter { plan.completedLessonIDs.contains($0.id) }
+            let open = plan.lessons.filter { !plan.completedLessonIDs.contains($0.id) }
+            let context = PlanExtensionContext(
+                profile: plan.profile,
+                existingLessons: plan.lessons,
+                history: store.learningHistory(),
+                unfinishedLessonTitles: open.map(\.title),
+                direction: direction
+            )
+            guard !done.isEmpty else { throw LearningValidationError.invalidResponse }
+
+            let extension_ = try await self.service.nextLessons(context)
+            try Task.checkCancellation()
+            try store.update { state in
+                guard var current = state.activePlan, current.id == plan.id else {
+                    throw LearningValidationError.invalidResponse
+                }
+                try extension_.validate(existingIDs: Set(current.lessons.map(\.id)))
+                current.lessons.append(contentsOf: extension_.lessons)
+                state.activePlan = current
+            }
+            self.directions = nil
         }
     }
 

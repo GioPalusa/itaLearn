@@ -4,7 +4,7 @@ import SwiftUI
 ///
 /// The design is specified for light appearance only, so the ink and surface
 /// colours are fixed rather than semantic. `RootView` pins the app to light.
-enum ItaLearn {
+nonisolated enum ItaLearn {
     static let purple = Color(red: 0x56 / 255, green: 0x47 / 255, blue: 0x97 / 255)
     static let magenta = Color(red: 0xC0 / 255, green: 0x33 / 255, blue: 0x8B / 255)
     static let cyan = Color(red: 0x2E / 255, green: 0xAA / 255, blue: 0xE1 / 255)
@@ -91,6 +91,16 @@ extension View {
         self
 #else
         toolbarVisibility(.hidden, for: .navigationBar)
+#endif
+    }
+
+    /// A long lesson title truncates as a large title; inline handles it better.
+    /// `navigationBarTitleDisplayMode` does not exist on macOS.
+    func inlineNavigationTitle() -> some View {
+#if os(macOS)
+        self
+#else
+        navigationBarTitleDisplayMode(.inline)
 #endif
     }
 
@@ -283,5 +293,170 @@ struct FeedbackList: View {
                 }
             }
         }
+    }
+}
+
+// MARK: - Turn 3 components
+
+/// Gradient progress ring with a fraction in the middle, e.g. "1 av 5".
+struct ProgressRing: View {
+    let completed: Int
+    let total: Int
+    var size: CGFloat = 76
+
+    private var fraction: Double {
+        guard total > 0 else { return 0 }
+        return min(max(Double(completed) / Double(total), 0), 1)
+    }
+
+    @State private var shown: Double = 0
+
+    var body: some View {
+        ZStack {
+            Circle()
+                .stroke(Color.black.opacity(0.08), lineWidth: size * 0.105)
+            Circle()
+                .trim(from: 0, to: shown)
+                .stroke(
+                    LinearGradient(colors: [ItaLearn.magenta, ItaLearn.cyan],
+                                   startPoint: .topTrailing, endPoint: .bottomLeading),
+                    style: StrokeStyle(lineWidth: size * 0.105, lineCap: .round)
+                )
+                .rotationEffect(.degrees(-90))
+            VStack(spacing: 0) {
+                Text("\(completed)")
+                    .font(.system(size: size * 0.29, weight: .bold, design: .monospaced))
+                    .monospacedDigit()
+                    .foregroundStyle(Color.black.opacity(0.9))
+                Text("av \(total)")
+                    .font(.il(size * 0.13, .semibold))
+                    .foregroundStyle(Color.black.opacity(0.45))
+            }
+        }
+        .frame(width: size, height: size)
+        .motion(ItaLearnMotion.fill, shown)
+        .onAppear { shown = fraction }
+        .onChange(of: fraction) { shown = fraction }
+        .accessibilityElement()
+        .accessibilityLabel("Framsteg")
+        .accessibilityValue("\(completed) av \(total)")
+    }
+}
+
+/// One filled bar per item, used above the practice rounds.
+struct SegmentedProgress: View {
+    let current: Int
+    let total: Int
+
+    var body: some View {
+        HStack(spacing: 5) {
+            ForEach(0..<max(total, 1), id: \.self) { index in
+                Capsule()
+                    .fill(index <= current && total > 0 ? ItaLearn.purple : Color.black.opacity(0.12))
+                    .frame(height: 5)
+            }
+        }
+        .motion(ItaLearnMotion.settle, current)
+        .accessibilityElement()
+        .accessibilityLabel("Framsteg")
+        .accessibilityValue("\(min(current + 1, total)) av \(total)")
+    }
+}
+
+/// The header shared by the practice rounds: back control, title, counter.
+struct PracticeHeader: View {
+    let title: LocalizedStringKey
+    let subtitle: String
+    let current: Int
+    let total: Int
+    let onBack: () -> Void
+
+    var body: some View {
+        HStack(spacing: 12) {
+            Button(action: onBack) {
+                Image(systemName: "chevron.backward")
+                    .font(.system(size: 16, weight: .semibold))
+                    .foregroundStyle(Color.black.opacity(0.7))
+                    .frame(width: 38, height: 38)
+                    .background(ItaLearn.card, in: .circle)
+                    .overlay { Circle().strokeBorder(ItaLearn.cardBorder, lineWidth: 1) }
+                    .shadow(color: .black.opacity(0.06), radius: 4, y: 4)
+            }
+            .buttonStyle(.plain)
+            .accessibilityLabel("Tillbaka")
+
+            VStack(alignment: .leading, spacing: 2) {
+                Text(title).font(.il(22, .bold)).foregroundStyle(ItaLearn.ink)
+                Text(subtitle).font(.il(12)).foregroundStyle(ItaLearn.inkTertiary).lineLimit(1)
+            }
+            .frame(maxWidth: .infinity, alignment: .leading)
+
+            HStack(spacing: 0) {
+                Text("\(min(current + 1, max(total, 1)))").foregroundStyle(ItaLearn.purple)
+                Text("/\(total)").foregroundStyle(Color.black.opacity(0.35))
+            }
+            .font(.ilMono(15))
+            .monospacedDigit()
+        }
+    }
+}
+
+// MARK: - Motion
+
+/// The app's motion vocabulary. Every animation goes through here so Reduce Motion
+/// is honoured in one place rather than remembered at each call site.
+enum ItaLearnMotion {
+    /// Content settling into place — cards appearing, sections expanding.
+    static let settle = Animation.spring(duration: 0.42, bounce: 0.18)
+    /// Something the learner moved — a tile, a card, a tab.
+    static let move = Animation.spring(duration: 0.32, bounce: 0.22)
+    /// A value counting up — rings and progress bars.
+    static let fill = Animation.easeOut(duration: 0.65)
+    /// A quick acknowledgement, like a correct answer.
+    static let pop = Animation.spring(duration: 0.28, bounce: 0.4)
+}
+
+extension View {
+    /// Applies an animation unless the learner asked for less motion.
+    func motion(_ animation: Animation, _ value: some Equatable) -> some View {
+        modifier(ReducedMotionModifier(animation: animation, value: value))
+    }
+
+    /// Fades and lifts a view in the first time it appears, staggered by `index`
+    /// so a list of cards arrives in sequence instead of all at once.
+    func appearsInSequence(_ index: Int) -> some View {
+        modifier(SequencedAppearance(index: index))
+    }
+}
+
+private struct ReducedMotionModifier<Value: Equatable>: ViewModifier {
+    @Environment(\.accessibilityReduceMotion) private var reduceMotion
+    let animation: Animation
+    let value: Value
+
+    func body(content: Content) -> some View {
+        content.animation(reduceMotion ? nil : animation, value: value)
+    }
+}
+
+private struct SequencedAppearance: ViewModifier {
+    @Environment(\.accessibilityReduceMotion) private var reduceMotion
+    let index: Int
+    @State private var hasAppeared = false
+
+    private var delay: Double { min(Double(index) * 0.06, 0.4) }
+
+    func body(content: Content) -> some View {
+        content
+            .opacity(hasAppeared ? 1 : 0)
+            .offset(y: hasAppeared ? 0 : 12)
+            .onAppear {
+                guard !hasAppeared else { return }
+                if reduceMotion {
+                    hasAppeared = true
+                } else {
+                    withAnimation(ItaLearnMotion.settle.delay(delay)) { hasAppeared = true }
+                }
+            }
     }
 }

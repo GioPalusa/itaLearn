@@ -4,8 +4,27 @@ import SwiftUI
 /// Explicit parsing is needed for model strings: Text(String) renders Markdown markers literally.
 nonisolated enum LearningMarkdown {
     static func attributed(_ source: String) -> AttributedString {
-        (try? AttributedString(markdown: source, options: .init(interpretedSyntax: .inlineOnlyPreservingWhitespace)))
-            ?? AttributedString(source)
+        let text = LessonDialogue.normalized(source)
+        var output = (try? AttributedString(markdown: text, options: .init(interpretedSyntax: .inlineOnlyPreservingWhitespace)))
+            ?? AttributedString(text)
+        highlightQuotations(in: &output)
+        return output
+    }
+
+    /// Italian inside « » or " " is what the learner is meant to say, so it is set
+    /// apart from the Swedish explanation around it.
+    private static func highlightQuotations(in text: inout AttributedString) {
+        for (open, close) in [(Character("«"), Character("»")), (Character("\""), Character("\""))] {
+            var searchFrom = text.startIndex
+            while searchFrom < text.endIndex,
+                  let start = text[searchFrom...].range(of: String(open)),
+                  let end = text[start.upperBound...].range(of: String(close)) {
+                let span = start.lowerBound..<end.upperBound
+                text[span].foregroundColor = ItaLearn.purple
+                text[span].inlinePresentationIntent = .stronglyEmphasized
+                searchFrom = end.upperBound
+            }
+        }
     }
 
     static func spoken(_ source: String) -> String { String(attributed(source).characters) }
@@ -64,6 +83,15 @@ struct LearningMarkdownText: View {
     let source: String
     init(_ source: String) { self.source = source }
     var body: some View {
+        let dialogue = LessonDialogue.lines(source)
+        if LessonDialogue.isConversation(dialogue) {
+            LessonDialogueView(lines: dialogue)
+        } else {
+            prose
+        }
+    }
+
+    private var prose: some View {
         VStack(alignment: .leading, spacing: 4) {
             ForEach(Array(source.components(separatedBy: "\n").enumerated()), id: \.offset) { _, line in
                 if line.hasPrefix("### ") {

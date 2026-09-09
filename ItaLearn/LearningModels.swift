@@ -27,6 +27,26 @@ nonisolated struct Correction: Codable, Sendable, Equatable {
     var explanation: String
 }
 
+/// Rough 0–100 reach per skill, for the profile chart. The placement interview is
+/// written only, so listening and speaking are deliberately low-confidence.
+nonisolated struct SkillEstimate: Codable, Sendable, Equatable {
+    var reading: Int
+    var writing: Int
+    var listening: Int
+    var speaking: Int
+
+    var pairs: [(label: String, value: Int, assessed: Bool)] {
+        [("Läsa", reading, true), ("Skriva", writing, true),
+         ("Lyssna", listening, false), ("Tala", speaking, false)]
+    }
+
+    func validate() throws {
+        guard [reading, writing, listening, speaking].allSatisfy({ (0...100).contains($0) }) else {
+            throw LearningValidationError.invalidResponse
+        }
+    }
+}
+
 nonisolated struct LearnerProfile: Codable, Sendable, Equatable {
     var nativeLanguage: String
     var targetLanguage: String
@@ -34,6 +54,9 @@ nonisolated struct LearnerProfile: Codable, Sendable, Equatable {
     var goal: String
     var strengths: [String]
     var focusAreas: [String]
+
+    // Optional additions keep existing version-1 snapshots decodable.
+    var skills: SkillEstimate?
 }
 
 nonisolated struct PlannedLesson: Codable, Identifiable, Sendable, Equatable {
@@ -45,6 +68,10 @@ nonisolated struct PlannedLesson: Codable, Identifiable, Sendable, Equatable {
     var vocabulary: [String]
     var scenario: String
     var successCriteria: [String]
+
+    // Optional additions keep existing version-1 snapshots decodable.
+    /// Roughly how long the lesson takes, shown on the plan and next-step rows.
+    var estimatedMinutes: Int?
 }
 
 /// Exactly the structured JSON contract returned by Sol. App IDs/dates live outside it.
@@ -66,6 +93,7 @@ nonisolated struct AssessmentResult: Codable, Sendable, Equatable {
               profile.strengths.count <= 8, profile.focusAreas.count <= 8 else {
             throw LearningValidationError.invalidResponse
         }
+        try profile.skills?.validate()
         if recommendation == .continueCurrent {
             guard hasCurrentPlan, lessons.isEmpty else { throw LearningValidationError.invalidResponse }
             return
@@ -80,6 +108,7 @@ nonisolated struct AssessmentResult: Codable, Sendable, Equatable {
                   (1...5).contains(lesson.successCriteria.count),
                   lesson.vocabulary.count <= 15,
                   lesson.prerequisites.allSatisfy({ seen.contains($0) }),
+                  lesson.estimatedMinutes.map({ (3...60).contains($0) }) ?? true,
                   (lesson.objectives + lesson.successCriteria).allSatisfy({ !$0.isEmpty && $0.count <= 1000 }) else {
                 throw LearningValidationError.invalidResponse
             }
@@ -153,6 +182,10 @@ nonisolated struct LearningPlan: Codable, Identifiable, Sendable {
     var profile: LearnerProfile
     var lessons: [PlannedLesson]
     var completedLessonIDs: Set<String> = []
+
+    // Optional additions keep existing version-1 snapshots decodable.
+    /// When this plan was replaced by a newer one.
+    var archivedAt: Date?
 }
 
 nonisolated struct LessonSession: Codable, Identifiable, Sendable {
@@ -170,6 +203,10 @@ nonisolated struct LessonSession: Codable, Identifiable, Sendable {
     var wrapUp: LessonWrapUp?
     var wrapUpRequested: Bool?
     var practice: PracticeProgress?
+    /// How many times Milo asked the learner to try the same skill again.
+    var retryCount: Int?
+    var startedAt: Date?
+    var finishedAt: Date?
 
     static let answerBudget = 8
     var answerCount: Int { messages.filter { $0.role == .user }.count }
@@ -184,6 +221,7 @@ nonisolated struct LessonSession: Codable, Identifiable, Sendable {
         guard answerCount >= 2, pendingAnswer == nil else { throw LearningValidationError.invalidResponse }
         wrapUp = result
         wrapUpRequested = nil
+        finishedAt = .now
         achievedObjectives.formUnion(result.demonstratedObjectives)
         isComplete = result.readyToAdvance && !requiresRetry
     }
@@ -194,6 +232,8 @@ nonisolated struct LessonSession: Codable, Identifiable, Sendable {
         if let pendingAnswer { messages.append(ChatMessage(role: .user, text: pendingAnswer)) }
         // Opening messages cannot establish knowledge or finish a lesson.
         if hasAnswer {
+            if startedAt == nil { startedAt = .now }
+            if reply.requiresRetry { retryCount = (retryCount ?? 0) + 1 }
             achievedObjectives.formUnion(reply.objectiveIDsAchieved)
             requiresRetry = reply.requiresRetry
             isComplete = reply.lessonComplete && !requiresRetry && achievedObjectives.count == objectiveCount
@@ -227,8 +267,16 @@ nonisolated struct LearningState: Codable, Sendable {
         assessments.append(SavedAssessment(result: result, resultJSON: rawJSON, messages: assessment.messages))
         switch result.recommendation {
         case .newPlan:
-            if let activePlan { archivedPlans.append(activePlan) }
-            activePlan = LearningPlan(profile: result.profile, lessons: result.lessons)
+            var replacement = LearningPlan(profile: result.profile, lessons: result.lessons)
+            if var previous = activePlan {
+                // A rewritten plan can reuse lesson ids; keep credit for those.
+                let carried = previous.completedLessonIDs
+                    .intersection(Set(replacement.lessons.map(\.id)))
+                replacement.completedLessonIDs = carried
+                previous.archivedAt = .now
+                archivedPlans.append(previous)
+            }
+            activePlan = replacement
         case .continueCurrent:
             activePlan?.profile = result.profile
         }
