@@ -111,6 +111,7 @@ extension View {
 
 /// The 50 pt filled capsule used for every primary action in the design.
 struct ItaLearnPrimaryButtonStyle: ButtonStyle {
+    @Environment(\.isEnabled) var controlIsEnabled
     var background: AnyShapeStyle = AnyShapeStyle(ItaLearn.purple)
     var foreground: Color = .white
     var isEnabled = true
@@ -121,7 +122,7 @@ struct ItaLearnPrimaryButtonStyle: ButtonStyle {
             .foregroundStyle(foreground)
             .frame(maxWidth: .infinity, minHeight: 50)
             .background(background, in: .capsule)
-            .opacity(isEnabled ? 1 : 0.4)
+            .opacity(isEnabled && controlIsEnabled ? 1 : 0.4)
             .shadow(color: .black.opacity(0.10), radius: 4, y: 4)
             .scaleEffect(configuration.isPressed ? 0.98 : 1)
             .animation(.spring(duration: 0.2), value: configuration.isPressed)

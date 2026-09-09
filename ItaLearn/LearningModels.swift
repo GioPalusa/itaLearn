@@ -166,6 +166,28 @@ nonisolated struct LessonSession: Codable, Identifiable, Sendable {
     var requiresRetry = false
     var isComplete = false
 
+    // Optional additions keep existing version-1 snapshots decodable.
+    var wrapUp: LessonWrapUp?
+    var wrapUpRequested: Bool?
+    var practice: PracticeProgress?
+
+    static let answerBudget = 8
+    var answerCount: Int { messages.filter { $0.role == .user }.count }
+    func shouldWrapUp(objectiveCount: Int) -> Bool {
+        wrapUp == nil && pendingAnswer == nil && answerCount >= 2 &&
+        (wrapUpRequested == true || isComplete || answerCount >= Self.answerBudget ||
+         (!requiresRetry && achievedObjectives.count == objectiveCount))
+    }
+
+    mutating func finish(_ result: LessonWrapUp, objectiveCount: Int) throws {
+        try result.validate(objectiveCount: objectiveCount)
+        guard answerCount >= 2, pendingAnswer == nil else { throw LearningValidationError.invalidResponse }
+        wrapUp = result
+        wrapUpRequested = nil
+        achievedObjectives.formUnion(result.demonstratedObjectives)
+        isComplete = result.readyToAdvance && !requiresRetry
+    }
+
     mutating func accept(_ reply: LessonReply, objectiveCount: Int) throws {
         try reply.validate(objectiveCount: objectiveCount)
         let hasAnswer = pendingAnswer != nil

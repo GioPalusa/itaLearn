@@ -82,6 +82,30 @@ final class LearningStore {
         try update { $0.sessions.append(session) }
         return session.id
     }
+    func continueLesson(sessionID: UUID) throws -> UUID {
+        guard let previous = state.sessions.first(where: { $0.id == sessionID }),
+              previous.wrapUp != nil || previous.isComplete,
+              state.activePlan?.id == previous.planID else { throw LearningValidationError.invalidResponse }
+        var next = LessonSession(planID: previous.planID, lessonID: previous.lessonID)
+        next.memory = previous.memory + "\n" + (previous.wrapUp?.summary ?? "")
+        next.achievedObjectives = previous.achievedObjectives
+        next.practice = previous.practice
+        try update { $0.sessions.append(next) }
+        return next.id
+    }
+
+    func lessonContext(sessionID: UUID, settings: TutorSettings) throws -> LessonContext {
+        guard let session = state.sessions.first(where: { $0.id == sessionID }),
+              let plan = ([state.activePlan].compactMap { $0 } + state.archivedPlans).first(where: { $0.id == session.planID }),
+              let lesson = plan.lessons.first(where: { $0.id == session.lessonID }) else { throw LearningValidationError.invalidResponse }
+        return LessonContext(profile: plan.profile, lesson: lesson,
+                             recentMessages: Array(session.messages.suffix(32)), learnerAnswer: nil,
+                             memory: session.memory, achievedObjectives: session.achievedObjectives.sorted(),
+                             awaitingRetry: session.requiresRetry, tone: settings.tone.modelInstruction,
+                             correctsSpelling: settings.correctsSpelling,
+                             turnsRemaining: max(0, LessonSession.answerBudget - session.answerCount))
+    }
+
 }
 
 /// Retains and cancels requests explicitly; failed requests leave a persisted pending answer.
@@ -149,7 +173,14 @@ final class LearningChat {
     func lesson(store: LearningStore, sessionID: UUID, settings: TutorSettings, answer: String? = nil) {
         guard !isWorking else { return }
         guard let existing = store.state.sessions.first(where: { $0.id == sessionID }),
-              !existing.isComplete,
+              existing.wrapUp == nil else { return }
+        if existing.pendingAnswer == nil,
+           let context = try? store.lessonContext(sessionID: sessionID, settings: settings),
+           existing.shouldWrapUp(objectiveCount: context.lesson.objectives.count) {
+            finishLesson(store: store, sessionID: sessionID, settings: settings)
+            return
+        }
+        guard !existing.isComplete,
               answer != nil || existing.pendingAnswer != nil || existing.messages.isEmpty else { return }
         run {
             guard let index = store.state.sessions.firstIndex(where: { $0.id == sessionID }),
@@ -169,15 +200,54 @@ final class LearningChat {
                 recentMessages: Array(session.messages.suffix(16)), learnerAnswer: session.pendingAnswer,
                 memory: session.memory, achievedObjectives: session.achievedObjectives.sorted(),
                 awaitingRetry: session.requiresRetry, tone: settings.tone.modelInstruction,
-                correctsSpelling: settings.correctsSpelling
+                correctsSpelling: settings.correctsSpelling,
+                turnsRemaining: max(0, LessonSession.answerBudget - session.answerCount - (session.pendingAnswer == nil ? 0 : 1))
             )
             let reply = try await self.service.teach(context)
             try Task.checkCancellation()
             try store.update { state in
                 try state.sessions[index].accept(reply, objectiveCount: lesson.objectives.count)
-                if state.sessions[index].isComplete {
-                    state.activePlan?.completedLessonIDs.insert(lesson.id)
-                }
+            }
+            if store.state.sessions[index].shouldWrapUp(objectiveCount: lesson.objectives.count) {
+                try await self.saveWrapUp(store: store, sessionID: sessionID, settings: settings)
+            }
+        }
+    }
+
+    func finishLesson(store: LearningStore, sessionID: UUID, settings: TutorSettings) {
+        guard !isWorking else { return }
+        run { try await self.saveWrapUp(store: store, sessionID: sessionID, settings: settings) }
+    }
+
+    private func saveWrapUp(store: LearningStore, sessionID: UUID, settings: TutorSettings) async throws {
+        guard let session = store.state.sessions.first(where: { $0.id == sessionID }),
+              session.wrapUp == nil, session.pendingAnswer == nil, session.answerCount >= 2 else { return }
+        // Persist the request so cancellation/relaunch can resume only the summarization step.
+        try store.update { state in
+            guard let index = state.sessions.firstIndex(where: { $0.id == sessionID }) else { return }
+            state.sessions[index].wrapUpRequested = true
+        }
+        let context = try store.lessonContext(sessionID: sessionID, settings: settings)
+        let summary = try await service.wrapUp(context)
+        try Task.checkCancellation()
+        try store.update { state in
+            guard let index = state.sessions.firstIndex(where: { $0.id == sessionID }),
+                  state.activePlan?.id == state.sessions[index].planID else { throw LearningValidationError.invalidResponse }
+            try state.sessions[index].finish(summary, objectiveCount: context.lesson.objectives.count)
+            if state.sessions[index].isComplete { state.activePlan?.completedLessonIDs.insert(context.lesson.id) }
+        }
+    }
+
+    func generatePractice(store: LearningStore, sessionID: UUID, settings: TutorSettings) {
+        guard !isWorking, store.state.sessions.first(where: { $0.id == sessionID })?.practice == nil else { return }
+        run {
+            let context = try store.lessonContext(sessionID: sessionID, settings: settings)
+            let pack = try await self.service.practice(context)
+            try Task.checkCancellation()
+            try pack.validate()
+            try store.update { state in
+                guard let index = state.sessions.firstIndex(where: { $0.id == sessionID }) else { throw LearningValidationError.invalidResponse }
+                state.sessions[index].practice = PracticeProgress(pack: pack)
             }
         }
     }

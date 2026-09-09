@@ -81,28 +81,6 @@ enum CorrectionDiff {
 
     /// Styled text for the "Rättat i din text" card.
     static func attributedText(original: String, corrected: String) -> AttributedString {
-        var output = AttributedString()
-
-        for (index, token) in tokens(original: original, corrected: corrected).enumerated() {
-            if index > 0 {
-                output.append(AttributedString(" "))
-            }
-
-            var piece = AttributedString(token.text)
-            switch token.kind {
-            case .unchanged:
-                piece.foregroundColor = ItaLearn.ink
-            case .removed:
-                piece.foregroundColor = .black.opacity(0.35)
-                piece.strikethroughStyle = Text.LineStyle(pattern: .solid, color: ItaLearn.red)
-            case .added:
-                piece.foregroundColor = ItaLearn.ink
-                piece.backgroundColor = ItaLearn.green.opacity(0.16)
-                piece.underlineStyle = Text.LineStyle(pattern: .solid, color: ItaLearn.green)
-            }
-            output.append(piece)
-        }
-
-        return output
+        LearningMarkdown.correction(original: original, corrected: corrected)
     }
 }

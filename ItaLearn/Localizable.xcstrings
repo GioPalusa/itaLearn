@@ -13,6 +13,16 @@
     "\"Snyggt! Artigheten är i hamn — nu kör vi på priserna!\"" : {
 
     },
+    "%@, %@" : {
+      "localizations" : {
+        "sv" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "%1$@, %2$@"
+          }
+        }
+      }
+    },
     "%lld" : {
 
     },
@@ -49,6 +59,16 @@
         }
       }
     },
+    "%lld av %lld svar · sedan sammanfattar vi" : {
+      "localizations" : {
+        "sv" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "%1$lld av %2$lld svar · sedan sammanfattar vi"
+          }
+        }
+      }
+    },
     "%lld lektioner kvar på nivån." : {
 
     },
@@ -70,6 +90,9 @@
     "Alla lektioner på den här nivån är klara." : {
 
     },
+    "Alla meningar är klara!" : {
+
+    },
     "alle sette = klockan sju" : {
 
     },
@@ -89,6 +112,12 @@
 
     },
     "Avsluta inspelning" : {
+
+    },
+    "Avsluta och sammanfatta" : {
+
+    },
+    "Avsluta rundan" : {
 
     },
     "Baserad på skriftliga svar, inte ett formellt CEFR-prov." : {
@@ -115,6 +144,12 @@
     "Börja · %lld min" : {
 
     },
+    "Börja om meningen" : {
+
+    },
+    "Bra övat — här är din sammanfattning" : {
+
+    },
     "Buongiorno" : {
 
     },
@@ -122,6 +157,12 @@
 
     },
     "Buongiorno. Vorrei … per favore. Quanto costa? Grazie!" : {
+
+    },
+    "Bygg meningen" : {
+
+    },
+    "BYGG PÅ ITALIENSKA" : {
 
     },
     "Byt OpenAI API-nyckel" : {
@@ -157,6 +198,12 @@
     "Det här fungerar redan" : {
 
     },
+    "Det här har du tränat" : {
+
+    },
+    "Det kunde jag" : {
+
+    },
     "Devo comprare … Vorrei un chilo di … Dove sono …?" : {
 
     },
@@ -167,6 +214,9 @@
 
     },
     "DIN ITALIENSKA · %@" : {
+
+    },
+    "Din italienska mening…" : {
 
     },
     "Din kunskapskoll" : {
@@ -196,6 +246,18 @@
     "Din studieplan, dina kunskapskollar och samtal sparas lokalt. För varje svar skickar appen bara den aktuella lektionen, en kort lärandesammanfattning och de senaste meddelandena till OpenAI. Kunskapskollen använder sina sex svar och din nuvarande plan." : {
 
     },
+    "Din väg framåt" : {
+
+    },
+    "Dina framsteg är sparade. Du kan gå vidare." : {
+
+    },
+    "Dina framsteg är sparade. Du kan spela igen när du vill." : {
+
+    },
+    "Dina markeringar är sparade. Repetera gärna de ord du vill befästa." : {
+
+    },
     "Dina studier" : {
 
     },
@@ -208,10 +270,19 @@
     "Ditt namn (valfritt)" : {
 
     },
+    "Ditt nästa steg" : {
+
+    },
     "Ditt svar på italienska" : {
 
     },
+    "Dölj exempel" : {
+
+    },
     "dove sono? = var finns de?" : {
+
+    },
+    "Dra orden till meningen eller tryck på dem. Dra till ett annat ord för att placera framför det." : {
 
     },
     "DU ÄR HÄR" : {
@@ -238,16 +309,25 @@
     "faccio colazione = jag äter frukost" : {
 
     },
+    "Flytta först" : {
+
+    },
     "Försök igen" : {
 
     },
     "FÖRSÖK IGEN · DU FÅR HJÄLP PÅ VÄGEN" : {
 
     },
+    "Försök komma på svaret innan du vänder kortet." : {
+
+    },
     "Fortsätt min kunskapskoll" : {
 
     },
     "Fortsätt öva" : {
+
+    },
+    "Fortsätt öva med läraren" : {
 
     },
     "Fortsätt på din väg" : {
@@ -289,6 +369,9 @@
     "Helgplaner" : {
 
     },
+    "HUR SÄGER DU?" : {
+
+    },
     "I DAG" : {
 
     },
@@ -305,6 +388,9 @@
 
     },
     "ItaLearn" : {
+
+    },
+    "ITALIENSKA" : {
 
     },
     "Jag kan använda è, ha och enkla adjektiv för att beskriva en person." : {
@@ -352,6 +438,16 @@
     "Kontrollera igen" : {
 
     },
+    "Kort %lld av %lld" : {
+      "localizations" : {
+        "sv" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "Kort %1$lld av %2$lld"
+          }
+        }
+      }
+    },
     "Korta övningar för dig som precis har börjat. Din tidigare återkoppling följer med så att varje lektion kan bygga vidare på den förra." : {
 
     },
@@ -377,6 +473,9 @@
 
     },
     "Låst" : {
+
+    },
+    "Lek och repetera" : {
 
     },
     "Lektion %lld" : {
@@ -412,7 +511,7 @@
         }
       }
     },
-    "Lektion klar! Dina framsteg är sparade." : {
+    "Lektion klar!" : {
 
     },
     "Lektioner och rättningar" : {
@@ -427,11 +526,24 @@
     "Luna hjälper dig…" : {
 
     },
+    "Luna skapar ordkort och meningar utifrån lektionen och dina senaste svar. Detta använder ditt OpenAI API-konto." : {
+
+    },
     "Lyssna" : {
 
     },
     "Lyssna på lärarens italienska" : {
 
+    },
+    "Mening %lld av %lld" : {
+      "localizations" : {
+        "sv" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "Mening %1$lld av %2$lld"
+          }
+        }
+      }
     },
     "mi chiamo = jag heter" : {
 
@@ -463,6 +575,15 @@
     "NÄSTA" : {
 
     },
+    "Nästa lektion: %@" : {
+
+    },
+    "Nästa mening" : {
+
+    },
+    "Nästan — prova igen" : {
+
+    },
     "Nivån anpassas efter din senaste kunskapskoll. Du kan göra en ny från Min studieplan." : {
 
     },
@@ -476,6 +597,9 @@
 
     },
     "Nyckeln sparas i Nyckelringen på den här enheten. Dina meddelanden och relevant lärandehistorik skickas till OpenAI när du ber läraren om ett svar. Studieplanen och samtalen sparas lokalt i appen." : {
+
+    },
+    "Om din bedömning" : {
 
     },
     "OpenAI" : {
@@ -508,16 +632,31 @@
     "Ordkort" : {
 
     },
+    "Ordkort och bygg meningar" : {
+
+    },
     "Öva från hemskärmen" : {
 
     },
+    "Öva igen" : {
+
+    },
     "ÖVA ITALIENSKA · ETT STEG I TAGET" : {
+
+    },
+    "Öva med ordkort och meningar" : {
+
+    },
+    "Öva ord och bygg meningar från din lektion. När övningarna är skapade kan du spela utan internet." : {
 
     },
     "Öva som samtal" : {
 
     },
     "På kafé" : {
+
+    },
+    "Passet är sparat. Öva vidare innan du går till nästa lektion." : {
 
     },
     "Peppig" : {
@@ -556,7 +695,13 @@
     "Rak" : {
 
     },
+    "Rätt! Bra jobbat." : {
+
+    },
     "Rätta även stavning" : {
+
+    },
+    "Rättad mening: %@" : {
 
     },
     "Rättad text: %@" : {
@@ -565,7 +710,13 @@
     "Rättat i din text" : {
 
     },
+    "Rundan är klar!" : {
+
+    },
     "Så hanterar OpenAI API-data" : {
+
+    },
+    "Sammanfattningen är sparad" : {
 
     },
     "Samtal" : {
@@ -583,7 +734,13 @@
     "simpatico/a = trevlig" : {
 
     },
+    "Skapa mina övningar" : {
+
+    },
     "SKAPAD FÖR DIG · %@" : {
+
+    },
+    "Skapar ordkort och meningar…" : {
 
     },
     "Skicka svar" : {
@@ -646,6 +803,12 @@
     "Sparade samtal" : {
 
     },
+    "Spela en gång till" : {
+
+    },
+    "Spela igen" : {
+
+    },
     "Starta om appen och kontrollera ledigt lagringsutrymme. Dina sparade data har inte raderats." : {
 
     },
@@ -700,16 +863,25 @@
     "vado a = jag åker till" : {
 
     },
+    "Vänd kortet" : {
+
+    },
     "Väntar på lärarens svar" : {
 
     },
     "Varm" : {
 
     },
+    "Visa ett möjligt svar" : {
+
+    },
     "Visa kunskapskollen" : {
 
     },
     "Visa min studieplan" : {
+
+    },
+    "Visa svenska" : {
 
     },
     "voglio = jag vill" : {

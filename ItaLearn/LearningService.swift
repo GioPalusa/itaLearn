@@ -17,12 +17,21 @@ nonisolated struct LessonContext: Encodable, Sendable {
     var awaitingRetry: Bool
     var tone: String
     var correctsSpelling: Bool
+    var turnsRemaining: Int = 8
 }
 
 nonisolated protocol LearningService: Sendable {
     func question(_ context: AssessmentContext) async throws -> AssessmentQuestion
     func assess(_ context: AssessmentContext) async throws -> StructuredResponse<AssessmentResult>
     func teach(_ context: LessonContext) async throws -> LessonReply
+    func wrapUp(_ context: LessonContext) async throws -> LessonWrapUp
+    func practice(_ context: LessonContext) async throws -> PracticePack
+}
+
+// Test doubles for older capabilities fail explicitly instead of contacting a live service.
+nonisolated extension LearningService {
+    func wrapUp(_ context: LessonContext) async throws -> LessonWrapUp { throw OpenAIError.server }
+    func practice(_ context: LessonContext) async throws -> PracticePack { throw OpenAIError.server }
 }
 
 nonisolated struct OpenAILearningService: LearningService {
@@ -93,6 +102,13 @@ nonisolated struct OpenAILearningService: LearningService {
             model: OpenAIClient.teacherModel,
             instructions: Self.safety + """
 
+            The app ends this session after turnsRemaining learner answers. Stay focused on the
+            lesson objectives. Target one unachieved objective at a time and credit evidence accurately.
+            When all objectives are demonstrated, conclude naturally; do not invent extra tasks.
+            On the last answer give feedback without asking another question: the app will summarize.
+            If that last answer needs retry, keep requiresRetry true but make retryPrompt a suggestion
+            for the next practice session, rather than asking for another answer now.
+            Use Markdown **bold** and ~~strikethrough~~ sparingly. Never place raw HTML in output.
             Teach the CURRENT lesson interactively. Only its relevant plan slice is provided.
             Respect the learner's level and selected tone. Ask one short question/task at a time.
             If learnerAnswer is null, introduce the scene and ask the first question. Do not correct
@@ -116,6 +132,51 @@ nonisolated struct OpenAILearningService: LearningService {
             as: LessonReply.self
         )
         try result.value.validate(objectiveCount: context.lesson.objectives.count)
+        return result.value
+    }
+
+    func wrapUp(_ context: LessonContext) async throws -> LessonWrapUp {
+        let result = try await client.respond(
+            model: OpenAIClient.teacherModel,
+            instructions: Self.safety + """
+
+            End this lesson session now. Do not ask more questions. Evaluate the actual learner answers
+            against all lesson objectives and success criteria, including successful corrections on retry.
+            Prior objective indices are helpful but may be incomplete: review the supplied evidence.
+            Return a concise Swedish summary, up to 5 specific strengths, 1–5 concrete next steps,
+            and zero-based demonstratedObjectives. readyToAdvance is true ONLY when every objective
+            and success criterion has been demonstrated and awaitingRetry is false. Ending a session
+            is not itself proof of mastery. If evidence is weak or a retry remains, recommend practice.
+            Summary max 3000 chars, each bullet max 1000 chars. Explain what to do next warmly and briefly.
+            """,
+            input: try encode(context), schemaName: "lesson_wrap_up_v1", schema: LearningSchema.wrapUp,
+            as: LessonWrapUp.self
+        )
+        try result.value.validate(objectiveCount: context.lesson.objectives.count)
+        return result.value
+    }
+
+    func practice(_ context: LessonContext) async throws -> PracticePack {
+        let result = try await client.respond(
+            model: OpenAIClient.teacherModel,
+            instructions: Self.safety + """
+
+            Create reusable practice from this lesson, observed errors and vocabulary at the learner's level.
+            Return 4–12 flashcards: unique id, Swedish cue, Italian answer, short Italian example.
+            Return 3–8 sentence-building puzzles: unique id, a Swedish sentence to translate, answers
+            (1–4 valid Italian word orders as token arrays), words (a bank of 3–16 individual Italian tokens),
+            and a short Swedish explanation. Each answer has 2–14 tokens. Every answer must be buildable
+            from the bank with the exact multiplicity of each word; repeat tiles when necessary.
+            Include natural alternative orders that can be made from these words. Avoid ambiguous prompts.
+            Keep apostrophe words like l'ingresso together, attached punctuation with its word, no whitespace
+            inside a token. The app shuffles the bank locally. You may add 1–2 plausible distractor words.
+            Do not invent personal details. All fields are plain text, not Markdown. Cue/answer/example
+            max 800 chars each, explanation max 1000 chars, token max 60 chars.
+            """,
+            input: try encode(context), schemaName: "lesson_practice_v1", schema: LearningSchema.practice,
+            as: PracticePack.self
+        )
+        try result.value.validate()
         return result.value
     }
 

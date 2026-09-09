@@ -12,12 +12,13 @@ struct LearningPathView: View {
                     VStack(alignment: .leading, spacing: 10) {
                         Text("DIN ITALIENSKA · \(plan.profile.cefr)")
                             .font(.caption.weight(.semibold)).foregroundStyle(ItaLearn.magenta)
-                        Text(plan.profile.goal).font(.title.bold())
+                        Text("Din väg framåt").font(.title.bold())
+                        LearningMarkdownText(plan.profile.goal).font(.body)
                         Text("\(plan.completedLessonIDs.count) av \(plan.lessons.count) lektioner klara")
                             .font(.subheadline).foregroundStyle(.secondary)
                         ProgressView(value: Double(plan.completedLessonIDs.count), total: Double(plan.lessons.count))
                         if let assessment = store.state.assessments.last {
-                            Text(assessment.result.rationale).font(.callout)
+                            DisclosureGroup("Om din bedömning") { LearningMarkdownText(assessment.result.rationale).font(.callout) }
                         }
                     }
                     .italearnCard()
@@ -72,7 +73,10 @@ struct LessonOverviewView: View {
     var body: some View {
         ScrollView {
             VStack(alignment: .leading, spacing: 20) {
-                Text(lesson.summary).font(.title3)
+                LearningMarkdownText(lesson.summary).font(.title3)
+                NavigationLink { LessonPracticeView(lesson: lesson) } label: {
+                    Label("Ordkort och bygg meningar", systemImage: "rectangle.on.rectangle.angled")
+                }.buttonStyle(ItaLearnSecondaryButtonStyle())
                 LearningBulletCard(title: "Det här övar du", items: lesson.objectives)
                 LearningBulletCard(title: "Du är klar när du kan", items: lesson.successCriteria)
                 LearningBulletCard(title: "Ord att använda", items: lesson.vocabulary)
@@ -145,6 +149,7 @@ struct LearningProgressView: View {
                     NavigationLink {
                         ScrollView {
                             LazyVStack(spacing: 14) {
+                                if let summary = session.wrapUp { LessonSummaryCard(summary: summary, mastered: session.isComplete) }
                                 ForEach(session.messages) { LearningMessageBubble(message: $0) }
                             }
                             .padding(20).frame(maxWidth: 760).frame(maxWidth: .infinity)
@@ -174,7 +179,7 @@ struct AssessmentDetailView: View {
         ScrollView {
             VStack(alignment: .leading, spacing: 20) {
                 Text(assessment.result.profile.cefr).font(.largeTitle.bold())
-                Text(assessment.result.rationale)
+                LearningMarkdownText(assessment.result.rationale)
                 LearningBulletCard(title: "Styrkor", items: assessment.result.profile.strengths)
                 LearningBulletCard(title: "Nästa steg", items: assessment.result.profile.focusAreas)
                 ShareLink(item: String(decoding: assessment.resultJSON, as: UTF8.self)) {
@@ -240,7 +245,7 @@ struct AdaptiveChatView: View {
                         if assessmentFinished, let result = store.state.assessments.last {
                             Text(result.result.recommendation == .newPlan ? "Din nya studieplan är klar" : "Fortsätt på din väg")
                                 .font(.title2.bold())
-                            Text(result.result.rationale).italearnCard()
+                            LearningMarkdownText(result.result.rationale).italearnCard()
                             NavigationLink("Visa min studieplan") { LearningPathView() }
                                 .buttonStyle(ItaLearnPrimaryButtonStyle())
                         }
@@ -248,7 +253,7 @@ struct AdaptiveChatView: View {
                             LearningMessageBubble(message: message)
                             if !isAssessment && message.role == .assistant && !message.translation.isEmpty {
                                 Button("Lyssna", systemImage: "speaker.wave.2") {
-                                    narrator.stop(); narrator.speak(message.text)
+                                    narrator.stop(); narrator.speak(LearningMarkdown.spoken(message.text))
                                 }
                                 .font(.caption)
                                 .accessibilityLabel("Lyssna på lärarens italienska")
@@ -274,9 +279,19 @@ struct AdaptiveChatView: View {
                             }
                             .italearnCard().disabled(chat.isWorking)
                         }
-                        if session?.isComplete == true {
-                            Label("Lektion klar! Dina framsteg är sparade.", systemImage: "checkmark.seal.fill")
-                                .font(.headline).foregroundStyle(ItaLearn.deepGreen).italearnCard()
+                        if let session, let summary = session.wrapUp, case .lesson(let lesson) = mode {
+                            LessonSummaryCard(summary: summary, mastered: session.isComplete)
+                            if session.isComplete, let next = nextLesson {
+                                NavigationLink { AdaptiveChatView(mode: .lesson(next)) } label: {
+                                    Label("Nästa lektion: \(next.title)", systemImage: "arrow.right")
+                                }.buttonStyle(ItaLearnPrimaryButtonStyle())
+                            } else if !session.isComplete {
+                                Button("Fortsätt öva med läraren") { continueLesson(session.id) }
+                                    .buttonStyle(ItaLearnPrimaryButtonStyle())
+                            }
+                            NavigationLink { LessonPracticeView(lesson: lesson) } label: {
+                                Label("Öva med ordkort och meningar", systemImage: "rectangle.on.rectangle.angled")
+                            }.buttonStyle(ItaLearnSecondaryButtonStyle())
                             NavigationLink("Till min studieplan") { LearningPathView() }
                         }
                         Color.clear.frame(height: 1).id("latest")
@@ -290,11 +305,13 @@ struct AdaptiveChatView: View {
                 .onChange(of: pendingAnswer) { if pendingAnswer != nil { draft = "" } }
                 .onChange(of: chat.isWorking) { proxy.scrollTo("latest", anchor: .bottom) }
             }
-            if !assessmentFinished && session?.isComplete != true { composer }
+            if !assessmentFinished && session?.wrapUp == nil && session?.wrapUpRequested != true { composer }
         }
         .italearnCanvas()
         .navigationTitle(title)
-        .toolbar { Button("Inställningar", systemImage: "gearshape") { showingSettings = true } }
+        .toolbar {
+            Button("Inställningar", systemImage: "gearshape") { showingSettings = true }
+        }
         .sheet(isPresented: $showingSettings) { SettingsView() }
         .task { resume() }
         .onDisappear {
@@ -319,6 +336,15 @@ struct AdaptiveChatView: View {
                 Text(session?.requiresRetry == true ? "FÖRSÖK IGEN · DU FÅR HJÄLP PÅ VÄGEN" : "ÖVA ITALIENSKA · ETT STEG I TAGET")
                     .font(.caption.weight(.semibold)).foregroundStyle(ItaLearn.purple)
                 ProgressView(value: Double(session?.achievedObjectives.count ?? 0), total: Double(lesson.objectives.count))
+                Text(session?.wrapUp != nil ? "Sammanfattningen är sparad" : "\(min(session?.answerCount ?? 0, LessonSession.answerBudget)) av \(LessonSession.answerBudget) svar · sedan sammanfattar vi")
+                    .font(.caption).foregroundStyle(.secondary)
+                if let sessionID, session?.wrapUp == nil, (session?.answerCount ?? 0) >= 2 {
+                    Button("Avsluta och sammanfatta", systemImage: "checkmark.circle") {
+                        narrator.stop(); speechTask?.cancel()
+                        Task { await speech.cancel() }
+                        chat.finishLesson(store: store, sessionID: sessionID, settings: settings)
+                    }.font(.callout).disabled(chat.isWorking || pendingAnswer != nil || speech.isListening || speech.isPreparing)
+                }
             }
         }
         .padding(.horizontal, 20).padding(.vertical, 10)
@@ -382,6 +408,20 @@ struct AdaptiveChatView: View {
         .background(ItaLearn.field)
     }
 
+    private var nextLesson: PlannedLesson? {
+        guard let plan = store.state.activePlan else { return nil }
+        return plan.lessons.first {
+            !plan.completedLessonIDs.contains($0.id) && $0.prerequisites.allSatisfy { plan.completedLessonIDs.contains($0) }
+        }
+    }
+
+    private func continueLesson(_ id: UUID) {
+        do {
+            sessionID = try store.continueLesson(sessionID: id)
+            if let sessionID { chat.lesson(store: store, sessionID: sessionID, settings: settings) }
+        } catch { setupError = error.localizedDescription }
+    }
+
     private func resume() {
         setupError = nil
         do {
@@ -412,16 +452,17 @@ struct LearningMessageBubble: View {
     let message: ChatMessage
     var body: some View {
         VStack(alignment: .leading, spacing: 12) {
-            Text(message.text).font(.body).textSelection(.enabled)
+            LearningMarkdownText(message.text).font(.body)
             if !message.translation.isEmpty {
-                Text(message.translation).font(.callout).foregroundStyle(.secondary)
+                LearningMarkdownText(message.translation).font(.callout).foregroundStyle(.secondary)
             }
             if let correction = message.correction {
                 VStack(alignment: .leading, spacing: 8) {
                     Label("En liten rättning", systemImage: "sparkles").font(.subheadline.bold())
-                    Text(correction.original).strikethrough().foregroundStyle(.secondary)
-                    Text(correction.corrected).font(.headline)
-                    Text(correction.explanation).font(.callout)
+                    Text(LearningMarkdown.correction(original: correction.original, corrected: correction.corrected))
+                        .textSelection(.enabled)
+                        .accessibilityLabel("Rättad mening: \(LearningMarkdown.spoken(correction.corrected))")
+                    LearningMarkdownText(correction.explanation).font(.callout)
                 }
                 .padding(14)
                 .frame(maxWidth: .infinity, alignment: .leading)

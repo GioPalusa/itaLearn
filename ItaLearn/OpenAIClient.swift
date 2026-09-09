@@ -148,3 +148,17 @@ nonisolated enum LearningSchema {
         ])
     }
 }
+
+nonisolated extension LearningSchema {
+    static var wrapUp: [String: Any] {
+        object(["summary": string, "strengths": array(string), "nextSteps": array(string),
+                "demonstratedObjectives": array(integer), "readyToAdvance": boolean])
+    }
+    static var practice: [String: Any] {
+        object([
+            "flashcards": array(object(["id": string, "swedish": string, "italian": string, "example": string])),
+            "puzzles": array(object(["id": string, "swedish": string, "answers": array(array(string)),
+                                      "words": array(string), "explanation": string]))
+        ])
+    }
+}
