@@ -21,11 +21,11 @@ enum CorrectionDiff {
 
     /// Words match on their letters alone, so punctuation and casing changes
     /// ride along with the word instead of showing as separate edits.
-    private static func matchKey(_ word: String) -> String {
+    nonisolated private static func matchKey(_ word: String) -> String {
         word.lowercased().filter { $0.isLetter || $0.isNumber }
     }
 
-    static func tokens(original: String, corrected: String) -> [Token] {
+    nonisolated static func tokens(original: String, corrected: String) -> [Token] {
         let old = original.split(whereSeparator: \.isWhitespace).map(String.init)
         let new = corrected.split(whereSeparator: \.isWhitespace).map(String.init)
 

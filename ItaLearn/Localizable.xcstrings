@@ -26,22 +26,15 @@
         }
       }
     },
+    "%lld / 2000 tecken" : {
+
+    },
     "%lld av %lld" : {
       "localizations" : {
         "sv" : {
           "stringUnit" : {
             "state" : "new",
             "value" : "%1$lld av %2$lld"
-          }
-        }
-      }
-    },
-    "%lld AV %lld GRANSKNINGAR" : {
-      "localizations" : {
-        "sv" : {
-          "stringUnit" : {
-            "state" : "new",
-            "value" : "%1$lld AV %2$lld GRANSKNINGAR"
           }
         }
       }
@@ -80,28 +73,25 @@
     "alle sette = klockan sju" : {
 
     },
-    "APPLE INTELLIGENCE" : {
+    "Ändra mitt svar" : {
 
     },
-    "Apple Intelligence är inte redo" : {
+    "Anslut din lärare" : {
 
     },
-    "Apple Intelligence är på" : {
+    "Använd din egen OpenAI API-nyckel. Samtalen debiteras ditt API-konto, separat från en ChatGPT-prenumeration." : {
 
     },
-    "ÅTERSTÄLLS 00:00" : {
-
-    },
-    "Återställs kl. 00:00" : {
-
-    },
-    "Avbryt när du vill i App Store" : {
+    "Appen begär inte att OpenAI sparar en konversation. OpenAI kan ändå behålla API-data enligt sina datavillkor." : {
 
     },
     "Avklarade lektioner" : {
 
     },
-    "Avsluta samtalet" : {
+    "Avsluta inspelning" : {
+
+    },
+    "Baserad på skriftliga svar, inte ett formellt CEFR-prov." : {
 
     },
     "bello/a = vacker" : {
@@ -134,6 +124,9 @@
     "Buongiorno. Vorrei … per favore. Quanto costa? Grazie!" : {
 
     },
+    "Byt OpenAI API-nyckel" : {
+
+    },
     "ci vediamo = vi ses" : {
 
     },
@@ -146,22 +139,19 @@
     "Ciao! Mi chiamo … Abito a … Mi piace …" : {
 
     },
+    "Ciao! Vi börjar där du är." : {
+
+    },
     "con = med" : {
 
     },
     "Dagens gräns är nådd" : {
 
     },
-    "Dagens gräns för Private Cloud Compute är nådd." : {
-
-    },
     "del pane = lite bröd" : {
 
     },
-    "Den här enheten stöder inte Apple Intelligence, vilket krävs för privat återkoppling." : {
-
-    },
-    "Designen visar en widget med dagens mening på hemskärmen. Den kräver en WidgetKit-tillägg i projektet, som inte finns ännu." : {
+    "Dela bedömning som JSON" : {
 
     },
     "Det här fungerar redan" : {
@@ -176,7 +166,10 @@
     "Din första lektion. Vi börjar lugnt och bygger vidare på den nästa gång." : {
 
     },
-    "Din lärare granskar redan ett svar." : {
+    "DIN ITALIENSKA · %@" : {
+
+    },
+    "Din kunskapskoll" : {
 
     },
     "Din lärare håller extra utkik efter det här — det var dina nästa steg förra gången." : {
@@ -188,19 +181,31 @@
     "Din lärare tar med sig ditt förra nästa steg: %@" : {
 
     },
+    "Din nya studieplan är klar" : {
+
+    },
     "Din rutt" : {
 
     },
     "Din rutt genom %@" : {
 
     },
-    "Din text lämnar aldrig ett spår" : {
+    "Din senaste uppskattade nivå: %@" : {
 
     },
-    "Dina texter och lärarens återkoppling stannar på din iPhone. Ingenting används för att träna modeller." : {
+    "Din studieplan, dina kunskapskollar och samtal sparas lokalt. För varje svar skickar appen bara den aktuella lektionen, en kort lärandesammanfattning och de senaste meddelandena till OpenAI. Kunskapskollen använder sina sex svar och din nuvarande plan." : {
+
+    },
+    "Dina studier" : {
+
+    },
+    "Dina studier kunde inte öppnas" : {
 
     },
     "Ditt namn" : {
+
+    },
+    "Ditt namn (valfritt)" : {
 
     },
     "Ditt svar på italienska" : {
@@ -212,16 +217,13 @@
     "DU ÄR HÄR" : {
 
     },
-    "Du kan ändra allt i Inställningar sedan." : {
+    "Du har arbetat igenom din plan!" : {
 
     },
-    "Du närmar dig dagens gräns för Private Cloud Compute." : {
+    "En liten rättning" : {
 
     },
-    "En italienlärare som stannar i din telefon" : {
-
-    },
-    "En mikrolektion om dagen" : {
+    "En ny kunskapskoll kan ge dig en uppdaterad plan eller rekommendera att du fortsätter på din nuvarande väg. Dina tidigare studier sparas." : {
 
     },
     "En person du känner" : {
@@ -236,6 +238,24 @@
     "faccio colazione = jag äter frukost" : {
 
     },
+    "Försök igen" : {
+
+    },
+    "FÖRSÖK IGEN · DU FÅR HJÄLP PÅ VÄGEN" : {
+
+    },
+    "Fortsätt min kunskapskoll" : {
+
+    },
+    "Fortsätt öva" : {
+
+    },
+    "Fortsätt på din väg" : {
+
+    },
+    "FRÅGA %lld AV 6 · TA DET I DIN TAKT" : {
+
+    },
     "Framstegspoäng %lld av 5" : {
 
     },
@@ -248,34 +268,25 @@
     "Gör din första skrivövning så visas sammanfattningen här." : {
 
     },
+    "Gör en ny kunskapskoll för att hitta nästa steg." : {
+
+    },
+    "Gör föregående lektioner först" : {
+
+    },
+    "Granska texten innan du skickar den." : {
+
+    },
     "Granskar …" : {
 
     },
-    "Granskas i Private Cloud Compute. Sparas inte av Apple." : {
-
-    },
-    "Granskningar i dag" : {
-
-    },
-    "Granskningen avbröts." : {
-
-    },
-    "Granskningen kunde inte ansluta. Kontrollera internetanslutningen och försök igen." : {
-
-    },
     "ha = har" : {
-
-    },
-    "Håll för att prata" : {
 
     },
     "Hälsa och berätta lite om dig själv." : {
 
     },
     "Helgplaner" : {
-
-    },
-    "Hör skillnaden" : {
 
     },
     "I DAG" : {
@@ -290,19 +301,10 @@
     "Inga lektioner än" : {
 
     },
-    "Ingen daglig gräns för granskningar" : {
-
-    },
     "Inställningar" : {
 
     },
     "ItaLearn" : {
-
-    },
-    "ITALEARN PIÙ" : {
-
-    },
-    "ItaLearn Più finns inte att köpa i den här versionen. Ordkort och samtal fungerar som vanligt under tiden." : {
 
     },
     "Jag kan använda è, ha och enkla adjektiv för att beskriva en person." : {
@@ -329,6 +331,9 @@
     "Jag kan skriva enkla meningar med mi chiamo, abito och mi piace." : {
 
     },
+    "Jag vet inte ännu" : {
+
+    },
     "Jämför med dina tre senaste lektioner." : {
 
     },
@@ -338,10 +343,10 @@
     "Klarar mig" : {
 
     },
-    "Kom igång" : {
+    "Kontrollera" : {
 
     },
-    "Kontrollera" : {
+    "Kontrollera ditt API-konto" : {
 
     },
     "Kontrollera igen" : {
@@ -350,19 +355,28 @@
     "Korta övningar för dig som precis har börjat. Din tidigare återkoppling följer med så att varje lektion kan bygga vidare på den förra." : {
 
     },
-    "Längre samtal och egna scenarier" : {
+    "Kunde inte öppna dina studier" : {
 
     },
-    "LÄRAREN" : {
+    "Kunskapskoll och plan" : {
 
     },
-    "Läraren pratar långsam %@-italienska" : {
+    "Kunskapskollar" : {
 
     },
-    "Lärarens återkoppling sparas bara i Mitt lärande på din iPhone. Ingenting används för att träna modeller." : {
+    "Lägg till din OpenAI API-nyckel i Inställningar." : {
+
+    },
+    "Läraren" : {
+
+    },
+    "Läraren funderar…" : {
 
     },
     "Läs upp" : {
+
+    },
+    "Låst" : {
 
     },
     "Lektion %lld" : {
@@ -398,16 +412,25 @@
         }
       }
     },
+    "Lektion klar! Dina framsteg är sparade." : {
+
+    },
+    "Lektioner och rättningar" : {
+
+    },
     "Lektionssammanfattning" : {
 
     },
     "Lite van" : {
 
     },
-    "Lyssnar" : {
+    "Luna hjälper dig…" : {
 
     },
-    "Lyssnar …" : {
+    "Lyssna" : {
+
+    },
+    "Lyssna på lärarens italienska" : {
 
     },
     "mi chiamo = jag heter" : {
@@ -422,7 +445,7 @@
     "Mi sveglio alle … Poi … Faccio colazione … Dopo …" : {
 
     },
-    "Mikrolektion som notis" : {
+    "Mikrofonen kunde inte startas. Du kan skriva i stället." : {
 
     },
     "min" : {
@@ -431,31 +454,52 @@
     "Min morgon" : {
 
     },
+    "Min studieplan" : {
+
+    },
     "Mitt lärande" : {
-
-    },
-    "Något gick fel när texten granskades. Försök igen." : {
-
-    },
-    "När du trycker på Kontrollera skickas din övningstext till Private Cloud Compute. Servern körs på Apple-kisel, kan inte lagra din text och granskas av oberoende forskare." : {
 
     },
     "NÄSTA" : {
 
     },
-    "Nivå" : {
+    "Nivån anpassas efter din senaste kunskapskoll. Du kan göra en ny från Min studieplan." : {
+
+    },
+    "Ny studieplan" : {
 
     },
     "Nybörjare" : {
 
     },
-    "Obegränsad lärare\n39 kr/mån" : {
+    "Nyckeln är sparad. Anslutningen kontrolleras vid nästa svar." : {
 
     },
-    "OK" : {
+    "Nyckeln sparas i Nyckelringen på den här enheten. Dina meddelanden och relevant lärandehistorik skickas till OpenAI när du ber läraren om ett svar. Studieplanen och samtalen sparas lokalt i appen." : {
 
     },
-    "Om Private Cloud Compute" : {
+    "OpenAI" : {
+
+    },
+    "OpenAI API-nyckel" : {
+
+    },
+    "OpenAI styr saldo och användningsgränser för din API-nyckel. Dina sparade studier finns kvar." : {
+
+    },
+    "OpenAI:s datavillkor" : {
+
+    },
+    "Öppna inställningar" : {
+
+    },
+    "Öppna lektionen" : {
+
+    },
+    "Öppna OpenAI" : {
+
+    },
+    "Öppnar ItaLearn…" : {
 
     },
     "Öppnar skrivövningen" : {
@@ -464,22 +508,13 @@
     "Ordkort" : {
 
     },
-    "Ordkort med Genmoji utan tak" : {
-
-    },
-    "Ordkort och samtalsövningar körs på enheten och fungerar som vanligt" : {
-
-    },
-    "Öva" : {
-
-    },
     "Öva från hemskärmen" : {
 
     },
-    "Öva som samtal" : {
+    "ÖVA ITALIENSKA · ETT STEG I TAGET" : {
 
     },
-    "ÖVNING VARJE DAG" : {
+    "Öva som samtal" : {
 
     },
     "På kafé" : {
@@ -497,31 +532,10 @@
     "poi = sedan" : {
 
     },
-    "Prenumerationen är inte igång ännu" : {
-
-    },
     "Presentera dig" : {
 
     },
-    "Privat återkoppling är inte redo ännu. Kontrollera Apple Intelligence och internetanslutningen." : {
-
-    },
-    "Privat återkoppling är inte tillgänglig just nu." : {
-
-    },
-    "Private Cloud Compute" : {
-
-    },
-    "Private Cloud Compute är inte tillgängligt på den här enheten just nu." : {
-
-    },
-    "Private Cloud Compute är tillfälligt otillgängligt. Försök igen om en stund." : {
-
-    },
-    "Private Cloud Compute har granskat %lld texter i dag. Du kan fortsätta skriva — läraren läser igen kl. 00:00." : {
-
-    },
-    "Prova 7 dagar gratis" : {
+    "Prova en gång till" : {
 
     },
     "Prova nästa gång" : {
@@ -542,28 +556,22 @@
     "Rak" : {
 
     },
-    "Rättad text: %@" : {
+    "Rätta även stavning" : {
 
     },
-    "Rättar även stavning" : {
+    "Rättad text: %@" : {
 
     },
     "Rättat i din text" : {
 
     },
-    "Rättningen körs i Private Cloud Compute" : {
-
-    },
-    "Repetera" : {
+    "Så hanterar OpenAI API-data" : {
 
     },
     "Samtal" : {
 
     },
-    "SAMTAL" : {
-
-    },
-    "Samtalet är klart" : {
+    "Sex korta frågor hjälper din lärare att förstå vad du redan kan. Sedan får du en egen studieplan och övar italienska genom samtal, med hjälp och rättningar längs vägen." : {
 
     },
     "Si chiama … È … Ha … Gli/Le piace …" : {
@@ -576,6 +584,9 @@
 
     },
     "SKAPAD FÖR DIG · %@" : {
+
+    },
+    "Skicka svar" : {
 
     },
     "Skriv 2–4 korta meningar. Säg hej, vad du heter, var du bor och en sak du tycker om." : {
@@ -596,6 +607,9 @@
     "Skriv 4–6 meningar om en plats du tycker om. Beskriv var den ligger, hur den ser ut och vad du brukar göra där." : {
 
     },
+    "Skriv ditt svar…" : {
+
+    },
     "Skriv en kort dialog på ett kafé. Beställ en dryck och något att äta och fråga vad det kostar." : {
 
     },
@@ -608,9 +622,6 @@
     "Skriv italienska, lite i taget" : {
 
     },
-    "Skriv och spara utan gräns — rättningen köar till i morgon" : {
-
-    },
     "Skriv om en enkel vardagsrutin." : {
 
     },
@@ -620,22 +631,55 @@
     "Skriv på italienska" : {
 
     },
+    "Skriv på italienska…" : {
+
+    },
+    "Spara nyckel" : {
+
+    },
+    "Spara och börja samtalet" : {
+
+    },
     "Sparad i Mitt lärande · nästa lektion bygger vidare" : {
 
     },
-    "Stäng" : {
+    "Sparade samtal" : {
 
     },
-    "Svara direkt i notisen" : {
+    "Starta om appen och kontrollera ledigt lagringsutrymme. Dina sparade data har inte raderats." : {
 
     },
-    "Texten du skriver granskas i Private Cloud Compute. Inget sparas hos Apple, och inget konto behövs." : {
+    "Ta bort API-nyckeln" : {
 
     },
-    "Tid" : {
+    "Ta bort nyckeln" : {
+
+    },
+    "Ta bort nyckeln från den här enheten? Dina studier finns kvar." : {
+
+    },
+    "Tala italienska" : {
+
+    },
+    "Taligenkänning är inte tillgänglig här. Du kan skriva i stället." : {
+
+    },
+    "Testa mina kunskaper igen" : {
+
+    },
+    "Texten skickas till OpenAI. Återkopplingen sparas lokalt." : {
+
+    },
+    "Tidigare skrivövningar" : {
+
+    },
+    "Till min studieplan" : {
 
     },
     "Tillbaka" : {
+
+    },
+    "Tillgänglig" : {
 
     },
     "Ton" : {
@@ -650,22 +694,22 @@
     "un chilo di = ett kilo" : {
 
     },
-    "Vad ska läraren kalla dig?" : {
-
-    },
     "vado = jag går/åker" : {
 
     },
     "vado a = jag åker till" : {
 
     },
-    "Var är du nu?" : {
+    "Väntar på lärarens svar" : {
 
     },
     "Varm" : {
 
     },
-    "Visa Apples alternativ för gränsen" : {
+    "Visa kunskapskollen" : {
+
+    },
+    "Visa min studieplan" : {
 
     },
     "voglio = jag vill" : {
@@ -677,19 +721,7 @@
     "vuoi? = vill du?" : {
 
     },
-    "Widget" : {
-
-    },
-    "Widget på hemskärmen" : {
-
-    },
-    "Widgeten är inte med i den här versionen" : {
-
-    },
     "Widgeten visar dagens mening. En notis kl. %@ om du vill." : {
-
-    },
-    "Writing Tools i övningarna" : {
 
     }
   },

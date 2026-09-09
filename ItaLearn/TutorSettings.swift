@@ -65,9 +65,7 @@ enum ProficiencyLevel: String, CaseIterable, Identifiable, Sendable {
 /// User-facing preferences from screen 2f. Persisted in `UserDefaults`.
 @Observable
 final class TutorSettings {
-    /// Reviews the app budgets per day, shown in Inställningar and on the
-    /// limit screen. Apple's own Private Cloud Compute quota is separate and is
-    /// reported by `ItalianTutor`.
+    /// Legacy catalog progress scale; OpenAI usage is governed by the user's API account.
     static let dailyReviewAllowance = 12
 
     private enum Key {

@@ -1,5 +1,3 @@
-import AVFoundation
-import FoundationModels
 import SwiftData
 import SwiftUI
 
@@ -23,7 +21,7 @@ struct LessonView: View {
     @State private var isShowingPaywall = false
     @FocusState private var isEditorFocused: Bool
 
-    private let speaker = AVSpeechSynthesizer()
+    private let narrator = SpeechNarrator()
 
     private var learningMemories: [LearningMemory] {
         records
@@ -242,28 +240,10 @@ struct LessonView: View {
 
     @ViewBuilder
     private var modelStatus: some View {
-        switch tutor.availability {
-        case .available:
-            if tutor.isApproachingLimit && !tutor.isLimitReached {
-                statusLine(
-                    "Du närmar dig dagens gräns för Private Cloud Compute.",
-                    systemImage: "gauge.with.dots.needle.67percent",
-                    tint: ItaLearn.magenta
-                )
-            } else {
-                statusLine(
-                    "Granskas i Private Cloud Compute. Sparas inte av Apple.",
-                    systemImage: "lock",
-                    tint: ItaLearn.inkTertiary
-                )
-            }
-        case .unavailable(let reason):
-            statusLine(
-                LocalizedStringKey(reason.userMessage),
-                systemImage: "sparkles.slash",
-                tint: ItaLearn.inkTertiary
-            )
-        }
+        statusLine(
+            tutor.isAvailable ? "Texten skickas till OpenAI. Återkopplingen sparas lokalt." : "Lägg till din OpenAI API-nyckel i Inställningar.",
+            systemImage: "network", tint: ItaLearn.inkTertiary
+        )
     }
 
     private func statusLine(
@@ -353,7 +333,7 @@ struct LessonView: View {
                 .buttonStyle(ItaLearnSecondaryButtonStyle())
 
                 Button("Läs upp") {
-                    speak(feedback.correctedItalian)
+                    narrator.speak(feedback.correctedItalian)
                 }
                 .buttonStyle(
                     ItaLearnSecondaryButtonStyle(
@@ -414,13 +394,6 @@ struct LessonView: View {
     }
 
     // MARK: - Actions
-
-    private func speak(_ italian: String) {
-        let utterance = AVSpeechUtterance(string: italian)
-        utterance.voice = AVSpeechSynthesisVoice(language: "it-IT")
-        utterance.rate = AVSpeechUtteranceDefaultSpeechRate * 0.9
-        speaker.speak(utterance)
-    }
 
     private func checkWriting() async {
         let trimmed = attempt.trimmingCharacters(in: .whitespacesAndNewlines)

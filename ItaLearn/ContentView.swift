@@ -2,59 +2,46 @@ import SwiftData
 import SwiftUI
 
 struct ContentView: View {
-    @Environment(TutorSettings.self) private var settings
-    @State private var selection: TabSection = .practice
-    @State private var isShowingOnboarding = false
-
-    enum TabSection: Hashable {
-        case practice
-        case conversation
-        case learning
-    }
+    @Environment(\.modelContext) private var modelContext
+    @State private var store = LearningStore()
+    @State private var access = OpenAIAccess()
 
     var body: some View {
-        TabView(selection: $selection) {
-            Tab("Öva", systemImage: "pencil.and.scribble", value: .practice) {
-                HomeView()
-            }
-
-            Tab("Samtal", systemImage: "mic", value: .conversation) {
-                ConversationTab()
-            }
-
-            Tab("Mitt lärande", systemImage: "books.vertical", value: .learning) {
-                NavigationStack {
-                    LessonHistoryView()
+        Group {
+            if !access.isReady {
+                ProgressView("Öppnar ItaLearn…")
+            } else if !access.hasKey {
+                OnboardingView()
+            } else if !store.isLoaded {
+                ContentUnavailableView {
+                    Label("Kunde inte öppna dina studier", systemImage: "externaldrive.badge.exclamationmark")
+                } description: {
+                    Text(store.errorMessage ?? "Försök igen.")
+                } actions: {
+                    Button("Försök igen") { store.load(container: modelContext.container) }
+                }
+            } else if store.state.activePlan == nil {
+                NavigationStack { AdaptiveChatView(mode: .assessment) }
+            } else {
+                TabView {
+                    Tab("Min studieplan", systemImage: "point.topleft.down.to.point.bottomright.curvepath") {
+                        NavigationStack { LearningPathView() }
+                    }
+                    Tab("Samtal", systemImage: "bubble.left.and.bubble.right") {
+                        NavigationStack { CurrentLessonView() }
+                    }
+                    Tab("Mitt lärande", systemImage: "books.vertical") {
+                        NavigationStack { LearningProgressView() }
+                    }
                 }
             }
         }
+        .environment(store)
+        .environment(access)
         .tint(ItaLearn.purple)
-        .onAppear { isShowingOnboarding = !settings.hasOnboarded }
-        .onboardingCover(isPresented: $isShowingOnboarding) {
-            OnboardingView()
+        .task {
+            store.load(container: modelContext.container)
+            await access.load()
         }
     }
-}
-
-/// The Samtal tab practises whichever lesson comes next.
-private struct ConversationTab: View {
-    @Query(sort: \LessonRecord.completedAt, order: .reverse)
-    private var records: [LessonRecord]
-
-    private var lesson: WritingLesson {
-        let completed = Set(records.map(\.lessonID))
-        return LessonCatalog.all.first { !completed.contains($0.id) } ?? LessonCatalog.all[0]
-    }
-
-    var body: some View {
-        NavigationStack {
-            ConversationView(lesson: lesson)
-        }
-    }
-}
-
-#Preview {
-    ContentView()
-        .environment(TutorSettings(store: UserDefaults(suiteName: "preview") ?? .standard))
-        .modelContainer(for: LessonRecord.self, inMemory: true)
 }
