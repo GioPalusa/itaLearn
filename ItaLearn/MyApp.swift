@@ -13,6 +13,19 @@ import SwiftUI
     var body: some Scene {
         WindowGroup {
             Group {
+#if DEBUG
+                if ProcessInfo.processInfo.arguments.contains("--milo-demo") {
+                    MiloDemoView()
+                } else { appContent }
+#else
+                appContent
+#endif
+            }
+            .environment(settings)
+            .preferredColorScheme(.light)
+        }
+    }
+    @ViewBuilder private var appContent: some View {
                 switch storage {
                 case .success(let container):
                     ContentView().modelContainer(container)
@@ -23,9 +36,5 @@ import SwiftUI
                         description: Text("Starta om appen och kontrollera ledigt lagringsutrymme. Dina sparade data har inte raderats.")
                     )
                 }
-            }
-            .environment(settings)
-            .preferredColorScheme(.light)
-        }
     }
 }

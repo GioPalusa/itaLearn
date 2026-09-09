@@ -86,7 +86,7 @@ struct LearningContractTests {
         #expect(state.assessment == nil)
     }
 
-    @Test func replacementArchivesOldPlanAndKeepsItsProgress() throws {
+    @Test func replacementArchivesOldPlanAndCarriesReusedLessonProgress() throws {
         var state = LearningState()
         state.assessment = completedAssessment()
         try state.apply(sampleResult(), rawJSON: Data())
@@ -95,7 +95,7 @@ struct LearningContractTests {
         state.assessment = completedAssessment()
         try state.apply(sampleResult(), rawJSON: Data())
         #expect(state.activePlan?.id != oldID)
-        #expect(state.activePlan?.completedLessonIDs.isEmpty == true)
+        #expect(state.activePlan?.completedLessonIDs == ["lesson-0"])
         #expect(state.archivedPlans.first?.id == oldID)
         #expect(state.archivedPlans.first?.completedLessonIDs == ["lesson-0"])
     }

@@ -24,6 +24,9 @@ xcuserdata/
 
 # Xcode build data
 DerivedData/
+.derivedData/
+.home/
+.cache/
 
 # Swift/Obj-C specific
 *.hmap
@@ -42,3 +45,6 @@ playground.xcworkspace
 # Local Swift package test output
 .build/
 .swiftpm/
+
+# Blender/Python export tooling
+__pycache__/

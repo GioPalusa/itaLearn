@@ -121,6 +121,9 @@ struct FlashcardPracticeView: View {
             SegmentedProgress(current: index, total: queue.count)
                 .padding(.horizontal, 16).padding(.top, 14)
 
+            if narrator.isPreparing || narrator.isSpeaking || narrator.errorMessage != nil {
+                MiloSpeechView(narrator: narrator).padding(.horizontal, 16)
+            }
             if queue.indices.contains(index) {
                 cardArea(queue[index])
                 actions(queue[index])
@@ -409,6 +412,9 @@ struct SentencePracticeView: View {
                 SegmentedProgress(current: index, total: livePuzzles.count)
                     .padding(.top, 14)
 
+                if narrator.isPreparing || narrator.isSpeaking || narrator.errorMessage != nil {
+                    MiloSpeechView(narrator: narrator).padding(.top, 12)
+                }
                 if livePuzzles.indices.contains(index) {
                     round(livePuzzles[index])
                 } else {

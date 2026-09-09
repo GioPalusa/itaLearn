@@ -26,6 +26,11 @@ struct SettingsView: View {
                     Toggle("Rätta även stavning", isOn: $settings.correctsSpelling)
                     Text("Nivån anpassas efter din senaste kunskapskoll. Du kan göra en ny från Min studieplan.")
                         .font(.footnote).foregroundStyle(.secondary)
+                    NavigationLink {
+                        MiloDemoView()
+                    } label: {
+                        Label("Öppna Milos karaktärsstudio", systemImage: "figure.wave")
+                    }
                 }
                 Section("OpenAI") {
                     APIKeyForm()
@@ -48,6 +53,10 @@ struct SettingsView: View {
                     Text("Din studieplan, dina kunskapskollar och samtal sparas lokalt. För varje svar skickar appen bara den aktuella lektionen, en kort lärandesammanfattning och de senaste meddelandena till OpenAI. Kunskapskollen använder sina sex svar och din nuvarande plan.")
                     Text("Appen begär inte att OpenAI sparar en konversation. OpenAI kan ändå behålla API-data enligt sina datavillkor.")
                     Link("OpenAI:s datavillkor", destination: URL(string: "https://developers.openai.com/api/docs/guides/your-data")!)
+                }
+                Section("Om") {
+                    Text("Milo bygger på karaktären Snow av Blender Studio (CC BY 4.0).")
+                    Link("Licens för Snow", destination: URL(string: "https://creativecommons.org/licenses/by/4.0/")!)
                 }
                 Section {
                     Button("Radera alla mina studier", role: .destructive) { confirmWipe = true }

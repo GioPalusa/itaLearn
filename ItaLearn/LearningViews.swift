@@ -27,6 +27,7 @@ struct LearningPathView: View {
                 if let plan {
                     header(plan).appearsInSequence(0)
                     goalCard(plan).appearsInSequence(1)
+                    MiloGreetingCard().appearsInSequence(2)
                     if let assessment = store.state.assessments.last {
                         rationaleCard(assessment).appearsInSequence(2)
                     }
@@ -971,6 +972,11 @@ struct AdaptiveChatView: View {
 
     var body: some View {
         VStack(spacing: 0) {
+            if !assessmentFinished && session?.wrapUp == nil {
+                MiloSpeechView(narrator: narrator, listening: speech.isListening, thinking: chat.isWorking,
+                               encouraging: session?.requiresRetry == true)
+                    .padding(.horizontal, 20)
+            }
             statusHeader
             ScrollViewReader { proxy in
                 ScrollView {
@@ -997,7 +1003,7 @@ struct AdaptiveChatView: View {
                             LearningMessageBubble(message: ChatMessage(role: .user, text: pendingAnswer))
                             Text("Väntar på Milos svar").font(.caption).foregroundStyle(.secondary)
                         }
-                        if chat.isWorking { MiloLoadingView(message: isAssessment ? "Milo funderar på din kunskapskoll…" : "Milo förbereder ditt nästa steg…") }
+                        if chat.isWorking { MiloLoadingView(message: isAssessment ? "Milo funderar på din kunskapskoll…" : "Milo förbereder ditt nästa steg…", showsMascot: false) }
                         if let error = setupError ?? chat.errorMessage ?? store.errorMessage {
                             VStack(alignment: .leading, spacing: 12) {
                                 Text(error).foregroundStyle(ItaLearn.red)

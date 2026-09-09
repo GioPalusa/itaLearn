@@ -139,6 +139,12 @@
     "Ändra mitt svar" : {
 
     },
+    "Animation" : {
+
+    },
+    "Ansiktsformer" : {
+
+    },
     "Använd den här planen igen" : {
 
     },
@@ -194,6 +200,12 @@
 
     },
     "Bjud in en vän" : {
+
+    },
+    "Blick och tal" : {
+
+    },
+    "Blunda" : {
 
     },
     "Börja · %lld min" : {
@@ -404,6 +416,9 @@
     "Fastnar du? Be mig om en ledtråd, så provar vi igen." : {
 
     },
+    "Förbereder uppläsning…" : {
+
+    },
     "Föreslå andra vägar" : {
 
     },
@@ -411,6 +426,9 @@
 
     },
     "FÖRSÖK IGEN · DU FÅR HJÄLP PÅ VÄGEN" : {
+
+    },
+    "Försök läsa upp igen" : {
 
     },
     "Fortsätt lektion %lld" : {
@@ -459,6 +477,9 @@
 
     },
     "HISTORIK" : {
+
+    },
+    "Humör" : {
 
     },
     "HUR SÄGER DU?" : {
@@ -512,6 +533,9 @@
     "Jag kan skriva enkla meningar med mi chiamo, abito och mi piace." : {
 
     },
+    "Jag lyssnar. Ta det i din takt." : {
+
+    },
     "Jag vet inte ännu" : {
 
     },
@@ -525,6 +549,9 @@
 
     },
     "Klarar mig" : {
+
+    },
+    "Klipp" : {
 
     },
     "Kontrollera" : {
@@ -575,6 +602,9 @@
     "Låst tills lektionen före är klar" : {
 
     },
+    "Låt Milo tala" : {
+
+    },
     "Lek och repetera" : {
 
     },
@@ -617,16 +647,25 @@
     "Lektionssammanfattning" : {
 
     },
+    "Licens för Snow" : {
+
+    },
     "Lite italienska i taget. Vi tar nästa steg tillsammans." : {
 
     },
     "Lite van" : {
 
     },
+    "Lugn konversation" : {
+
+    },
     "Lyssna" : {
 
     },
     "Lyssna och tala har inte testats i kunskapskollen — de staplarna är en försiktig gissning." : {
+
+    },
+    "Lyssna på italienskan" : {
 
     },
     "Lyssna på Milos italienska" : {
@@ -650,10 +689,16 @@
     "Mikrofonen kunde inte startas. Du kan skriva i stället." : {
 
     },
+    "Milo" : {
+
+    },
     "MILO · DIN ITALIENSKALÄRARE" : {
 
     },
     "Milo är en AI-lärare i ItaLearn. Svaren skapas med OpenAI." : {
+
+    },
+    "Milo bygger på karaktären Snow av Blender Studio (CC BY 4.0)." : {
 
     },
     "Milo förbereder ditt nästa steg…" : {
@@ -701,6 +746,9 @@
     "Milo utgår från den här lektionen och undviker meningar du redan har. Detta använder ditt OpenAI API-konto." : {
 
     },
+    "Milos studio" : {
+
+    },
     "MILOS VAL" : {
 
     },
@@ -734,6 +782,9 @@
     "Nivån anpassas efter din senaste kunskapskoll. Du kan göra en ny från Min studieplan." : {
 
     },
+    "Nollställ ansiktet" : {
+
+    },
     "NU" : {
 
     },
@@ -747,6 +798,9 @@
 
     },
     "Nyckeln sparas i Nyckelringen på den här enheten. Dina meddelanden och relevant lärandehistorik skickas till OpenAI när du ber Milo om ett svar. Studieplanen och samtalen sparas lokalt i appen." : {
+
+    },
+    "Om" : {
 
     },
     "OpenAI" : {
@@ -765,6 +819,9 @@
 
     },
     "Öppna lektionen" : {
+
+    },
+    "Öppna Milos karaktärsstudio" : {
 
     },
     "Öppna OpenAI" : {
@@ -974,6 +1031,15 @@
     "Skriv på italienska…" : {
 
     },
+    "Småpratar" : {
+
+    },
+    "Småpratar – variant 2" : {
+
+    },
+    "Snow-modell och italiensk systemröst. Studion gör inga API-anrop." : {
+
+    },
     "Spara nyckel" : {
 
     },
@@ -992,7 +1058,16 @@
     "Spela igen från början" : {
 
     },
+    "Spela klippet från början" : {
+
+    },
     "Starta om appen och kontrollera ledigt lagringsutrymme. Dina sparade data har inte raderats." : {
+
+    },
+    "Stoppa Milo" : {
+
+    },
+    "Stoppa uppläsningen" : {
 
     },
     "Svep vänster för att öva igen, höger för känt." : {
@@ -1034,6 +1109,12 @@
     "Tillbaka" : {
 
     },
+    "Tittar omkring" : {
+
+    },
+    "Tittar omkring – variant 2" : {
+
+    },
     "Tom plats %lld" : {
 
     },
@@ -1070,13 +1151,22 @@
     "Vänd kortet" : {
 
     },
+    "Väntar lugnt" : {
+
+    },
     "Väntar på Milos svar" : {
 
     },
     "Varm" : {
 
     },
+    "Vi provar en gång till tillsammans." : {
+
+    },
     "Visa ett möjligt svar" : {
+
+    },
+    "Visa fallback-bilden" : {
 
     },
     "Visa kunskapskollen" : {

@@ -1,28 +1,28 @@
 import SwiftUI
 
-/// Animation is local presentation only; it never starts a model request or a timer task.
+/// Live 3D only for a visible, active teacher; compact avatars use the matching portrait.
 struct MiloView: View {
-    enum Mood { case still, greeting, thinking, celebrating }
+    typealias Mood = MiloMood
     var mood: Mood = .greeting
     var size: CGFloat = 120
     var wanders = false
+    var mouthOpening: Float = 0
+    var trigger = 0
+    var debug: MiloDebugControls? = nil
+    var onRigStatus: ((String) -> Void)? = nil
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
     @Environment(\.scenePhase) private var scenePhase
     @State private var isVisible = false
 
     var body: some View {
         Group {
-            if !reduceMotion && isVisible && scenePhase == .active && mood != .still {
-                PhaseAnimator([0, 1, 2, 3]) { phase in
-                    artwork
-                        .rotationEffect(.degrees(phase == 1 ? 3 : phase == 3 ? -3 : 0), anchor: .bottom)
-                        .offset(x: wanders ? (phase == 1 ? 12 : phase == 3 ? -12 : 0) : 0,
-                                y: phase.isMultiple(of: 2) ? 0 : mood == .celebrating ? -10 : -4)
-                } animation: { _ in
-                    .easeInOut(duration: mood == .thinking ? 0.9 : mood == .celebrating ? 0.6 : 1.8)
-                }
+            if !reduceMotion && isVisible && scenePhase == .active && mood != .still && size > 48 {
+                MiloRealityView(
+                    mood: mood, mouth: mouthOpening, wanders: wanders,
+                    trigger: trigger, debug: debug, onRigStatus: onRigStatus
+                )
             } else {
-                artwork
+                Image(mood == .thinking ? "MiloThinking" : "Milo").resizable().scaledToFit()
             }
         }
         .frame(width: size, height: size)
@@ -30,19 +30,14 @@ struct MiloView: View {
         .onAppear { isVisible = true }
         .onDisappear { isVisible = false }
     }
-
-    private var artwork: some View {
-        Image(mood == .thinking ? "MiloThinking" : "Milo")
-            .resizable().scaledToFit()
-            .frame(width: size, height: size)
-    }
 }
 
 struct MiloLoadingView: View {
     var message: LocalizedStringResource = "Milo funderar…"
+    var showsMascot = true
     var body: some View {
         HStack(spacing: 14) {
-            MiloView(mood: .thinking, size: 64)
+            if showsMascot { MiloView(mood: .thinking, size: 64) }
             VStack(alignment: .leading, spacing: 8) {
                 Text(message).font(.subheadline.weight(.medium))
                 ProgressView().accessibilityLabel(Text(message))
@@ -93,7 +88,7 @@ struct MiloGreetingCard: View {
         Button {
             greetingIndex = (greetingIndex + 1) % tips.count
         } label: {
-            MiloView(size: 104, wanders: true)
+            MiloView(size: 104, wanders: true, trigger: greetingIndex)
                 .padding(.horizontal, 14).padding(.vertical, 10)
                 .contentShape(Rectangle())
         }

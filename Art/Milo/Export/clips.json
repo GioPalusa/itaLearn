@@ -1,0 +1,41 @@
+{
+  "debugOnly": true,
+  "clips": [
+    {
+      "name": "Idle_Neutral_A",
+      "frames": 759,
+      "fps": 30,
+      "loops": true
+    },
+    {
+      "name": "Idle_LookAround",
+      "frames": 1014,
+      "fps": 30,
+      "loops": true
+    },
+    {
+      "name": "Idle_Chatting",
+      "frames": 806,
+      "fps": 30,
+      "loops": true
+    },
+    {
+      "name": "Idle_Watching",
+      "frames": 813,
+      "fps": 30,
+      "loops": true
+    },
+    {
+      "name": "Idle_Chatting02",
+      "frames": 1256,
+      "fps": 30,
+      "loops": true
+    },
+    {
+      "name": "Idle_LookAround02",
+      "frames": 1003,
+      "fps": 30,
+      "loops": true
+    }
+  ]
+}

@@ -1,0 +1,120 @@
+{
+  "model": "Milo",
+  "version": 2,
+  "source": "Snow v4.2 (Blender Studio, CC-BY-4.0)",
+  "rigVariant": "quality",
+  "vertices": 23340,
+  "triangles": 44606,
+  "joints": [
+    "root",
+    "hips",
+    "spine",
+    "chest",
+    "neck",
+    "head",
+    "jaw",
+    "eye_L",
+    "eye_R",
+    "clavicle_L",
+    "upper_arm_L",
+    "upper_arm_twist_L",
+    "forearm_L",
+    "forearm_twist_L",
+    "hand_L",
+    "clavicle_R",
+    "upper_arm_R",
+    "upper_arm_twist_R",
+    "forearm_R",
+    "forearm_twist_R",
+    "hand_R",
+    "upper_leg_L",
+    "upper_leg_twist_L",
+    "lower_leg_L",
+    "lower_leg_twist_L",
+    "foot_L",
+    "toe_L",
+    "upper_leg_R",
+    "upper_leg_twist_R",
+    "lower_leg_R",
+    "lower_leg_twist_R",
+    "foot_R",
+    "toe_R"
+  ],
+  "jointCount": 33,
+  "meshes": [
+    "Milo_Head",
+    "Milo_Eyes",
+    "Milo_Hair",
+    "Milo_Body"
+  ],
+  "materials": [
+    "Milo_body_PBR",
+    "Milo_head_PBR",
+    "Milo_pants_PBR",
+    "Milo_shirt_PBR",
+    "Milo_shoes_PBR",
+    "snow.eyes",
+    "snow.hair"
+  ],
+  "textures": [
+    "body_base.png",
+    "head_base.png",
+    "pants_base.png",
+    "shirt_base.png",
+    "shoes_base.png"
+  ],
+  "blendShapes": [
+    "browRaiseL",
+    "browRaiseR",
+    "browDownL",
+    "browDownR",
+    "smileL",
+    "smileR",
+    "cheekRaiseL",
+    "cheekRaiseR",
+    "mouthWide",
+    "mouthNarrow",
+    "mouthPucker",
+    "mouthFV",
+    "blinkL",
+    "blinkR"
+  ],
+  "clips": [
+    {
+      "name": "Idle_Neutral_A",
+      "frames": 759,
+      "fps": 30,
+      "loops": true
+    },
+    {
+      "name": "Idle_LookAround",
+      "frames": 1014,
+      "fps": 30,
+      "loops": true
+    },
+    {
+      "name": "Idle_Chatting",
+      "frames": 806,
+      "fps": 30,
+      "loops": true
+    },
+    {
+      "name": "Idle_Watching",
+      "frames": 813,
+      "fps": 30,
+      "loops": true
+    },
+    {
+      "name": "Idle_Chatting02",
+      "frames": 1256,
+      "fps": 30,
+      "loops": true
+    },
+    {
+      "name": "Idle_LookAround02",
+      "frames": 1003,
+      "fps": 30,
+      "loops": true
+    }
+  ]
+}

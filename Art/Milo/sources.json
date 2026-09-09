@@ -1,0 +1,33 @@
+{
+  "assetRootEnv": "MILO_ASSET_ROOT",
+  "sources": {
+    "snow": {
+      "path": "${MILO_ASSET_ROOT}/Snow/snow_v4.2.blend",
+      "sha256": "80fd0a81bca90f0efdcdcb98422df0e198ae57f4a1c239e13fb795922779b1fc"
+    },
+    "idle_neutral_a": {
+      "path": "${MILO_ASSET_ROOT}/Movements & Animations/EVERYDAY-IDLES-MOCAP/Idle_Conversation_Loop_MIXAMO_769_segment-2.fbx",
+      "sha256": "67892a332df013461020b839c165a04bdc8e20552344d098962e587826dcd556"
+    },
+    "idle_look_around": {
+      "path": "${MILO_ASSET_ROOT}/Movements & Animations/EVERYDAY-IDLES-MOCAP/Idle_LookingAround_MIXAMO_769.fbx",
+      "sha256": "0c967adac22b5b2337c26ea36272b6ef089f4ea2be22e873caceeab496ead595"
+    },
+    "idle_chatting": {
+      "path": "${MILO_ASSET_ROOT}/Movements & Animations/EVERYDAY-IDLES-MOCAP/Idle_Chatting_MIXAMO_WHS.fbx",
+      "sha256": "a8a7bd0b65a65ffe2fd65f50f339c96250fb24fd3895c38d63df581d9594db2c"
+    },
+    "idle_watching": {
+      "path": "${MILO_ASSET_ROOT}/Movements & Animations/EVERYDAY-IDLES-MOCAP/Idle_WatchingSomething_Loop_MIXAMO_769_segment.fbx",
+      "sha256": "e8ffd7bca7a2a9cc3efd017a2596edba4c9bae734da788b974d80b0a38475dec"
+    },
+    "idle_chatting_02": {
+      "path": "${MILO_ASSET_ROOT}/Movements & Animations/EVERYDAY-IDLES-MOCAP/Idle_Chatting02_MIXAMO_WHS.fbx",
+      "sha256": "a0956bced339998764d88013df009a290a627e60890b6e20fc29cef82053bd46"
+    },
+    "idle_look_around_02": {
+      "path": "${MILO_ASSET_ROOT}/Movements & Animations/EVERYDAY-IDLES-MOCAP/Idle_LookingAround02_MIXAMO_769.fbx",
+      "sha256": "6e93af2bed87b64cd4ec1a8a76070cb4834a3644991569bb8c48acfb708a86ef"
+    }
+  }
+}

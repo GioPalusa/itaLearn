@@ -21,7 +21,7 @@ struct LessonView: View {
     @State private var isShowingPaywall = false
     @FocusState private var isEditorFocused: Bool
 
-    private let narrator = SpeechNarrator()
+    @State private var narrator = SpeechNarrator()
 
     private var learningMemories: [LearningMemory] {
         records
@@ -44,6 +44,9 @@ struct LessonView: View {
                 header
                 briefCard
                 writingCard
+                if narrator.isPreparing || narrator.isSpeaking || narrator.errorMessage != nil {
+                    MiloSpeechView(narrator: narrator)
+                }
 
                 if isSubmitting {
                     MiloLoadingView(message: "Milo tittar på din text…")
@@ -90,6 +93,7 @@ struct LessonView: View {
         .onDisappear {
             reviewTask?.cancel()
             reviewTask = nil
+            narrator.stop()
         }
     }
 
