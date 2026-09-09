@@ -131,7 +131,7 @@ nonisolated struct AssessmentSession: Codable, Identifiable, Sendable {
     var id = UUID()
     var messages: [ChatMessage] = [ChatMessage(
         role: .assistant,
-        text: "Ciao! Jag hjälper dig att hitta en bra start i italienskan. Vad vill du kunna använda språket till? Presentera dig gärna med en mening på italienska. Det går bra att säga att du inte vet ännu.",
+        text: "Ciao! Jag heter \(TeacherIdentity.name) och hjälper dig att hitta en bra start i italienskan. Vad vill du kunna använda språket till? Presentera dig gärna med en mening på italienska. Det går bra att säga att du inte vet ännu.",
         translation: "Vi tar sex korta frågor, en i taget. Det här är en uppskattning av din skriftliga nivå, inte ett formellt språkprov."
     )]
     var pendingAnswer: String?

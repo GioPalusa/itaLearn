@@ -99,10 +99,7 @@
     "Ändra mitt svar" : {
 
     },
-    "Anslut din lärare" : {
-
-    },
-    "Använd din egen OpenAI API-nyckel. Samtalen debiteras ditt API-konto, separat från en ChatGPT-prenumeration." : {
+    "Använd din egen OpenAI API-nyckel. Samtalen debiteras ditt API-konto." : {
 
     },
     "Appen begär inte att OpenAI sparar en konversation. OpenAI kan ändå behålla API-data enligt sina datavillkor." : {
@@ -144,6 +141,9 @@
     "Börja · %lld min" : {
 
     },
+    "Börja lära med Milo" : {
+
+    },
     "Börja om meningen" : {
 
     },
@@ -177,10 +177,16 @@
     "ciao = hej" : {
 
     },
+    "Ciao, %@!" : {
+
+    },
+    "Ciao! Jag är Milo." : {
+
+    },
     "Ciao! Mi chiamo … Abito a … Mi piace …" : {
 
     },
-    "Ciao! Vi börjar där du är." : {
+    "Ciao! Milo här." : {
 
     },
     "con = med" : {
@@ -226,6 +232,9 @@
 
     },
     "Din lärare läser …" : {
+
+    },
+    "Din lärare Milo" : {
 
     },
     "Din lärare tar med sig ditt förra nästa steg: %@" : {
@@ -309,6 +318,9 @@
     "faccio colazione = jag äter frukost" : {
 
     },
+    "Fastnar du? Be mig om en ledtråd, så provar vi igen." : {
+
+    },
     "Flytta först" : {
 
     },
@@ -327,7 +339,7 @@
     "Fortsätt öva" : {
 
     },
-    "Fortsätt öva med läraren" : {
+    "Fortsätt öva med Milo" : {
 
     },
     "Fortsätt på din väg" : {
@@ -366,6 +378,9 @@
     "Hälsa och berätta lite om dig själv." : {
 
     },
+    "Hälsa på Milo" : {
+
+    },
     "Helgplaner" : {
 
     },
@@ -391,6 +406,9 @@
 
     },
     "ITALIENSKA" : {
+
+    },
+    "Jag hjälper dig med italienskan. Sex korta frågor hjälper mig att förstå vad du redan kan. Sedan får du en egen studieplan och övar italienska genom samtal, med hjälp och rättningar längs vägen." : {
 
     },
     "Jag kan använda è, ha och enkla adjektiv för att beskriva en person." : {
@@ -454,19 +472,10 @@
     "Kunde inte öppna dina studier" : {
 
     },
-    "Kunskapskoll och plan" : {
-
-    },
     "Kunskapskollar" : {
 
     },
     "Lägg till din OpenAI API-nyckel i Inställningar." : {
-
-    },
-    "Läraren" : {
-
-    },
-    "Läraren funderar…" : {
 
     },
     "Läs upp" : {
@@ -514,25 +523,19 @@
     "Lektion klar!" : {
 
     },
-    "Lektioner och rättningar" : {
+    "Lektionssammanfattning" : {
 
     },
-    "Lektionssammanfattning" : {
+    "Lite italienska i taget. Vi tar nästa steg tillsammans." : {
 
     },
     "Lite van" : {
 
     },
-    "Luna hjälper dig…" : {
-
-    },
-    "Luna skapar ordkort och meningar utifrån lektionen och dina senaste svar. Detta använder ditt OpenAI API-konto." : {
-
-    },
     "Lyssna" : {
 
     },
-    "Lyssna på lärarens italienska" : {
+    "Lyssna på Milos italienska" : {
 
     },
     "Mening %lld av %lld" : {
@@ -558,6 +561,36 @@
 
     },
     "Mikrofonen kunde inte startas. Du kan skriva i stället." : {
+
+    },
+    "MILO · DIN ITALIENSKALÄRARE" : {
+
+    },
+    "Milo är en AI-lärare i ItaLearn. Svaren skapas med OpenAI." : {
+
+    },
+    "Milo förbereder ditt nästa steg…" : {
+
+    },
+    "Milo funderar på din kunskapskoll…" : {
+
+    },
+    "Milo funderar…" : {
+
+    },
+    "Milo gör plats för dina studier…" : {
+
+    },
+    "Milo hjälper dig att öva, rätta och prova igen. Anpassa tonen så att den passar dig." : {
+
+    },
+    "Milo skapar ordkort och meningar utifrån lektionen och dina senaste svar. Detta använder ditt OpenAI API-konto." : {
+
+    },
+    "Milo skapar ordkort och meningar…" : {
+
+    },
+    "Milo tittar på din text…" : {
 
     },
     "min" : {
@@ -596,7 +629,7 @@
     "Nyckeln är sparad. Anslutningen kontrolleras vid nästa svar." : {
 
     },
-    "Nyckeln sparas i Nyckelringen på den här enheten. Dina meddelanden och relevant lärandehistorik skickas till OpenAI när du ber läraren om ett svar. Studieplanen och samtalen sparas lokalt i appen." : {
+    "Nyckeln sparas i Nyckelringen på den här enheten. Dina meddelanden och relevant lärandehistorik skickas till OpenAI när du ber Milo om ett svar. Studieplanen och samtalen sparas lokalt i appen." : {
 
     },
     "Om din bedömning" : {
@@ -623,9 +656,6 @@
     "Öppna OpenAI" : {
 
     },
-    "Öppnar ItaLearn…" : {
-
-    },
     "Öppnar skrivövningen" : {
 
     },
@@ -635,6 +665,9 @@
     "Ordkort och bygg meningar" : {
 
     },
+    "Ordkorten hjälper dig att minnas. Prova några efter lektionen." : {
+
+    },
     "Öva från hemskärmen" : {
 
     },
@@ -642,6 +675,9 @@
 
     },
     "ÖVA ITALIENSKA · ETT STEG I TAGET" : {
+
+    },
+    "Öva med Milo" : {
 
     },
     "Öva med ordkort och meningar" : {
@@ -716,13 +752,13 @@
     "Så hanterar OpenAI API-data" : {
 
     },
+    "Säg gärna att du inte vet. Då hittar vi en bra plats att börja." : {
+
+    },
     "Sammanfattningen är sparad" : {
 
     },
     "Samtal" : {
-
-    },
-    "Sex korta frågor hjälper din lärare att förstå vad du redan kan. Sedan får du en egen studieplan och övar italienska genom samtal, med hjälp och rättningar längs vägen." : {
 
     },
     "Si chiama … È … Ha … Gli/Le piace …" : {
@@ -738,9 +774,6 @@
 
     },
     "SKAPAD FÖR DIG · %@" : {
-
-    },
-    "Skapar ordkort och meningar…" : {
 
     },
     "Skicka svar" : {
@@ -851,6 +884,9 @@
     "tranquillo/a = lugn" : {
 
     },
+    "Tryck på Milo för ett tips" : {
+
+    },
     "un caffè = en kaffe" : {
 
     },
@@ -866,7 +902,7 @@
     "Vänd kortet" : {
 
     },
-    "Väntar på lärarens svar" : {
+    "Väntar på Milos svar" : {
 
     },
     "Varm" : {
@@ -882,6 +918,9 @@
 
     },
     "Visa svenska" : {
+
+    },
+    "Visar ett nytt studietips" : {
 
     },
     "voglio = jag vill" : {

@@ -46,7 +46,7 @@ struct LessonView: View {
                 writingCard
 
                 if isSubmitting {
-                    ThinkingCard()
+                    MiloLoadingView(message: "Milo tittar på din text…")
                 }
 
                 if let errorMessage {

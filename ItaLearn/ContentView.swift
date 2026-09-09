@@ -9,7 +9,7 @@ struct ContentView: View {
     var body: some View {
         Group {
             if !access.isReady {
-                ProgressView("Öppnar ItaLearn…")
+                MiloLoadingView(message: "Milo gör plats för dina studier…").padding(24)
             } else if !access.hasKey {
                 OnboardingView()
             } else if !store.isLoaded {

@@ -9,6 +9,7 @@ struct LearningPathView: View {
         ScrollView {
             VStack(alignment: .leading, spacing: 20) {
                 if let plan = store.state.activePlan {
+                    MiloGreetingCard()
                     VStack(alignment: .leading, spacing: 10) {
                         Text("DIN ITALIENSKA · \(plan.profile.cefr)")
                             .font(.caption.weight(.semibold)).foregroundStyle(ItaLearn.magenta)
@@ -73,6 +74,10 @@ struct LessonOverviewView: View {
     var body: some View {
         ScrollView {
             VStack(alignment: .leading, spacing: 20) {
+                HStack(spacing: 16) {
+                    MiloView(size: 76)
+                    Text("Öva med Milo").font(.title2.bold())
+                }
                 LearningMarkdownText(lesson.summary).font(.title3)
                 NavigationLink { LessonPracticeView(lesson: lesson) } label: {
                     Label("Ordkort och bygg meningar", systemImage: "rectangle.on.rectangle.angled")
@@ -243,6 +248,7 @@ struct AdaptiveChatView: View {
                 ScrollView {
                     LazyVStack(alignment: .leading, spacing: 14) {
                         if assessmentFinished, let result = store.state.assessments.last {
+                            MiloView(mood: .celebrating, size: 110).frame(maxWidth: .infinity)
                             Text(result.result.recommendation == .newPlan ? "Din nya studieplan är klar" : "Fortsätt på din väg")
                                 .font(.title2.bold())
                             LearningMarkdownText(result.result.rationale).italearnCard()
@@ -256,14 +262,14 @@ struct AdaptiveChatView: View {
                                     narrator.stop(); narrator.speak(LearningMarkdown.spoken(message.text))
                                 }
                                 .font(.caption)
-                                .accessibilityLabel("Lyssna på lärarens italienska")
+                                .accessibilityLabel("Lyssna på Milos italienska")
                             }
                         }
                         if let pendingAnswer {
                             LearningMessageBubble(message: ChatMessage(role: .user, text: pendingAnswer))
-                            Text("Väntar på lärarens svar").font(.caption).foregroundStyle(.secondary)
+                            Text("Väntar på Milos svar").font(.caption).foregroundStyle(.secondary)
                         }
-                        if chat.isWorking { ProgressView(isAssessment ? "Läraren funderar…" : "Luna hjälper dig…") }
+                        if chat.isWorking { MiloLoadingView(message: isAssessment ? "Milo funderar på din kunskapskoll…" : "Milo förbereder ditt nästa steg…") }
                         if let error = setupError ?? chat.errorMessage ?? store.errorMessage {
                             VStack(alignment: .leading, spacing: 12) {
                                 Text(error).foregroundStyle(ItaLearn.red)
@@ -286,7 +292,7 @@ struct AdaptiveChatView: View {
                                     Label("Nästa lektion: \(next.title)", systemImage: "arrow.right")
                                 }.buttonStyle(ItaLearnPrimaryButtonStyle())
                             } else if !session.isComplete {
-                                Button("Fortsätt öva med läraren") { continueLesson(session.id) }
+                                Button("Fortsätt öva med Milo") { continueLesson(session.id) }
                                     .buttonStyle(ItaLearnPrimaryButtonStyle())
                             }
                             NavigationLink { LessonPracticeView(lesson: lesson) } label: {
@@ -452,6 +458,12 @@ struct LearningMessageBubble: View {
     let message: ChatMessage
     var body: some View {
         VStack(alignment: .leading, spacing: 12) {
+            if message.role == .assistant {
+                HStack(spacing: 8) {
+                    MiloView(mood: .still, size: 32)
+                    Text(TeacherIdentity.name).font(.caption.bold()).foregroundStyle(ItaLearn.purple)
+                }
+            }
             LearningMarkdownText(message.text).font(.body)
             if !message.translation.isEmpty {
                 LearningMarkdownText(message.translation).font(.callout).foregroundStyle(.secondary)
@@ -521,5 +533,5 @@ private struct LearningFlowPreview: View {
 }
 
 #Preview("Personlig studieplan") { LearningFlowPreview() }
-#Preview("Luna med rättning och nytt försök") { LearningFlowPreview(showsChat: true) }
+#Preview("Milo med rättning och nytt försök") { LearningFlowPreview(showsChat: true) }
 #endif

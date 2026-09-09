@@ -10,7 +10,11 @@ struct SettingsView: View {
         @Bindable var settings = settings
         NavigationStack {
             Form {
-                Section("Läraren") {
+                Section("Din lärare Milo") {
+                    HStack(spacing: 16) {
+                        MiloView(mood: .still, size: 70)
+                        Text("Milo hjälper dig att öva, rätta och prova igen. Anpassa tonen så att den passar dig.")
+                    }
                     TextField("Ditt namn", text: $settings.learnerName)
                     Picker("Ton", selection: $settings.tone) {
                         ForEach(TeacherTone.allCases) { Text($0.label).tag($0) }
@@ -21,8 +25,7 @@ struct SettingsView: View {
                 }
                 Section("OpenAI") {
                     APIKeyForm()
-                    LabeledContent("Kunskapskoll och plan", value: "GPT-5.6 Sol")
-                    LabeledContent("Lektioner och rättningar", value: "GPT-5.6 Luna")
+                    Text("Milo är en AI-lärare i ItaLearn. Svaren skapas med OpenAI.").font(.footnote).foregroundStyle(.secondary)
                     if access.hasKey {
                         Button("Ta bort API-nyckeln", role: .destructive) { confirmRemoval = true }
                     }

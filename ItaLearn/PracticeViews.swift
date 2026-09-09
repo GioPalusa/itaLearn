@@ -33,8 +33,8 @@ struct LessonPracticeView: View {
                     }
                     .buttonStyle(ItaLearnPrimaryButtonStyle())
                     .disabled(generator.isWorking || sessionID == nil)
-                    Text("Luna skapar ordkort och meningar utifrån lektionen och dina senaste svar. Detta använder ditt OpenAI API-konto.").font(.footnote).foregroundStyle(.secondary)
-                    if generator.isWorking { ProgressView("Skapar ordkort och meningar…") }
+                    Text("Milo skapar ordkort och meningar utifrån lektionen och dina senaste svar. Detta använder ditt OpenAI API-konto.").font(.footnote).foregroundStyle(.secondary)
+                    if generator.isWorking { MiloLoadingView(message: "Milo skapar ordkort och meningar…") }
                 }
                 if let error = errorMessage ?? generator.errorMessage {
                     Text(error).foregroundStyle(ItaLearn.red)
@@ -272,6 +272,7 @@ struct LessonSummaryCard: View {
     let mastered: Bool
     var body: some View {
         VStack(alignment: .leading, spacing: 16) {
+            MiloView(mood: mastered ? .celebrating : .greeting, size: 92).frame(maxWidth: .infinity)
             Label(mastered ? "Lektion klar!" : "Bra övat — här är din sammanfattning", systemImage: mastered ? "checkmark.seal.fill" : "book.closed")
                 .font(.title2.bold()).foregroundStyle(ItaLearn.purple)
             LearningMarkdownText(summary.summary)
