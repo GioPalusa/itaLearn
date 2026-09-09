@@ -53,7 +53,7 @@ private struct MiloSpeechPreview: View {
     var body: some View {
         VStack(spacing: 20) {
             MiloSpeechView(narrator: narrator)
-            Button("Lyssna") { narrator.speak("Ciao! Mi chiamo Milo. Come stai? Io sto bene. Proviamo insieme, un passo alla volta.") }
+            Button("Lyssna") { narrator.speak(LearningLanguage.italian.sampleLine, in: .italian) }
         }.padding(24).langlearnCanvas()
     }
 }

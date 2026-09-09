@@ -90,30 +90,57 @@ final class TutorSettings {
     var hasOnboarded: Bool { didSet { store.set(hasOnboarded, forKey: Key.hasOnboarded) } }
     var learnerName: String { didSet { store.set(learnerName, forKey: Key.learnerName) } }
 
-    /// The language being learned. Studies are stored per language, so changing
-    /// this swaps in that language's plan rather than rewriting the current one.
-    var targetLanguage: LearningLanguage {
+    /// The language being learned, or nil before the learner has picked one.
+    ///
+    /// Nothing is presumed at first run: there is no starter language, so the
+    /// onboarding picker opens empty rather than on somebody else's choice.
+    /// Studies are stored per language, so changing this swaps in that
+    /// language's plan rather than rewriting the current one.
+    var chosenTarget: LearningLanguage? {
         didSet {
-            store.set(targetLanguage.code, forKey: Key.targetLanguage)
-            store.set(true, forKey: Key.hasChosenLanguage)
+            if let chosenTarget { store.set(chosenTarget.code, forKey: Key.targetLanguage) }
+            else { store.removeObject(forKey: Key.targetLanguage) }
         }
     }
+
+    /// The chosen language. The placeholder only stands in for the moment before
+    /// onboarding has produced a real answer, and onboarding blocks every screen
+    /// that reads this until it has.
+    var targetLanguage: LearningLanguage {
+        get { chosenTarget ?? .english }
+        set { chosenTarget = newValue }
+    }
+
     /// The language Milo explains, corrects and summarizes in.
     var nativeLanguage: LearningLanguage {
-        didSet {
-            store.set(nativeLanguage.code, forKey: Key.nativeLanguage)
-            store.set(true, forKey: Key.hasChosenLanguage)
-        }
+        didSet { store.set(nativeLanguage.code, forKey: Key.nativeLanguage) }
     }
-    /// False until the learner has been through the language picker, so an
-    /// existing Italian study is never relabelled as a deliberate choice.
+
+    /// False until the learner has been through the language picker, and again
+    /// whenever they ask to redo the introduction.
     private(set) var hasChosenLanguage: Bool
 
+    /// Only meaningful once `chosenTarget` exists.
     var course: LanguageCourse { LanguageCourse(target: targetLanguage, native: nativeLanguage) }
 
     func confirmLanguageChoice() {
         hasChosenLanguage = true
         store.set(true, forKey: Key.hasChosenLanguage)
+    }
+
+    /// Makes a language current. When it has no plan yet the app routes to a
+    /// kunskapskoll, which is what builds one.
+    func startLearning(_ language: LearningLanguage) {
+        chosenTarget = language
+        confirmLanguageChoice()
+    }
+
+    /// Sends the learner back through onboarding, leaving their studies and
+    /// their saved key untouched.
+    func restartOnboarding() {
+        hasOnboarded = false
+        hasChosenLanguage = false
+        store.set(false, forKey: Key.hasChosenLanguage)
     }
 
     /// Minutes past midnight, so the reminder time survives as a plain integer.
@@ -128,12 +155,11 @@ final class TutorSettings {
         reminderMinutes = store.object(forKey: Key.reminderTime) as? Int ?? (8 * 60 + 15)
         hasOnboarded = store.bool(forKey: Key.hasOnboarded)
         learnerName = store.string(forKey: Key.learnerName) ?? ""
-        // Studies saved before language selection existed are Italian, so that
-        // stays the fallback rather than the device language.
-        targetLanguage = store.string(forKey: Key.targetLanguage)
-            .flatMap(LearningLanguage.named) ?? .italian
+        // No language until the learner names one; studies saved before language
+        // selection existed are Italian and come back when Italian is picked.
+        chosenTarget = store.string(forKey: Key.targetLanguage).flatMap(LearningLanguage.named)
         nativeLanguage = store.string(forKey: Key.nativeLanguage)
-            .flatMap(LearningLanguage.named) ?? .swedish
+            .flatMap(LearningLanguage.named) ?? .matchingDevice(fallback: .english)
         hasChosenLanguage = store.bool(forKey: Key.hasChosenLanguage)
     }
 

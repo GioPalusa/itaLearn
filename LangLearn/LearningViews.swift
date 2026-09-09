@@ -8,6 +8,7 @@ struct LearningPathView: View {
     @Environment(OpenAIAccess.self) private var access
     @State private var showingSettings = false
     @State private var showingRationale = false
+    @State private var showingLanguages = false
     @State private var planner = LearningChat()
 
     private var plan: LearningPlan? { store.state.activePlan }
@@ -49,6 +50,7 @@ struct LearningPathView: View {
         .langlearnCanvas()
         .hideNavigationBar()
         .sheet(isPresented: $showingSettings) { SettingsView() }
+        .sheet(isPresented: $showingLanguages) { LanguageSwitcherView() }
         .sheet(isPresented: $showingRationale) {
             if let assessment = store.state.assessments.last {
                 NavigationStack { AssessmentDetailView(assessment: assessment) }
@@ -60,10 +62,10 @@ struct LearningPathView: View {
 
     private func header(_ plan: LearningPlan) -> some View {
         HStack(spacing: 12) {
-            VStack(alignment: .leading, spacing: 3) {
-                Text("DIN ITALIENSKA · \(plan.profile.cefr)")
-                    .font(.il(11, .semibold)).tracking(0.66)
-                    .foregroundStyle(LangLearn.magenta)
+            VStack(alignment: .leading, spacing: 6) {
+                LanguageChip(language: settings.targetLanguage, level: plan.profile.cefr) {
+                    showingLanguages = true
+                }
                 Text("Min studieplan")
                     .font(.il(32, .bold)).foregroundStyle(LangLearn.ink)
             }
@@ -391,37 +393,6 @@ struct LessonOverviewView: View {
         .langlearnCanvas()
         .navigationTitle(lesson.title)
         .inlineNavigationTitle()
-    }
-}
-
-struct CurrentLessonView: View {
-    @Environment(LearningStore.self) private var store
-    @Environment(TutorSettings.self) private var settings
-    @Environment(OpenAIAccess.self) private var access
-    @State private var planner = LearningChat()
-    private var nextLesson: PlannedLesson? {
-        guard let plan = store.state.activePlan else { return nil }
-        return plan.lessons.first {
-            !plan.completedLessonIDs.contains($0.id) && $0.prerequisites.allSatisfy { plan.completedLessonIDs.contains($0) }
-        }
-    }
-    var body: some View {
-        if let lesson = nextLesson {
-            // Keep the completed conversation visible until the learner chooses the next lesson.
-            LessonOverviewView(lesson: lesson)
-        } else {
-            ScrollView {
-                VStack(spacing: 16) {
-                    PlanDirectionPicker(planner: planner).langlearnCard()
-                    NavigationLink("Testa mina kunskaper igen") { AdaptiveChatView(mode: .assessment) }
-                        .buttonStyle(LangLearnSecondaryButtonStyle())
-                }
-                .padding(20).padding(.bottom, 40)
-                .frame(maxWidth: 700).frame(maxWidth: .infinity)
-            }
-            .langlearnCanvas()
-            .navigationTitle("Samtal")
-        }
     }
 }
 
@@ -948,7 +919,7 @@ private struct LearningBulletCard: View {
 }
 
 struct AdaptiveChatView: View {
-    enum Mode { case assessment, lesson(PlannedLesson) }
+    enum Mode { case assessment, lesson(PlannedLesson), freeChat }
     let mode: Mode
     @Environment(LearningStore.self) private var store
     @Environment(OpenAIAccess.self) private var access
@@ -965,18 +936,38 @@ struct AdaptiveChatView: View {
     @FocusState private var composerFocused: Bool
 
     private var isAssessment: Bool { if case .assessment = mode { true } else { false } }
+    private var isFreeChat: Bool { if case .freeChat = mode { true } else { false } }
     private var session: LessonSession? { store.state.sessions.first { $0.id == sessionID } }
-    private var messages: [ChatMessage] { isAssessment ? store.state.assessment?.messages ?? [] : session?.messages ?? [] }
-    private var pendingAnswer: String? { isAssessment ? store.state.assessment?.pendingAnswer : session?.pendingAnswer }
+    private var messages: [ChatMessage] {
+        switch mode {
+        case .assessment: store.state.assessment?.messages ?? []
+        case .freeChat: store.state.freeChat?.messages ?? []
+        case .lesson: session?.messages ?? []
+        }
+    }
+    private var pendingAnswer: String? {
+        switch mode {
+        case .assessment: store.state.assessment?.pendingAnswer
+        case .freeChat: store.state.freeChat?.pendingAnswer
+        case .lesson: session?.pendingAnswer
+        }
+    }
     private var assessmentFinished: Bool { isAssessment && hasStartedAssessment && store.state.assessment == nil && !store.state.assessments.isEmpty }
-    private var title: String { if case .lesson(let lesson) = mode { lesson.title } else { "Din kunskapskoll" } }
+    private var title: String {
+        switch mode {
+        case .lesson(let lesson): lesson.title
+        case .freeChat: "Chatta med Milo"
+        case .assessment: "Din kunskapskoll"
+        }
+    }
 
     var body: some View {
         VStack(spacing: 0) {
-            if !assessmentFinished && session?.wrapUp == nil {
+            if !assessmentFinished && session?.wrapUp == nil && !composerFocused {
                 MiloSpeechView(narrator: narrator, listening: speech.isListening, thinking: chat.isWorking,
                                encouraging: session?.requiresRetry == true)
                     .padding(.horizontal, 20)
+                    .transition(.opacity.combined(with: .move(edge: .top)))
             }
             statusHeader
             ScrollViewReader { proxy in
@@ -1012,9 +1003,10 @@ struct AdaptiveChatView: View {
                                 Button("Försök igen") { resume() }
                                 if pendingAnswer != nil {
                                     Button("Ändra mitt svar") {
-                                        if let recovered = chat.recoverPendingAnswer(store: store, sessionID: sessionID) {
-                                            draft = recovered; composerFocused = true
-                                        }
+                                        let recovered = isFreeChat
+                                            ? chat.recoverFreeChatAnswer(store: store)
+                                            : chat.recoverPendingAnswer(store: store, sessionID: sessionID)
+                                        if let recovered { draft = recovered; composerFocused = true }
                                     }
                                 }
                                 Button("Öppna inställningar") { showingSettings = true }
@@ -1040,6 +1032,7 @@ struct AdaptiveChatView: View {
                     }
                     .padding(20).frame(maxWidth: 760).frame(maxWidth: .infinity)
                 }
+                .scrollDismissesKeyboard(.interactively)
                 .onChange(of: messages.count) {
                     if messages.last(where: { $0.role == .user })?.text == draft { draft = "" }
                     withAnimation { proxy.scrollTo("latest", anchor: .bottom) }
@@ -1051,6 +1044,8 @@ struct AdaptiveChatView: View {
         }
         .langlearnCanvas()
         .navigationTitle(title)
+        .compactNavigationTitle(composerFocused)
+        .animation(.easeInOut(duration: 0.22), value: composerFocused)
         .toolbar {
             Button("Inställningar", systemImage: "gearshape") { showingSettings = true }
         }
@@ -1069,18 +1064,32 @@ struct AdaptiveChatView: View {
 
     private var statusHeader: some View {
         VStack(alignment: .leading, spacing: 8) {
-            if isAssessment && !assessmentFinished {
+            if isFreeChat {
+                if !composerFocused {
+                    Text("FRITT SAMTAL · MILO RÄTTAR NÄR DET BEHÖVS")
+                        .font(.caption.weight(.semibold)).foregroundStyle(LangLearn.purple)
+                }
+            } else if isAssessment && !assessmentFinished {
                 let count = store.state.assessment?.answeredCount ?? 0
-                Text("FRÅGA \(min(count + 1, 6)) AV 6 · TA DET I DIN TAKT")
-                    .font(.caption.weight(.semibold)).foregroundStyle(LangLearn.magenta)
+                if !composerFocused {
+                    Text("FRÅGA \(min(count + 1, 6)) AV 6 · TA DET I DIN TAKT")
+                        .font(.caption.weight(.semibold)).foregroundStyle(LangLearn.magenta)
+                }
                 ProgressView(value: Double(count), total: 6)
+                    .accessibilityLabel("Fråga \(min(count + 1, 6)) av 6")
             } else if case .lesson(let lesson) = mode {
-                Text(session?.requiresRetry == true ? "FÖRSÖK IGEN · DU FÅR HJÄLP PÅ VÄGEN" : "ÖVA ITALIENSKA · ETT STEG I TAGET")
-                    .font(.caption.weight(.semibold)).foregroundStyle(LangLearn.purple)
+                if !composerFocused {
+                    Text(session?.requiresRetry == true
+                         ? "FÖRSÖK IGEN · DU FÅR HJÄLP PÅ VÄGEN"
+                         : "ÖVA \(settings.targetLanguage.displayName.uppercased()) · ETT STEG I TAGET")
+                        .font(.caption.weight(.semibold)).foregroundStyle(LangLearn.purple)
+                }
                 ProgressView(value: Double(session?.achievedObjectives.count ?? 0), total: Double(lesson.objectives.count))
-                Text(session?.wrapUp != nil ? "Sammanfattningen är sparad" : "\(min(session?.answerCount ?? 0, LessonSession.answerBudget)) av \(LessonSession.answerBudget) svar · sedan sammanfattar vi")
-                    .font(.caption).foregroundStyle(.secondary)
-                if let sessionID, session?.wrapUp == nil, (session?.answerCount ?? 0) >= 2 {
+                if !composerFocused {
+                    Text(session?.wrapUp != nil ? "Sammanfattningen är sparad" : "\(min(session?.answerCount ?? 0, LessonSession.answerBudget)) av \(LessonSession.answerBudget) svar · sedan sammanfattar vi")
+                        .font(.caption).foregroundStyle(.secondary)
+                }
+                if let sessionID, session?.wrapUp == nil, (session?.answerCount ?? 0) >= 2, !composerFocused {
                     Button("Avsluta och sammanfatta", systemImage: "checkmark.circle") {
                         narrator.stop(); speechTask?.cancel()
                         Task { await speech.cancel() }
@@ -1207,6 +1216,8 @@ struct AdaptiveChatView: View {
                     hasStartedAssessment = true
                 }
                 if !assessmentFinished { chat.assessment(store: store, course: settings.course) }
+            } else if isFreeChat {
+                chat.freeChat(store: store, settings: settings)
             } else if case .lesson(let lesson) = mode {
                 sessionID = try store.lessonSession(for: lesson)
                 if let sessionID { chat.lesson(store: store, sessionID: sessionID, settings: settings) }
@@ -1218,6 +1229,7 @@ struct AdaptiveChatView: View {
         guard !chat.isWorking, pendingAnswer == nil else { return }
         narrator.stop()
         if isAssessment { chat.assessment(store: store, course: settings.course, answer: text) }
+        else if isFreeChat { chat.freeChat(store: store, settings: settings, answer: text) }
         else if let sessionID { chat.lesson(store: store, sessionID: sessionID, settings: settings, answer: text) }
         else { return }
         composerFocused = false
@@ -1273,7 +1285,7 @@ private struct LearningFlowPreview: View {
         self.showsChat = showsChat
         container = try! ModelContainer(for: LearningSnapshot.self, configurations: ModelConfiguration(isStoredInMemoryOnly: true, cloudKitDatabase: .none))
         store = LearningStore()
-        store.load(container: container)
+        store.load(container: container, language: .italian)
         let lessons = [
             PlannedLesson(id: "greetings", title: "Berätta hur du mår", summary: "Hälsa, presentera dig och fråga hur någon mår.", objectives: ["Berätta hur du mår", "Fråga hur någon annan mår"], prerequisites: [], vocabulary: ["ciao", "sto bene"], scenario: "Un nuovo amico", successCriteria: ["Svara och ställ en egen fråga"]),
             PlannedLesson(id: "cafe", title: "En paus på kaféet", summary: "Beställ något gott och fråga vad det kostar.", objectives: ["Beställa artigt"], prerequisites: ["greetings"], vocabulary: ["vorrei"], scenario: "Al bar", successCriteria: ["Gör en beställning"]),

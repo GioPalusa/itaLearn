@@ -171,6 +171,33 @@ nonisolated extension LearningSchema {
             "successCriteria": array(string), "estimatedMinutes": integer
         ]))])
     }
+    static var chatTurn: [String: Any] {
+        object([
+            "reply": string, "translation": string,
+            "correction": ["anyOf": [object(["original": string, "corrected": string, "explanation": string]), ["type": "null"]]],
+            "memory": string
+        ])
+    }
+    static var writingFeedback: [String: Any] {
+        object([
+            "corrected": string, "summary": string, "strengths": array(string),
+            "nextSteps": array(string), "score": integer,
+            "ruleTitle": string, "ruleExplanation": string
+        ])
+    }
+    static var pronounGame: [String: Any] {
+        object([
+            "overview": string,
+            "pronouns": array(object([
+                "pronoun": string, "meaning": string, "person": integer,
+                "plural": boolean, "note": string, "pronunciation": string
+            ])),
+            "rounds": array(object([
+                "id": string, "sentence": string, "translation": string,
+                "answer": string, "explanation": string
+            ]))
+        ])
+    }
     static var hint: [String: Any] {
         object(["encouragement": string, "hint": string, "nextWord": string])
     }

@@ -74,7 +74,8 @@ struct MiloGreetingCard: View {
     ] }
     private var greeting: LocalizedStringResource {
         let name = settings.learnerName.trimmingCharacters(in: .whitespacesAndNewlines)
-        return name.isEmpty ? "Ciao! Milo här." : "Ciao, \(name)!"
+        let hello = settings.targetLanguage.greeting
+        return name.isEmpty ? "\(hello)! Milo här." : "\(hello), \(name)!"
     }
 
     var body: some View {
@@ -111,7 +112,7 @@ struct MiloGreetingCard: View {
 
     private var words: some View {
         VStack(alignment: .leading, spacing: 8) {
-            Text("MILO · DIN \(settings.targetLanguage.displayName.uppercased())LÄRARE")
+            Text("MILO · DIN LÄRARE I \(settings.targetLanguage.displayName.uppercased())")
                 .font(.caption2.bold()).foregroundStyle(LangLearn.purple)
             Text(greeting).font(.title2.bold())
             Text(tips[greetingIndex]).font(.callout).fixedSize(horizontal: false, vertical: true)

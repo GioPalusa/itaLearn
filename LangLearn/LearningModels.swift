@@ -83,7 +83,7 @@ nonisolated struct AssessmentResult: Codable, Sendable, Equatable {
     var profile: LearnerProfile
     var lessons: [PlannedLesson]
 
-    func validate(hasCurrentPlan: Bool, course: LanguageCourse = .default) throws {
+    func validate(hasCurrentPlan: Bool, course: LanguageCourse) throws {
         guard schemaVersion == 1 else { throw LearningValidationError.unsupportedVersion }
         guard profile.nativeLanguage == course.native.code, profile.targetLanguage == course.target.code,
               ["pre-A1", "A1", "A2", "B1", "B2", "C1", "C2"].contains(profile.cefr),
@@ -163,7 +163,7 @@ nonisolated struct AssessmentSession: Codable, Identifiable, Sendable {
     var messages: [ChatMessage]
     var pendingAnswer: String?
 
-    init(course: LanguageCourse = .default) {
+    init(course: LanguageCourse) {
         let language = course.target.displayName.lowercased()
         messages = [ChatMessage(
             role: .assistant,
@@ -266,7 +266,16 @@ nonisolated struct LearningState: Codable, Sendable {
     var assessment: AssessmentSession?
     var sessions: [LessonSession] = []
 
-    mutating func apply(_ result: AssessmentResult, rawJSON: Data, course: LanguageCourse = .default) throws {
+    // Optional additions keep existing version-1 snapshots decodable.
+    /// Subject pronouns belong to the language, not to one lesson, so the game
+    /// lives beside the plan rather than inside a session.
+    var pronouns: PronounGameProgress?
+    /// Open conversation, which belongs to no lesson either.
+    var freeChat: FreeChatSession?
+    /// Texts the learner wrote and had reviewed, newest last.
+    var writings: [WritingReview]?
+
+    mutating func apply(_ result: AssessmentResult, rawJSON: Data, course: LanguageCourse) throws {
         try result.validate(hasCurrentPlan: activePlan != nil, course: course)
         guard let assessment, assessment.answeredCount == AssessmentSession.questionCount else {
             throw LearningValidationError.invalidResponse

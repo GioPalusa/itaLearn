@@ -40,7 +40,8 @@ struct LanguageSelectionTests {
         #expect(!instructions.contains("Swedish"))
         // Habits worth correcting travel with the target language.
         #expect(course.promptPreamble.contains("ser and estar"))
-        #expect(LanguageCourse.default.promptPreamble.contains("Sto bene"))
+        let italian = LanguageCourse(target: .italian, native: .swedish)
+        #expect(italian.promptPreamble.contains("Sto bene"))
     }
 
     @Test func courseReachesTheModelAsDataToo() throws {
@@ -62,7 +63,8 @@ struct LanguageSelectionTests {
         let spanish = LanguageCourse(target: .spanish, native: .swedish)
         try result(target: "es").validate(hasCurrentPlan: false, course: spanish)
         #expect(throws: LearningValidationError.self) {
-            try result(target: "es").validate(hasCurrentPlan: false, course: .default)
+            try result(target: "es").validate(hasCurrentPlan: false,
+                                              course: LanguageCourse(target: .italian, native: .swedish))
         }
         #expect(throws: LearningValidationError.self) {
             try result(target: "it").validate(hasCurrentPlan: false, course: spanish)
@@ -136,8 +138,9 @@ struct PerLanguageStudyTests {
         let context = ModelContext(container)
         var state = LearningState()
         state.activePlan = plan(target: "it")
-        // A row written before LearningSnapshot carried a language code.
-        context.insert(LearningSnapshot(payload: try JSONEncoder().encode(state)))
+        // Rows written before LearningSnapshot carried a language code read back
+        // as "it", which is what those studies actually were.
+        context.insert(LearningSnapshot(payload: try JSONEncoder().encode(state), languageCode: "it"))
         try context.save()
 
         let store = LearningStore()
@@ -164,5 +167,305 @@ struct PerLanguageStudyTests {
         // Studies can be built again on the emptied store.
         try store.update { $0.activePlan = plan(target: "it") }
         #expect(store.state.activePlan != nil)
+    }
+}
+
+@Suite("Neutral start and several languages at once")
+struct MultiLanguageTests {
+    private func freshSettings() -> (TutorSettings, UserDefaults) {
+        let name = "LangLearn.tests.\(UUID().uuidString)"
+        let defaults = UserDefaults(suiteName: name)!
+        defaults.removePersistentDomain(forName: name)
+        return (TutorSettings(store: defaults), defaults)
+    }
+
+    @Test func firstRunPresumesNoLanguageToLearn() {
+        let (settings, _) = freshSettings()
+        #expect(settings.chosenTarget == nil, "The app must not pick a language on the learner's behalf")
+        #expect(!settings.hasChosenLanguage)
+    }
+
+    @Test func choosingALanguageIsWhatUnlocksTheApp() {
+        let (settings, _) = freshSettings()
+        settings.startLearning(.finnish)
+        #expect(settings.chosenTarget == .finnish)
+        #expect(settings.hasChosenLanguage)
+        #expect(settings.course.target == .finnish)
+    }
+
+    @Test func redoingOnboardingKeepsTheLanguageButAsksAgain() {
+        let (settings, _) = freshSettings()
+        settings.startLearning(.greek)
+        settings.restartOnboarding()
+        #expect(!settings.hasChosenLanguage, "Onboarding shows again")
+        #expect(!settings.hasOnboarded)
+        #expect(settings.chosenTarget == .greek, "…but the pickers open on what was already chosen")
+    }
+
+    @Test func theChoiceSurvivesRelaunch() {
+        let (settings, defaults) = freshSettings()
+        settings.startLearning(.polish)
+        let reopened = TutorSettings(store: defaults)
+        #expect(reopened.chosenTarget == .polish)
+        #expect(reopened.hasChosenLanguage)
+    }
+
+    @Test func everyNordicLanguageIsOffered() {
+        let codes = Set(LearningLanguage.catalog.map(\.code))
+        for nordic in ["sv", "da", "nb", "fi", "is"] {
+            #expect(codes.contains(nordic), "Missing Nordic language \(nordic)")
+        }
+    }
+
+    @Test func theCatalogIsUsableAsAList() {
+        let codes = LearningLanguage.catalog.map(\.code)
+        #expect(Set(codes).count == codes.count, "Language codes are ids, so they must be unique")
+        #expect(LearningLanguage.pickerOrder.count == LearningLanguage.catalog.count)
+        let names = LearningLanguage.pickerOrder.map(\.displayName)
+        #expect(names == names.sorted { $0.localizedCaseInsensitiveCompare($1) == .orderedAscending })
+        for language in LearningLanguage.catalog {
+            #expect(LearningLanguage.named(language.code) == language)
+        }
+    }
+
+    @Test func everyLanguageCarriesItsOwnFixedPhrases() {
+        for language in LearningLanguage.catalog {
+            #expect(!language.greeting.isEmpty, "\(language.englishName) has no greeting")
+            #expect(!language.sampleLine.isEmpty, "\(language.englishName) has no sample line")
+            #expect(!language.flag.isEmpty)
+        }
+        // The phrases must actually differ per language, or the app is still
+        // greeting everyone in one language.
+        #expect(LearningLanguage.italian.greeting == "Ciao")
+        #expect(LearningLanguage.mandarin.greeting == "你好")
+        #expect(LearningLanguage.icelandic.greeting != LearningLanguage.italian.greeting)
+        let greetings = LearningLanguage.catalog.map(\.greeting)
+        #expect(Set(greetings).count >= 20, "Greetings look copy-pasted across languages")
+    }
+
+    @Test func icelandicIsOfferedEvenWithoutSpeechSupport() {
+        // It has neither a voice nor a recognizer on Apple platforms; the UI says
+        // so rather than showing buttons that do nothing.
+        #expect(LearningLanguage.named("is") != nil)
+    }
+
+    @MainActor
+    @Test func eachLanguageKeepsItsOwnPlanAndIsListedSeparately() throws {
+        let container = try memoryContainer()
+        let store = LearningStore()
+
+        store.load(container: container, language: .italian)
+        try store.update { state in
+            var italianPlan = plan(target: "it")
+            italianPlan.lessons = result(target: "it").lessons
+            italianPlan.completedLessonIDs = ["lesson-0"]
+            state.activePlan = italianPlan
+        }
+
+        store.switchLanguage(to: .japanese)
+        #expect(store.state.activePlan == nil, "A new language starts without a plan, so the app runs a kunskapskoll")
+        try store.update { $0.activePlan = plan(target: "ja") }
+
+        let listed = store.studies()
+        #expect(Set(listed.map(\.language.code)) == ["it", "ja"])
+        let italianStudy = try #require(listed.first { $0.language == .italian })
+        #expect(italianStudy.lessonsCompleted == 1)
+        #expect(italianStudy.lessonTotal == 3)
+        #expect(italianStudy.hasPlan)
+
+        // Switching back resumes the other language exactly where it was left.
+        store.switchLanguage(to: .italian)
+        #expect(store.state.activePlan?.completedLessonIDs == ["lesson-0"])
+        #expect(store.state.activePlan?.lessons.count == 3)
+    }
+
+    @MainActor
+    @Test func progressCountsOnlyLessonsThePlanStillHas() throws {
+        let container = try memoryContainer()
+        let store = LearningStore()
+        store.load(container: container, language: .spanish)
+        try store.update { state in
+            var spanish = plan(target: "es")
+            spanish.lessons = Array(result(target: "es").lessons.prefix(2))
+            // A rewritten plan can leave credit behind for lessons it no longer has.
+            spanish.completedLessonIDs = ["lesson-0", "lesson-7"]
+            state.activePlan = spanish
+        }
+        let study = try #require(store.studies().first { $0.language == .spanish })
+        #expect(study.lessonTotal == 2)
+        #expect(study.lessonsCompleted == 1)
+    }
+}
+
+@Suite("Subject pronoun game")
+struct PronounGameTests {
+    private func pronoun(_ form: String, _ meaning: String, person: Int, plural: Bool = false) -> SubjectPronoun {
+        SubjectPronoun(pronoun: form, meaning: meaning, person: person, plural: plural,
+                       note: "", pronunciation: "")
+    }
+
+    private func round(_ id: String, answer: String) -> PronounRound {
+        PronounRound(id: id, sentence: "\(PronounGame.blank) sono a casa.",
+                     translation: "Jag är hemma.", answer: answer,
+                     explanation: "Verbet 'sono' hör ihop med io.")
+    }
+
+    private func game(rounds: Int = 6, answer: String = "io") -> PronounGame {
+        PronounGame(
+            overview: "Italienskan utelämnar ofta pronomenet eftersom verbet redan visar personen.",
+            pronouns: [pronoun("io", "jag", person: 1), pronoun("tu", "du", person: 2),
+                       pronoun("lui", "han", person: 3), pronoun("noi", "vi", person: 1, plural: true)],
+            rounds: (0..<rounds).map { self.round("r\($0)", answer: answer) }
+        )
+    }
+
+    @Test func aWellFormedGameValidates() throws {
+        try game().validate()
+    }
+
+    @Test func everyRoundNeedsABlankToFill() {
+        var broken = game()
+        broken.rounds[2].sentence = "Io sono a casa."
+        #expect(throws: LearningValidationError.self) { try broken.validate() }
+    }
+
+    @Test func theAnswerMustBeOneOfThePronounsOnScreen() {
+        // Otherwise the round is unanswerable: the chips come from `pronouns`.
+        var broken = game()
+        broken.rounds[0].answer = "voi"
+        #expect(throws: LearningValidationError.self) { try broken.validate() }
+    }
+
+    @Test func aGameNeedsEnoughRoundsToBeWorthPlaying() {
+        #expect(throws: LearningValidationError.self) { try game(rounds: 3).validate() }
+        #expect(throws: LearningValidationError.self) { try game(rounds: 20).validate() }
+    }
+
+    @Test func personMustBeFirstSecondOrThird() {
+        var broken = game()
+        broken.pronouns[0] = SubjectPronoun(pronoun: "io", meaning: "jag", person: 4,
+                                            plural: false, note: "", pronunciation: "")
+        #expect(throws: LearningValidationError.self) { try broken.validate() }
+    }
+
+    @Test func progressCountsOnlyWhatWasSolvedFirstTry() {
+        var progress = PronounGameProgress(game: game())
+        progress.solvedRoundIDs = ["r0", "r1", "r2"]
+        progress.attemptsByRound = ["r0": 1, "r1": 3, "r2": 1]
+        #expect(progress.firstTryCount == 2)
+        #expect(!progress.isComplete)
+        progress.solvedRoundIDs = Set((0..<6).map { "r\($0)" })
+        #expect(progress.isComplete)
+    }
+
+    @MainActor
+    @Test func theGameIsSavedPerLanguageLikeEverythingElse() throws {
+        let container = try memoryContainer()
+        let store = LearningStore()
+        store.load(container: container, language: .italian)
+        try store.update { $0.pronouns = PronounGameProgress(game: game()) }
+        try store.updatePronouns { $0.solvedRoundIDs.insert("r0") }
+        #expect(store.state.pronouns?.solvedRoundIDs == ["r0"])
+
+        store.switchLanguage(to: .japanese)
+        #expect(store.state.pronouns == nil, "A new language starts its own pronoun game")
+
+        store.switchLanguage(to: .italian)
+        #expect(store.state.pronouns?.solvedRoundIDs == ["r0"])
+    }
+
+    @MainActor
+    @Test func snapshotsWrittenBeforeTheGameExistedStillDecode() throws {
+        let container = try memoryContainer()
+        var state = LearningState()
+        state.activePlan = plan(target: "it")
+        state.pronouns = nil
+        let payload = try JSONEncoder().encode(state)
+        container.mainContext.insert(LearningSnapshot(payload: payload, languageCode: "it"))
+        try container.mainContext.save()
+
+        let store = LearningStore()
+        store.load(container: container, language: .italian)
+        #expect(store.isLoaded)
+        #expect(store.state.pronouns == nil)
+    }
+}
+
+@Suite("Free conversation and written feedback")
+struct WritingAndChatTests {
+    private func feedback(score: Int = 4, nextSteps: [String] = ["Öva verbet essere"]) -> WritingFeedback {
+        WritingFeedback(corrected: "Sto bene, grazie.", summary: "Texten gör vad den ska.",
+                        strengths: ["Tydlig hälsning"], nextSteps: nextSteps, score: score,
+                        ruleTitle: "Stare för mående", ruleExplanation: "Använd stare, inte essere.")
+    }
+
+    @Test func wellFormedFeedbackValidates() throws {
+        try feedback().validate()
+    }
+
+    @Test func theScoreStaysOnItsScale() {
+        #expect(throws: LearningValidationError.self) { try feedback(score: 0).validate() }
+        #expect(throws: LearningValidationError.self) { try feedback(score: 6).validate() }
+    }
+
+    @Test func feedbackAlwaysSaysWhatToDoNext() {
+        #expect(throws: LearningValidationError.self) { try feedback(nextSteps: []).validate() }
+    }
+
+    @Test func aChatTurnNeedsSomethingToSay() {
+        var turn = ChatTurn(reply: "", translation: "Hej", correction: nil, memory: "")
+        #expect(throws: LearningValidationError.self) { try turn.validate() }
+        turn.reply = "Ciao!"
+        #expect(throws: Never.self) { try turn.validate() }
+    }
+
+    @Test func aHalfEmptyCorrectionIsRejected() {
+        let turn = ChatTurn(reply: "Ciao!", translation: "Hej!",
+                            correction: Correction(original: "Sono bene", corrected: "", explanation: "x"),
+                            memory: "")
+        #expect(throws: LearningValidationError.self) { try turn.validate() }
+    }
+
+    @Test func acceptingATurnMovesThePendingAnswerIntoTheTranscript() throws {
+        var session = FreeChatSession()
+        session.pendingAnswer = "Sono bene"
+        try session.accept(ChatTurn(
+            reply: "Bene! E tu?", translation: "Bra! Och du?",
+            correction: Correction(original: "Sono bene", corrected: "Sto bene", explanation: "Använd stare."),
+            memory: "Blandar essere och stare."))
+        #expect(session.pendingAnswer == nil)
+        #expect(session.messages.count == 2)
+        #expect(session.messages.first?.role == .user)
+        #expect(session.messages.last?.correction?.corrected == "Sto bene")
+        #expect(session.memory == "Blandar essere och stare.")
+    }
+
+    @Test func anOpeningTurnCarriesNoCorrection() throws {
+        // Nothing has been said yet, so there is nothing to correct.
+        var session = FreeChatSession()
+        try session.accept(ChatTurn(
+            reply: "Ciao! Di cosa parliamo?", translation: "Hej! Vad pratar vi om?",
+            correction: Correction(original: "x", corrected: "y", explanation: "z"), memory: ""))
+        #expect(session.messages.count == 1)
+        #expect(session.messages.first?.correction == nil)
+    }
+
+    @MainActor
+    @Test func writingsAndChatAreKeptPerLanguage() throws {
+        let container = try memoryContainer()
+        let store = LearningStore()
+        store.load(container: container, language: .italian)
+        try store.update { state in
+            state.writings = [WritingReview(text: "Sono bene", feedback: self.feedback())]
+            state.freeChat = FreeChatSession(messages: [ChatMessage(role: .assistant, text: "Ciao!")])
+        }
+
+        store.switchLanguage(to: .german)
+        #expect(store.state.writings == nil)
+        #expect(store.state.freeChat == nil)
+
+        store.switchLanguage(to: .italian)
+        #expect(store.state.writings?.count == 1)
+        #expect(store.state.freeChat?.messages.count == 1)
     }
 }

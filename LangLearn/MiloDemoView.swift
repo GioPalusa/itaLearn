@@ -80,7 +80,9 @@ struct MiloDemoView: View {
                             if narrator.isSpeaking || narrator.isPreparing {
                                 narrator.stop()
                             } else {
-                                narrator.speak("Ciao! Mi chiamo Milo. Proviamo insieme, un passo alla volta.")
+                                // The studio is about the mascot, not the course, so it
+                                // stays independent of the learner's chosen language.
+                                narrator.speak(LearningLanguage.english.sampleLine, in: .english)
                             }
                         }
                     }

@@ -3,6 +3,9 @@ import SwiftData
 import Testing
 @testable import LangLearnCore
 
+/// These suites all predate language selection, so they run the Italian course.
+private let italian = LanguageCourse(target: .italian, native: .swedish)
+
 private func sampleResult() -> AssessmentResult {
     AssessmentResult(
         schemaVersion: 1, recommendation: .newPlan, rationale: "Vi börjar med enkla vardagssamtal.",
@@ -16,7 +19,7 @@ private func sampleResult() -> AssessmentResult {
 }
 
 private func completedAssessment() -> AssessmentSession {
-    var session = AssessmentSession()
+    var session = AssessmentSession(course: italian)
     for _ in 0..<6 { session.messages.append(ChatMessage(role: .user, text: "Ciao")) }
     return session
 }
@@ -33,32 +36,32 @@ struct LearningContractTests {
         let result = sampleResult()
         let data = try JSONEncoder().encode(result)
         #expect(try JSONDecoder().decode(AssessmentResult.self, from: data) == result)
-        try result.validate(hasCurrentPlan: false)
+        try result.validate(hasCurrentPlan: false, course: italian)
         var incompatible = result
         incompatible.schemaVersion = 2
-        #expect(throws: LearningValidationError.self) { try incompatible.validate(hasCurrentPlan: false) }
+        #expect(throws: LearningValidationError.self) { try incompatible.validate(hasCurrentPlan: false, course: italian) }
     }
 
     @Test func rejectsDuplicateIDsForwardPrerequisitesAndEmptyObjectives() throws {
         var result = sampleResult()
         result.lessons[1].id = result.lessons[0].id
-        #expect(throws: LearningValidationError.self) { try result.validate(hasCurrentPlan: false) }
+        #expect(throws: LearningValidationError.self) { try result.validate(hasCurrentPlan: false, course: italian) }
         result = sampleResult()
         result.lessons[0].prerequisites = ["lesson-2"]
-        #expect(throws: LearningValidationError.self) { try result.validate(hasCurrentPlan: false) }
+        #expect(throws: LearningValidationError.self) { try result.validate(hasCurrentPlan: false, course: italian) }
         result = sampleResult()
         result.lessons[0].objectives = []
-        #expect(throws: LearningValidationError.self) { try result.validate(hasCurrentPlan: false) }
+        #expect(throws: LearningValidationError.self) { try result.validate(hasCurrentPlan: false, course: italian) }
     }
 
     @Test func cannotContinueWithoutAnExistingPlanOrFinishEarly() throws {
         var result = sampleResult()
         result.recommendation = .continueCurrent
         result.lessons = []
-        #expect(throws: LearningValidationError.self) { try result.validate(hasCurrentPlan: false) }
+        #expect(throws: LearningValidationError.self) { try result.validate(hasCurrentPlan: false, course: italian) }
         var state = LearningState()
-        state.assessment = AssessmentSession()
-        #expect(throws: LearningValidationError.self) { try state.apply(sampleResult(), rawJSON: Data()) }
+        state.assessment = AssessmentSession(course: italian)
+        #expect(throws: LearningValidationError.self) { try state.apply(sampleResult(), rawJSON: Data(), course: italian) }
         #expect(state.activePlan == nil)
         #expect(state.assessments.isEmpty)
     }
@@ -66,7 +69,7 @@ struct LearningContractTests {
     @Test func continueCurrentPreservesPlanIdentityProgressAndConversations() throws {
         var state = LearningState()
         state.assessment = completedAssessment()
-        try state.apply(sampleResult(), rawJSON: JSONEncoder().encode(sampleResult()))
+        try state.apply(sampleResult(), rawJSON: JSONEncoder().encode(sampleResult()), course: italian)
         let id = try #require(state.activePlan?.id)
         state.activePlan?.completedLessonIDs.insert("lesson-0")
         let session = LessonSession(planID: id, lessonID: "lesson-0")
@@ -76,7 +79,7 @@ struct LearningContractTests {
         updated.recommendation = .continueCurrent
         updated.lessons = []
         updated.profile.cefr = "A2"
-        try state.apply(updated, rawJSON: JSONEncoder().encode(updated))
+        try state.apply(updated, rawJSON: JSONEncoder().encode(updated), course: italian)
         #expect(state.activePlan?.id == id)
         #expect(state.activePlan?.completedLessonIDs == ["lesson-0"])
         #expect(state.activePlan?.profile.cefr == "A2")
@@ -89,11 +92,11 @@ struct LearningContractTests {
     @Test func replacementArchivesOldPlanAndCarriesReusedLessonProgress() throws {
         var state = LearningState()
         state.assessment = completedAssessment()
-        try state.apply(sampleResult(), rawJSON: Data())
+        try state.apply(sampleResult(), rawJSON: Data(), course: italian)
         let oldID = state.activePlan?.id
         state.activePlan?.completedLessonIDs.insert("lesson-0")
         state.assessment = completedAssessment()
-        try state.apply(sampleResult(), rawJSON: Data())
+        try state.apply(sampleResult(), rawJSON: Data(), course: italian)
         #expect(state.activePlan?.id != oldID)
         #expect(state.activePlan?.completedLessonIDs == ["lesson-0"])
         #expect(state.archivedPlans.first?.id == oldID)
@@ -168,13 +171,13 @@ struct LearningStoreTests {
     @Test func sixAnswersGenerateExactlyFiveFollowupsAndOnePlan() async throws {
         let container = try container()
         let store = LearningStore()
-        store.load(container: container)
+        store.load(container: container, language: .italian)
         let service = ScriptedService()
         let chat = LearningChat(service: service)
-        chat.assessment(store: store)
+        chat.assessment(store: store, course: italian)
         await chat.waitForCurrentRequest()
         for _ in 0..<6 {
-            chat.assessment(store: store, answer: "Ciao")
+            chat.assessment(store: store, course: italian, answer: "Ciao")
             await chat.waitForCurrentRequest()
             #expect(chat.errorMessage == nil)
         }
@@ -183,28 +186,28 @@ struct LearningStoreTests {
         #expect(store.state.activePlan?.lessons.count == 3)
         #expect(store.state.assessments.first?.messages.filter { $0.role == .user }.count == 6)
         let reopened = LearningStore()
-        reopened.load(container: container)
+        reopened.load(container: container, language: .italian)
         #expect(reopened.state.activePlan?.id == store.state.activePlan?.id)
         #expect(reopened.state.assessments.first?.resultJSON == store.state.assessments.first?.resultJSON)
-        try reopened.beginAssessment()
+        try reopened.beginAssessment(course: italian)
         #expect(reopened.state.assessment?.answeredCount == 0, "A second assessment must start after the first one")
     }
 
     @Test func failedAnswerSurvivesReloadAndRetryDoesNotDuplicateIt() async throws {
         let container = try container()
         let store = LearningStore()
-        store.load(container: container)
+        store.load(container: container, language: .italian)
         let service = ScriptedService()
         await service.failQuestionOnce()
         let chat = LearningChat(service: service)
-        chat.assessment(store: store, answer: "Mi chiamo Ada")
+        chat.assessment(store: store, course: italian, answer: "Mi chiamo Ada")
         await chat.waitForCurrentRequest()
         #expect(chat.errorMessage != nil)
         #expect(store.state.assessment?.answeredCount == 0)
         #expect(store.state.assessment?.pendingAnswer == "Mi chiamo Ada")
         let reopened = LearningStore()
-        reopened.load(container: container)
-        chat.assessment(store: reopened)
+        reopened.load(container: container, language: .italian)
+        chat.assessment(store: reopened, course: italian)
         await chat.waitForCurrentRequest()
         #expect(reopened.state.assessment?.answeredCount == 1)
         #expect(reopened.state.assessment?.pendingAnswer == nil)
@@ -214,10 +217,10 @@ struct LearningStoreTests {
     @Test func lessonUsesBoundedContextAndKeepsRetryStateAcrossReload() async throws {
         let container = try container()
         let store = LearningStore()
-        store.load(container: container)
+        store.load(container: container, language: .italian)
         try store.update { state in
             state.assessment = completedAssessment()
-            try state.apply(sampleResult(), rawJSON: Data())
+            try state.apply(sampleResult(), rawJSON: Data(), course: italian)
         }
         let lesson = try #require(store.state.activePlan?.lessons.first)
         let sessionID = try store.lessonSession(for: lesson)
@@ -237,7 +240,7 @@ struct LearningStoreTests {
         #expect(captured.memory == "Preserve the pending verb exercise")
         #expect(captured.lesson.id == lesson.id)
         let reopened = LearningStore()
-        reopened.load(container: container)
+        reopened.load(container: container, language: .italian)
         #expect(reopened.state.sessions[0].requiresRetry)
         #expect(reopened.state.activePlan?.completedLessonIDs.isEmpty == true)
         #expect(throws: LearningValidationError.self) {
@@ -247,13 +250,13 @@ struct LearningStoreTests {
 
     @Test func corruptSnapshotIsNotOverwritten() throws {
         let container = try container()
-        container.mainContext.insert(LearningSnapshot(payload: Data("broken JSON".utf8)))
+        container.mainContext.insert(LearningSnapshot(payload: Data("broken JSON".utf8), languageCode: "it"))
         try container.mainContext.save()
         let store = LearningStore()
-        store.load(container: container)
+        store.load(container: container, language: .italian)
         #expect(!store.isLoaded)
         #expect(store.errorMessage != nil)
-        #expect(throws: LearningValidationError.self) { try store.beginAssessment() }
+        #expect(throws: LearningValidationError.self) { try store.beginAssessment(course: italian) }
         let snapshot = try #require(container.mainContext.fetch(FetchDescriptor<LearningSnapshot>()).first)
         #expect(snapshot.payload == Data("broken JSON".utf8))
     }
@@ -275,10 +278,10 @@ struct LearningStoreTests {
                                           configurations: ModelConfiguration(url: url, cloudKitDatabase: .none))
         #expect(try expanded.mainContext.fetch(FetchDescriptor<LessonRecord>()).first?.summary == "Saved before migration")
         let store = LearningStore()
-        store.load(container: expanded)
-        try store.beginAssessment()
+        store.load(container: expanded, language: .italian)
+        try store.beginAssessment(course: italian)
         let reopened = LearningStore()
-        reopened.load(container: expanded)
+        reopened.load(container: expanded, language: .italian)
         #expect(reopened.state.assessment?.messages.count == 1)
     }
 }
@@ -315,10 +318,10 @@ struct LearningRecoveryTests {
     @Test func cancelledRequestCannotSaveALateModelReply() async throws {
         let container = try ModelContainer(for: LearningSnapshot.self, configurations: ModelConfiguration(isStoredInMemoryOnly: true, cloudKitDatabase: .none))
         let store = LearningStore()
-        store.load(container: container)
+        store.load(container: container, language: .italian)
         let service = DelayedQuestionService()
         let chat = LearningChat(service: service)
-        chat.assessment(store: store, answer: "Ciao")
+        chat.assessment(store: store, course: italian, answer: "Ciao")
         async let finished: Void = chat.waitForCurrentRequest()
         await service.waitUntilRequested()
         chat.cancel()
@@ -334,15 +337,15 @@ struct LearningRecoveryTests {
     @Test func learnerCanEditAFailedAnswerWithoutDuplicatingIt() async throws {
         let container = try ModelContainer(for: LearningSnapshot.self, configurations: ModelConfiguration(isStoredInMemoryOnly: true, cloudKitDatabase: .none))
         let store = LearningStore()
-        store.load(container: container)
+        store.load(container: container, language: .italian)
         let service = ScriptedService()
         await service.failQuestionOnce()
         let chat = LearningChat(service: service)
-        chat.assessment(store: store, answer: "First attempt")
+        chat.assessment(store: store, course: italian, answer: "First attempt")
         await chat.waitForCurrentRequest()
         #expect(chat.recoverPendingAnswer(store: store, sessionID: nil) == "First attempt")
         #expect(store.state.assessment?.pendingAnswer == nil)
-        chat.assessment(store: store, answer: "Revised attempt")
+        chat.assessment(store: store, course: italian, answer: "Revised attempt")
         await chat.waitForCurrentRequest()
         #expect(store.state.assessment?.answeredCount == 1)
         #expect(store.state.assessment?.messages.filter { $0.role == .user }.first?.text == "Revised attempt")

@@ -11,7 +11,10 @@ struct ContentView: View {
         Group {
             if !access.isReady {
                 MiloLoadingView(message: "Milo gör plats för dina studier…").padding(24)
-            } else if !access.hasKey {
+            } else if !access.hasKey || !settings.hasChosenLanguage {
+                // The key lives in the Keychain and outlives the app, so it
+                // cannot stand in for "has been introduced": a learner who
+                // onboarded before the language step still owes us that answer.
                 OnboardingView()
             } else if !store.isLoaded {
                 ContentUnavailableView {
@@ -19,29 +22,38 @@ struct ContentView: View {
                 } description: {
                     Text(store.errorMessage ?? "Försök igen.")
                 } actions: {
-                    Button("Försök igen") { store.load(container: modelContext.container, language: settings.targetLanguage) }
+                    Button("Försök igen") { loadStudies() }
                 }
             } else if store.state.activePlan == nil {
                 NavigationStack { AdaptiveChatView(mode: .assessment) }
+                    .id(store.language?.code)
             } else {
                 MainTabs()
+                    .id(store.language?.code)
             }
         }
         .environment(store)
         .environment(access)
         .tint(LangLearn.purple)
         .task {
-            store.load(container: modelContext.container, language: settings.targetLanguage)
+            loadStudies()
             await access.load()
         }
-        // Studies are saved per language, so a switch swaps in that language's plan.
-        .onChange(of: settings.targetLanguage) { store.switchLanguage(to: settings.targetLanguage) }
+        // Studies are saved per language, so a switch swaps in that language's
+        // plan; a language with none routes to a kunskapskoll, which builds one.
+        .onChange(of: settings.chosenTarget) { loadStudies() }
+    }
+
+    /// Nothing is read from disk until the learner has named a language.
+    private func loadStudies() {
+        guard let language = settings.chosenTarget else { return }
+        store.load(container: modelContext.container, language: language)
     }
 }
 
 
 private struct MainTabs: View {
-    enum Section: Hashable { case plan, conversation, progress }
+    enum Section: Hashable { case plan, practice, progress }
     @State private var selection: Section = .plan
 
     var body: some View {
@@ -49,8 +61,8 @@ private struct MainTabs: View {
             Tab("Min studieplan", systemImage: "point.topleft.down.to.point.bottomright.curvepath", value: .plan) {
                 NavigationStack { LearningPathView() }
             }
-            Tab("Samtal", systemImage: "bubble.left.and.bubble.right", value: .conversation) {
-                NavigationStack { CurrentLessonView() }
+            Tab("Öva", systemImage: "gamecontroller", value: .practice) {
+                NavigationStack { PracticeHubView() }
             }
             Tab("Mitt lärande", systemImage: "books.vertical", value: .progress) {
                 NavigationStack { LearningProgressView() }

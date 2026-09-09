@@ -213,9 +213,12 @@ struct FlashcardPracticeView: View {
         } label: {
             VStack(spacing: 0) {
                 HStack {
-                    Text(revealed ? "ITALIENSKA" : "HUR SÄGER DU?")
-                        .font(.il(11, .semibold)).tracking(0.88)
-                        .foregroundStyle(LangLearn.magenta)
+                    Group {
+                        if revealed { Text(settings.targetLanguage.displayName.uppercased()) }
+                        else { Text("HUR SÄGER DU?") }
+                    }
+                    .font(.il(11, .semibold)).tracking(0.88)
+                    .foregroundStyle(LangLearn.magenta)
                     Spacer(minLength: 0)
                     if revealed {
                         Button { narrator.stop(); narrator.speak(card.answer, in: settings.targetLanguage) } label: {
@@ -443,7 +446,7 @@ struct SentencePracticeView: View {
 
     @ViewBuilder private func round(_ puzzle: SentencePuzzle) -> some View {
         VStack(alignment: .leading, spacing: 0) {
-            Text("SÄG DET PÅ ITALIENSKA")
+            Text("SÄG DET PÅ \(settings.targetLanguage.displayName.uppercased())")
                 .font(.il(11, .semibold)).tracking(0.88).foregroundStyle(LangLearn.magenta)
             Text(puzzle.cue)
                 .font(.il(24, .bold)).foregroundStyle(LangLearn.ink)

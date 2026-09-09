@@ -13,10 +13,22 @@ final class LearningSnapshot {
     var payload: Data = Data()
     var languageCode: String = "it"
 
-    init(payload: Data, languageCode: String = "it") {
+    init(payload: Data, languageCode: String) {
         self.payload = payload
         self.languageCode = languageCode
     }
+}
+
+/// One language the learner has studies for, as the switcher shows it.
+nonisolated struct LanguageStudy: Identifiable, Sendable {
+    let language: LearningLanguage
+    let lessonsCompleted: Int
+    let lessonTotal: Int
+    let updatedAt: Date
+
+    var id: String { language.code }
+    /// A language that was added but whose kunskapskoll never produced a plan.
+    var hasPlan: Bool { lessonTotal > 0 }
 }
 
 @MainActor @Observable
@@ -27,11 +39,11 @@ final class LearningStore {
     private var context: ModelContext?
     private var container: ModelContainer?
     private var snapshot: LearningSnapshot?
-    /// Which language's studies are currently loaded.
-    private(set) var language: LearningLanguage = .italian
+    /// Which language's studies are currently loaded, or nil before any are.
+    private(set) var language: LearningLanguage?
 
-    func load(container: ModelContainer, language: LearningLanguage = .italian) {
-        guard !isLoaded || language.code != self.language.code else { return }
+    func load(container: ModelContainer, language: LearningLanguage) {
+        guard !isLoaded || language.code != self.language?.code else { return }
         let context = ModelContext(container)
         context.autosaveEnabled = false
         let code = language.code
@@ -68,7 +80,7 @@ final class LearningStore {
 
     /// Publish state only after an explicit successful disk save.
     func update(_ change: (inout LearningState) throws -> Void) throws {
-        guard let context, isLoaded else { throw LearningValidationError.invalidResponse }
+        guard let context, let language, isLoaded else { throw LearningValidationError.invalidResponse }
         var next = state
         try change(&next)
         let payload = try JSONEncoder().encode(next)
@@ -88,7 +100,7 @@ final class LearningStore {
         }
     }
 
-    func beginAssessment(course: LanguageCourse = .default) throws {
+    func beginAssessment(course: LanguageCourse) throws {
         guard state.assessment == nil else { return }
         try update { $0.assessment = AssessmentSession(course: course) }
     }
@@ -137,6 +149,31 @@ final class LearningStore {
         snapshot = nil
         state = LearningState()
         errorMessage = nil
+    }
+
+    /// Every language with studies saved on this device, most recent first.
+    ///
+    /// Read back from the snapshots themselves rather than a parallel list in
+    /// settings, so the switcher can never disagree with what is on disk.
+    func studies() -> [LanguageStudy] {
+        guard let container else { return [] }
+        let context = ModelContext(container)
+        let snapshots = (try? context.fetch(FetchDescriptor<LearningSnapshot>(
+            sortBy: [SortDescriptor(\.updatedAt, order: .reverse)]
+        ))) ?? []
+        var seen = Set<String>()
+        return snapshots.compactMap { snapshot in
+            guard let language = LearningLanguage.named(snapshot.languageCode),
+                  seen.insert(snapshot.languageCode).inserted else { return nil }
+            let plan = (try? JSONDecoder().decode(LearningState.self, from: snapshot.payload))?.activePlan
+            let lessonIDs = Set(plan?.lessons.map(\.id) ?? [])
+            return LanguageStudy(
+                language: language,
+                lessonsCompleted: plan?.completedLessonIDs.intersection(lessonIDs).count ?? 0,
+                lessonTotal: lessonIDs.count,
+                updatedAt: snapshot.updatedAt
+            )
+        }
     }
 
     /// The newest saved assessment that actually carried a plan, if any.
@@ -189,6 +226,14 @@ final class LearningStore {
                 state.archivedPlans.append(current)
             }
             state.activePlan = restored
+        }
+    }
+
+    /// Mutates the pronoun game for the language currently loaded.
+    func updatePronouns(_ change: (inout PronounGameProgress) -> Void) throws {
+        try update { state in
+            guard state.pronouns != nil else { throw LearningValidationError.invalidResponse }
+            change(&state.pronouns!)
         }
     }
 
@@ -283,7 +328,7 @@ final class LearningChat {
         isWorking = false
     }
 
-    func assessment(store: LearningStore, course: LanguageCourse = .default, answer: String? = nil) {
+    func assessment(store: LearningStore, course: LanguageCourse, answer: String? = nil) {
         guard !isWorking else { return }
         run {
             try store.beginAssessment(course: course)
@@ -515,6 +560,126 @@ final class LearningChat {
                 state.activePlan = current
             }
             self.directions = nil
+        }
+    }
+
+    /// One turn of open conversation.
+    ///
+    /// The pending answer is persisted before the request goes out, so a failure
+    /// or a relaunch leaves the learner's words recoverable rather than lost.
+    func freeChat(store: LearningStore, settings: TutorSettings, answer: String? = nil) {
+        guard !isWorking else { return }
+        let existing = store.state.freeChat ?? FreeChatSession()
+        guard answer != nil || existing.pendingAnswer != nil || existing.messages.isEmpty else { return }
+        run {
+            if store.state.freeChat == nil {
+                try store.update { $0.freeChat = FreeChatSession() }
+            }
+            if let answer {
+                let trimmed = try Self.validatedAnswer(answer)
+                guard store.state.freeChat?.pendingAnswer == nil else { throw LearningValidationError.invalidResponse }
+                try store.update { $0.freeChat?.pendingAnswer = trimmed }
+            }
+            guard let session = store.state.freeChat else { return }
+            let context = FreeChatContext(
+                course: settings.course,
+                cefr: store.state.activePlan?.profile.cefr ?? "A1",
+                learnerName: settings.greetingName ?? "",
+                recentMessages: Array(session.messages.suffix(FreeChatSession.contextWindow)),
+                learnerAnswer: session.pendingAnswer,
+                memory: session.memory,
+                tone: settings.tone.modelInstruction,
+                correctsSpelling: settings.correctsSpelling
+            )
+            let turn = try await self.service.converse(context)
+            try Task.checkCancellation()
+            try store.update { state in
+                guard state.freeChat != nil else { throw LearningValidationError.invalidResponse }
+                try state.freeChat!.accept(turn)
+            }
+        }
+    }
+
+    /// Hands back a free-chat answer that failed, so it can be edited and resent.
+    func recoverFreeChatAnswer(store: LearningStore) -> String? {
+        guard !isWorking else { return nil }
+        let answer = store.state.freeChat?.pendingAnswer
+        do {
+            try store.update { $0.freeChat?.pendingAnswer = nil }
+            errorMessage = nil
+            return answer
+        } catch { errorMessage = store.errorMessage ?? error.localizedDescription; return nil }
+    }
+
+    /// Clears the conversation so the learner can start a fresh one.
+    func resetFreeChat(store: LearningStore) {
+        guard !isWorking else { return }
+        try? store.update { $0.freeChat = nil }
+    }
+
+    /// Reads a piece of writing back to the learner and saves the review.
+    func reviewWriting(store: LearningStore, settings: TutorSettings, prompt: String, text: String) {
+        guard !isWorking else { return }
+        run {
+            let trimmed = text.trimmingCharacters(in: .whitespacesAndNewlines)
+            guard !trimmed.isEmpty, trimmed.count <= 4000 else { throw LearningValidationError.invalidResponse }
+            let context = WritingContext(
+                course: settings.course,
+                cefr: store.state.activePlan?.profile.cefr ?? "A1",
+                prompt: prompt,
+                text: trimmed,
+                tone: settings.tone.modelInstruction,
+                correctsSpelling: settings.correctsSpelling,
+                focusAreas: store.state.activePlan?.profile.focusAreas ?? []
+            )
+            let feedback = try await self.service.reviewWriting(context)
+            try Task.checkCancellation()
+            try feedback.validate()
+            try store.update { state in
+                state.writings = (state.writings ?? []) + [
+                    WritingReview(prompt: prompt, text: trimmed, feedback: feedback)
+                ]
+            }
+        }
+    }
+
+    /// Builds the subject-pronoun game for the language being learned.
+    ///
+    /// It deliberately does not need a plan or a lesson: pronouns are the first
+    /// thing most learners want, and waiting for a kunskapskoll to finish would
+    /// put them behind a network round trip.
+    func generatePronounGame(store: LearningStore, settings: TutorSettings) {
+        guard !isWorking, store.state.pronouns == nil else { return }
+        run {
+            let context = PronounGameContext(
+                course: settings.course,
+                cefr: store.state.activePlan?.profile.cefr ?? "A1",
+                goal: store.state.activePlan?.profile.goal ?? "",
+                existingSentences: []
+            )
+            let game = try await self.service.pronounGame(context)
+            try Task.checkCancellation()
+            try game.validate()
+            try store.update { $0.pronouns = PronounGameProgress(game: game) }
+        }
+    }
+
+    /// Replaces the game with a fresh set of rounds, keeping nothing but the streak.
+    func refreshPronounGame(store: LearningStore, settings: TutorSettings) {
+        guard !isWorking, let existing = store.state.pronouns else { return }
+        run {
+            let context = PronounGameContext(
+                course: settings.course,
+                cefr: store.state.activePlan?.profile.cefr ?? "A1",
+                goal: store.state.activePlan?.profile.goal ?? "",
+                existingSentences: existing.game.rounds.map(\.sentence)
+            )
+            let game = try await self.service.pronounGame(context)
+            try Task.checkCancellation()
+            try game.validate()
+            try store.update {
+                $0.pronouns = PronounGameProgress(game: game, bestStreak: existing.bestStreak)
+            }
         }
     }
 

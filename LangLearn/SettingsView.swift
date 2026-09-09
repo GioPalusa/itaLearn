@@ -9,6 +9,8 @@ struct SettingsView: View {
     @State private var confirmRestore = false
     @State private var restoreMessage: String?
     @State private var confirmWipe = false
+    @State private var confirmRestartOnboarding = false
+    @State private var showingLanguages = false
 
     var body: some View {
         @Bindable var settings = settings
@@ -33,14 +35,20 @@ struct SettingsView: View {
                     }
                 }
                 Section {
-                    Picker("Jag lär mig", selection: $settings.targetLanguage) {
-                        ForEach(LearningLanguage.catalog) { language in
-                            Text("\(language.flag) \(language.displayName)").tag(language)
+                    Button { showingLanguages = true } label: {
+                        HStack {
+                            Text("Jag lär mig").foregroundStyle(LangLearn.ink)
+                            Spacer()
+                            Text(settings.targetLanguage.badge).foregroundStyle(.secondary)
+                            Image(systemName: "chevron.right")
+                                .font(.footnote.weight(.semibold)).foregroundStyle(.tertiary)
                         }
+                        .contentShape(.rect)
                     }
+                    .buttonStyle(.plain)
                     Picker("Förklaringar på", selection: $settings.nativeLanguage) {
-                        ForEach(LearningLanguage.catalog) { language in
-                            Text("\(language.flag) \(language.displayName)").tag(language)
+                        ForEach(LearningLanguage.pickerOrder) { language in
+                            Text(language.badge).tag(language)
                         }
                     }
                 } header: {
@@ -75,6 +83,11 @@ struct SettingsView: View {
                     Link("Licens för Snow", destination: URL(string: "https://creativecommons.org/licenses/by/4.0/")!)
                 }
                 Section {
+                    Button("Gör om introduktionen") { confirmRestartOnboarding = true }
+                } footer: {
+                    Text("Visar välkomsten och språkvalet igen. Dina studier och din sparade nyckel påverkas inte.")
+                }
+                Section {
                     Button("Radera alla mina studier", role: .destructive) { confirmWipe = true }
                 } header: {
                     Text("Farlig zon")
@@ -84,6 +97,14 @@ struct SettingsView: View {
             }
             .navigationTitle("Inställningar")
             .toolbar { ToolbarItem(placement: .confirmationAction) { Button("Klar") { dismiss() } } }
+            .sheet(isPresented: $showingLanguages) { LanguageSwitcherView() }
+            .confirmationDialog(
+                "Visa introduktionen igen? Dina studier och din nyckel ligger kvar.",
+                isPresented: $confirmRestartOnboarding
+            ) {
+                Button("Gör om introduktionen") { settings.restartOnboarding(); dismiss() }
+                Button("Avbryt", role: .cancel) {}
+            }
             .confirmationDialog("Ta bort nyckeln från den här enheten? Dina studier finns kvar.", isPresented: $confirmRemoval) {
                 Button("Ta bort nyckeln", role: .destructive) { Task { await access.remove(); dismiss() } }
             }

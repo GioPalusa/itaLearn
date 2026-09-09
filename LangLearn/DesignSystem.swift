@@ -94,6 +94,16 @@ extension View {
 #endif
     }
 
+    /// Hands the large title's height back to the content, for the moments when
+    /// the keyboard has taken most of the screen.
+    func compactNavigationTitle(_ compact: Bool) -> some View {
+#if os(macOS)
+        self
+#else
+        navigationBarTitleDisplayMode(compact ? .inline : .large)
+#endif
+    }
+
     /// A long lesson title truncates as a large title; inline handles it better.
     /// `navigationBarTitleDisplayMode` does not exist on macOS.
     func inlineNavigationTitle() -> some View {

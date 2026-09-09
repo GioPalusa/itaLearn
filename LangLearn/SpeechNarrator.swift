@@ -18,6 +18,8 @@ final class SpeechNarrator: NSObject, AVAudioPlayerDelegate {
     @ObservationIgnored private var timeoutTask: Task<Void, Never>?
     @ObservationIgnored private var completion: (() -> Void)?
     @ObservationIgnored private var lastText = ""
+    /// Retrying has to reach for the same voice, not a default one.
+    @ObservationIgnored private var lastLanguage: LearningLanguage?
     @ObservationIgnored private var ownsAudioSession = false
 
     override init() {
@@ -38,10 +40,10 @@ final class SpeechNarrator: NSObject, AVAudioPlayerDelegate {
     }
 #endif
 
-    func speak(_ text: String, in language: LearningLanguage = .italian, completion: (() -> Void)? = nil) {
+    func speak(_ text: String, in language: LearningLanguage, completion: (() -> Void)? = nil) {
         stop()
         guard !text.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty else { return }
-        errorMessage = nil; lastText = text; self.completion = completion
+        errorMessage = nil; lastText = text; lastLanguage = language; self.completion = completion
         let token = playback.begin()
         let writer = SpeechAudioWriter()
         self.writer = writer
@@ -60,7 +62,10 @@ final class SpeechNarrator: NSObject, AVAudioPlayerDelegate {
         }
     }
 
-    func retry() { speak(lastText) }
+    func retry() {
+        guard let lastLanguage else { return }
+        speak(lastText, in: lastLanguage)
+    }
 
     func stop() {
         playback.cancel()

@@ -119,7 +119,7 @@ struct ActivityStoreTests {
     private func fixture(answers: Int) throws -> (ModelContainer, LearningStore, UUID, TutorSettings) {
         let container = try ModelContainer(for: LearningSnapshot.self, configurations: ModelConfiguration(isStoredInMemoryOnly: true, cloudKitDatabase: .none))
         let store = LearningStore()
-        store.load(container: container)
+        store.load(container: container, language: .italian)
         let lesson = PlannedLesson(id: "test", title: "Test", summary: "Öva", objectives: ["Hälsa", "Fråga"], prerequisites: [], vocabulary: [], scenario: "Al bar", successCriteria: ["Svara"])
         let plan = LearningPlan(profile: LearnerProfile(nativeLanguage: "sv", targetLanguage: "it", cefr: "A1", goal: "Resa", strengths: [], focusAreas: []), lessons: [lesson])
         var session = LessonSession(planID: plan.id, lessonID: lesson.id)
@@ -138,7 +138,7 @@ struct ActivityStoreTests {
         #expect(await service.teaching == 0)
         #expect(await service.summaries == 1)
         #expect(store.state.activePlan?.completedLessonIDs.contains("test") == true)
-        let reopened = LearningStore(); reopened.load(container: container)
+        let reopened = LearningStore(); reopened.load(container: container, language: .italian)
         #expect(reopened.state.sessions[0].wrapUp?.summary == "Du har övat hälsningar och frågor.")
     }
 
@@ -161,7 +161,7 @@ struct ActivityStoreTests {
         await chat.waitForCurrentRequest()
         #expect(store.state.sessions[0].wrapUpRequested == true)
         #expect(store.state.activePlan?.completedLessonIDs.isEmpty == true)
-        let reopened = LearningStore(); reopened.load(container: container)
+        let reopened = LearningStore(); reopened.load(container: container, language: .italian)
         chat.lesson(store: reopened, sessionID: id, settings: settings)
         await chat.waitForCurrentRequest()
         #expect(await service.teaching == 0)
@@ -175,7 +175,7 @@ struct ActivityStoreTests {
         chat.generatePractice(store: store, sessionID: id, settings: settings)
         await chat.waitForCurrentRequest()
         try store.update { $0.sessions[0].practice?.knownCardIDs.insert("card-0"); $0.sessions[0].practice?.solvedPuzzleIDs.insert("puzzle-0") }
-        let reopened = LearningStore(); reopened.load(container: container)
+        let reopened = LearningStore(); reopened.load(container: container, language: .italian)
         chat.generatePractice(store: reopened, sessionID: id, settings: settings)
         await chat.waitForCurrentRequest()
         #expect(await service.generations == 1)

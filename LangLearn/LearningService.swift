@@ -1,7 +1,7 @@
 import Foundation
 
 nonisolated struct AssessmentContext: Encodable, Sendable {
-    var course: LanguageCourse = .default
+    var course: LanguageCourse
     var messages: [ChatMessage]
     var questionNumber: Int
     var currentPlan: LearningPlan?
@@ -29,7 +29,7 @@ nonisolated struct LessonHistoryEntry: Encodable, Sendable {
 }
 
 nonisolated struct LessonContext: Encodable, Sendable {
-    var course: LanguageCourse = .default
+    var course: LanguageCourse
     var profile: LearnerProfile
     var lesson: PlannedLesson
     var recentMessages: [ChatMessage]
@@ -46,7 +46,7 @@ nonisolated struct LessonContext: Encodable, Sendable {
 
 /// A stuck attempt at one sentence puzzle, sent when the learner asks for help.
 nonisolated struct PuzzleHintContext: Encodable, Sendable {
-    var course: LanguageCourse = .default
+    var course: LanguageCourse
     /// The sentence to translate, in the learner's own language.
     var cue: String
     var words: [String]
@@ -69,7 +69,7 @@ nonisolated struct PracticeExtensionContext: Encodable, Sendable {
 
 /// Asks for the next lessons after the learner has worked through the plan.
 nonisolated struct PlanExtensionContext: Encodable, Sendable {
-    var course: LanguageCourse = .default
+    var course: LanguageCourse
     var profile: LearnerProfile
     /// Titles and objectives already covered, so nothing is repeated.
     var existingLessons: [PlannedLesson]
@@ -78,6 +78,43 @@ nonisolated struct PlanExtensionContext: Encodable, Sendable {
     var unfinishedLessonTitles: [String]
     /// The theme the learner chose to continue with.
     var direction: PlanDirection?
+}
+
+/// Asks for the subject-pronoun paradigm of the language being learned, plus
+/// rounds to drill it. Not tied to a lesson: pronouns are a property of the
+/// language, and the learner should be able to reach them from day one.
+nonisolated struct PronounGameContext: Encodable, Sendable {
+    var course: LanguageCourse
+    var cefr: String
+    /// The learner's goal, so the example sentences are about their life.
+    var goal: String
+    /// Rounds already played, so a second pack does not repeat them.
+    var existingSentences: [String] = []
+}
+
+/// Open conversation: no lesson, no objectives, just a partner to talk to.
+nonisolated struct FreeChatContext: Encodable, Sendable {
+    var course: LanguageCourse
+    var cefr: String
+    var learnerName: String
+    var recentMessages: [ChatMessage]
+    var learnerAnswer: String?
+    var memory: String
+    var tone: String
+    var correctsSpelling: Bool
+}
+
+/// A piece of writing the learner wants read back to them.
+nonisolated struct WritingContext: Encodable, Sendable {
+    var course: LanguageCourse
+    var cefr: String
+    /// The prompt they chose, or empty when they wrote freely.
+    var prompt: String
+    var text: String
+    var tone: String
+    var correctsSpelling: Bool
+    /// What earlier lessons showed they struggle with.
+    var focusAreas: [String]
 }
 
 nonisolated protocol LearningService: Sendable {
@@ -90,6 +127,9 @@ nonisolated protocol LearningService: Sendable {
     func morePractice(_ context: PracticeExtensionContext) async throws -> PracticePack
     func nextLessons(_ context: PlanExtensionContext) async throws -> PlanExtension
     func planDirections(_ context: PlanExtensionContext) async throws -> PlanDirections
+    func pronounGame(_ context: PronounGameContext) async throws -> PronounGame
+    func converse(_ context: FreeChatContext) async throws -> ChatTurn
+    func reviewWriting(_ context: WritingContext) async throws -> WritingFeedback
 }
 
 // Test doubles for older capabilities fail explicitly instead of contacting a live service.
@@ -100,6 +140,9 @@ nonisolated extension LearningService {
     func morePractice(_ context: PracticeExtensionContext) async throws -> PracticePack { throw OpenAIError.server }
     func nextLessons(_ context: PlanExtensionContext) async throws -> PlanExtension { throw OpenAIError.server }
     func planDirections(_ context: PlanExtensionContext) async throws -> PlanDirections { throw OpenAIError.server }
+    func pronounGame(_ context: PronounGameContext) async throws -> PronounGame { throw OpenAIError.server }
+    func converse(_ context: FreeChatContext) async throws -> ChatTurn { throw OpenAIError.server }
+    func reviewWriting(_ context: WritingContext) async throws -> WritingFeedback { throw OpenAIError.server }
 }
 
 nonisolated struct OpenAILearningService: LearningService {
@@ -269,6 +312,99 @@ nonisolated struct OpenAILearningService: LearningService {
             """,
             input: try encode(context), schemaName: "lesson_practice_v1", schema: LearningSchema.practice,
             as: PracticePack.self
+        )
+        try result.value.validate()
+        return result.value
+    }
+
+    func converse(_ context: FreeChatContext) async throws -> ChatTurn {
+        let course = context.course
+        let result = try await client.respond(
+            model: OpenAIClient.teacherModel,
+            instructions: Self.safety(for: course) + """
+
+            This is open conversation, not a lesson. There is no syllabus to get through and
+            nothing to mark complete. Follow the learner's lead, stay on whatever they raise, and
+            keep the exchange going with one genuine question at a time.
+            reply: your message in \(course.targetName), pitched at cefr and short enough to answer
+            in a sentence or two. Never more than one question per turn.
+            translation: the same message in \(course.nativeName).
+            correction: set it only when the learner's last message has a real error worth naming,
+            with original, corrected and a one-sentence explanation in \(course.nativeName). When their
+            \(course.targetName) is already natural, leave correction null rather than rewriting good
+            language. Do not correct spelling when correctsSpelling is false.
+            memory: a short running note in \(course.nativeName) on what this learner can do and what
+            trips them up, carried into later turns. Replace it each turn; keep it under 600 characters.
+            If the learner writes in \(course.nativeName), answer their question, then offer them the
+            \(course.targetName) for what they were trying to say and invite them back into it.
+            All fields are plain text, not Markdown.
+            """,
+            input: try encode(context), schemaName: "free_chat_v1", schema: LearningSchema.chatTurn,
+            as: ChatTurn.self
+        )
+        try result.value.validate()
+        return result.value
+    }
+
+    func reviewWriting(_ context: WritingContext) async throws -> WritingFeedback {
+        let course = context.course
+        let result = try await client.respond(
+            model: OpenAIClient.teacherModel,
+            instructions: Self.safety(for: course) + """
+
+            The learner wrote a text in \(course.targetName) and wants it read back to them.
+            corrected: their text in \(course.targetName), corrected. Keep their voice, their content and
+            their sentence order. Change only what is actually wrong or unnatural, and never expand a
+            simple text into a more advanced one than they wrote. If a sentence is already correct,
+            reproduce it unchanged. Do not correct spelling when correctsSpelling is false.
+            summary: 2–4 sentences in \(course.nativeName) on what the text achieves and how well it
+            lands, naming specifics from the text rather than generic praise.
+            strengths: up to 5 short \(course.nativeName) points, each about something in this text.
+            Return an empty list rather than inventing strengths that are not there.
+            nextSteps: 1–5 short \(course.nativeName) points, the most useful things to work on next.
+            score: 1–5 for how well the text does what it set out to do at this cefr level. Be honest;
+            a 5 means it reads naturally to a native speaker at that level.
+            ruleTitle and ruleExplanation: the single grammar or usage rule this text most needs, named
+            in \(course.nativeName) and explained in one short paragraph with an example from their own
+            text. Leave both empty strings when the text has no recurring rule problem.
+            All fields are plain text, not Markdown.
+            """,
+            input: try encode(context), schemaName: "writing_feedback_v2", schema: LearningSchema.writingFeedback,
+            as: WritingFeedback.self
+        )
+        try result.value.validate()
+        return result.value
+    }
+
+    func pronounGame(_ context: PronounGameContext) async throws -> PronounGame {
+        let course = context.course
+        let result = try await client.respond(
+            model: OpenAIClient.teacherModel,
+            instructions: Self.safety(for: course) + """
+
+            Build a subject-pronoun game for \(course.targetName).
+            overview: 2–4 sentences in \(course.nativeName) on how \(course.targetName) actually handles
+            subject pronouns — whether they are normally dropped, whether politeness or gender splits
+            them, whether the verb already marks the person. Say what the learner has to decide, not
+            just what the list is.
+            pronouns: the everyday subject pronouns a learner at this level needs, 2–12 of them.
+            For each: pronoun in \(course.targetName); meaning in \(course.nativeName); person 1, 2 or 3;
+            plural true/false; note for politeness, gender or register in \(course.nativeName), or an
+            empty string; pronunciation as a transliteration when \(course.targetName) does not use the
+            Latin alphabet, otherwise an empty string. Include formal and informal forms where the
+            language distinguishes them, and never invent pronouns the language does not have.
+            rounds: 6–16 items, each with a unique id; sentence in \(course.targetName) containing
+            exactly the marker \(PronounGame.blank) where the subject pronoun belongs; translation of the
+            whole sentence in \(course.nativeName), clear enough that the blank has one defensible
+            answer; answer copied verbatim from one of the pronouns above; explanation in
+            \(course.nativeName), one or two sentences on why that pronoun and not a neighbouring one.
+            Order the rounds easiest first and vary person and number across the set. Where the
+            language normally drops the subject pronoun, still teach the explicit form and say so in
+            the explanation. Keep sentences short and about everyday situations tied to the learner's
+            goal. All fields are plain text, not Markdown.
+            """,
+            input: try encode(context), schemaName: "pronoun_game_v1", schema: LearningSchema.pronounGame,
+            as: PronounGame.self
         )
         try result.value.validate()
         return result.value

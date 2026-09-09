@@ -292,3 +292,180 @@ nonisolated struct WordAssembly: Equatable {
     mutating func reset() { selected = [] }
     func words(in puzzle: SentencePuzzle) -> [String] { selected.compactMap { puzzle.words.indices.contains($0) ? puzzle.words[$0] : nil } }
 }
+
+// MARK: - Subject pronouns
+
+/// One subject pronoun in the language being learned.
+///
+/// Person and number are kept as data rather than baked into a label, because the
+/// paradigm is what the learner is trying to internalise: the game lays the
+/// pronouns out as a grid, and every language fills that grid differently.
+nonisolated struct SubjectPronoun: Codable, Identifiable, Sendable, Equatable {
+    /// The pronoun itself, e.g. "io", "你", "hän".
+    var pronoun: String
+    /// What it means in the learner's own language, e.g. "jag".
+    var meaning: String
+    /// 1, 2 or 3.
+    var person: Int
+    var plural: Bool
+    /// Politeness, gender or register, e.g. "formellt" or "hon". Often empty.
+    var note: String
+    /// Reading help where the script needs it: pinyin, romaji, transliteration.
+    var pronunciation: String
+
+    var id: String { "\(person)\(plural ? "p" : "s")-\(pronoun)" }
+}
+
+/// One round: a sentence with the subject pronoun taken out.
+nonisolated struct PronounRound: Codable, Identifiable, Sendable, Equatable {
+    var id: String
+    /// The sentence in the target language, with `PronounGame.blank` where the
+    /// pronoun belongs.
+    var sentence: String
+    /// The whole sentence in the learner's own language, so the blank is decidable.
+    var translation: String
+    /// The pronoun that belongs in the blank; always one of the game's pronouns.
+    var answer: String
+    /// Why that one, in the learner's own language.
+    var explanation: String
+}
+
+nonisolated struct PronounGame: Codable, Sendable, Equatable {
+    /// How this language handles subject pronouns as a whole — dropped subjects in
+    /// Italian, politeness levels in Korean, no person marking in Indonesian.
+    var overview: String
+    var pronouns: [SubjectPronoun]
+    var rounds: [PronounRound]
+
+    /// What the model writes where the pronoun should go.
+    static let blank = "___"
+
+    func validate() throws {
+        guard (2...12).contains(pronouns.count),
+              (6...16).contains(rounds.count),
+              !overview.isEmpty, overview.count <= 1000,
+              Set(rounds.map(\.id)).count == rounds.count,
+              Set(pronouns.map(\.id)).count == pronouns.count else {
+            throw LearningValidationError.invalidResponse
+        }
+        for pronoun in pronouns {
+            guard !pronoun.pronoun.isEmpty, pronoun.pronoun.count <= 40,
+                  !pronoun.meaning.isEmpty, pronoun.meaning.count <= 80,
+                  (1...3).contains(pronoun.person),
+                  pronoun.note.count <= 120, pronoun.pronunciation.count <= 60 else {
+                throw LearningValidationError.invalidResponse
+            }
+        }
+        let forms = Set(pronouns.map(\.pronoun))
+        for round in rounds {
+            guard !round.id.isEmpty, round.id.count <= 60,
+                  round.sentence.contains(Self.blank), round.sentence.count <= 300,
+                  !round.translation.isEmpty, round.translation.count <= 300,
+                  // An answer outside the paradigm would be unanswerable in the UI.
+                  forms.contains(round.answer),
+                  !round.explanation.isEmpty, round.explanation.count <= 600 else {
+                throw LearningValidationError.invalidResponse
+            }
+        }
+    }
+}
+
+/// How far the learner has got with the pronoun game for one language.
+nonisolated struct PronounGameProgress: Codable, Sendable, Equatable {
+    var game: PronounGame
+    var solvedRoundIDs: Set<String> = []
+    var attemptsByRound: [String: Int] = [:]
+    var bestStreak = 0
+    /// Where to resume, so the game does not restart from the top.
+    var cursor = 0
+
+    var isComplete: Bool { solvedRoundIDs.count == game.rounds.count }
+    func attempts(for roundID: String) -> Int { attemptsByRound[roundID] ?? 0 }
+
+    /// Solved on the first try, which is what "learned it" actually looks like.
+    var firstTryCount: Int {
+        solvedRoundIDs.filter { attempts(for: $0) <= 1 }.count
+    }
+}
+
+// MARK: - Free conversation and written feedback
+
+/// One turn of open conversation. Unlike a lesson turn there are no objectives to
+/// tick off, so the reply carries only the correction and what to remember.
+nonisolated struct ChatTurn: Codable, Sendable, Equatable {
+    /// Milo's message, in the language being learned.
+    var reply: String
+    /// The same message in the learner's own language.
+    var translation: String
+    var correction: Correction?
+    /// A short running note on the learner, carried into the next turn.
+    var memory: String
+
+    func validate() throws {
+        guard !reply.isEmpty, reply.count <= 3000,
+              translation.count <= 3000, memory.count <= 3000 else {
+            throw LearningValidationError.invalidResponse
+        }
+        if let correction {
+            guard !correction.original.isEmpty, !correction.corrected.isEmpty,
+                  !correction.explanation.isEmpty else { throw LearningValidationError.invalidResponse }
+        }
+    }
+}
+
+/// An open-ended conversation, kept per language beside the plan.
+nonisolated struct FreeChatSession: Codable, Sendable, Equatable {
+    var messages: [ChatMessage] = []
+    var pendingAnswer: String?
+    var memory = ""
+
+    /// Bounded so a long-running chat cannot grow the request without limit.
+    static let contextWindow = 20
+
+    mutating func accept(_ turn: ChatTurn) throws {
+        try turn.validate()
+        if let pendingAnswer { messages.append(ChatMessage(role: .user, text: pendingAnswer)) }
+        messages.append(ChatMessage(
+            role: .assistant, text: turn.reply, translation: turn.translation,
+            correction: pendingAnswer == nil ? nil : turn.correction
+        ))
+        memory = turn.memory
+        pendingAnswer = nil
+    }
+}
+
+/// Milo's response to a piece of writing the learner submitted.
+nonisolated struct WritingFeedback: Codable, Sendable, Equatable {
+    /// The learner's text, corrected, in the language being learned.
+    var corrected: String
+    /// What the text achieved, in the learner's own language.
+    var summary: String
+    var strengths: [String]
+    var nextSteps: [String]
+    /// 1–5, deliberately coarse: this is encouragement with evidence, not a grade.
+    var score: Int
+    /// The one rule most worth taking away, named and explained.
+    var ruleTitle: String
+    var ruleExplanation: String
+
+    func validate() throws {
+        guard !corrected.isEmpty, corrected.count <= 6000,
+              !summary.isEmpty, summary.count <= 2000,
+              (1...5).contains(score),
+              strengths.count <= 5, (1...5).contains(nextSteps.count),
+              (strengths + nextSteps).allSatisfy({ !$0.isEmpty && $0.count <= 600 }),
+              ruleTitle.count <= 120, ruleExplanation.count <= 1200 else {
+            throw LearningValidationError.invalidResponse
+        }
+    }
+}
+
+/// One finished piece of writing and its feedback, saved per language.
+nonisolated struct WritingReview: Codable, Identifiable, Sendable, Equatable {
+    var id = UUID()
+    var createdAt = Date()
+    /// The prompt the learner picked, or empty when they wrote freely.
+    var prompt = ""
+    var text: String
+    var feedback: WritingFeedback
+}
