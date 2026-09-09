@@ -10,8 +10,8 @@ def repository_root(argv: list[str]) -> Path:
     if "--" not in argv:
         raise RuntimeError("Pass the repository root after --")
     root = Path(argv[argv.index("--") + 1]).resolve()
-    if not (root / "ItaLearn.xcodeproj").exists():
-        raise RuntimeError(f"Not an ItaLearn checkout: {root}")
+    if not (root / "LangLearn.xcodeproj").exists():
+        raise RuntimeError(f"Not an LangLearn checkout: {root}")
     return root
 
 
@@ -37,8 +37,8 @@ def verified_sources(root: Path) -> dict[str, Path]:
 def safe_output(root: Path, relative: str) -> Path:
     output = (root / relative).resolve()
     art = (root / "Art/Milo").resolve()
-    resources = (root / "ItaLearn/Resources").resolve()
-    assets = (root / "ItaLearn/Assets.xcassets").resolve()
+    resources = (root / "LangLearn/Resources").resolve()
+    assets = (root / "LangLearn/Assets.xcassets").resolve()
     if not any(output.is_relative_to(parent) for parent in (art, resources, assets)):
         raise RuntimeError(f"Refusing to write outside Milo outputs: {output}")
     if output.name == "Milo_Master.blend" and output.exists():

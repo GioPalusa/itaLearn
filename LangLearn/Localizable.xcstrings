@@ -1,0 +1,882 @@
+{
+  "sourceLanguage" : "sv",
+  "strings" : {
+    "" : {
+
+    },
+    "· %lld min" : {
+
+    },
+    "\"Artigheten sitter. Nästa steg: fråga om priset.\"" : {
+
+    },
+    "\"Fint jobbat med artigheten — nu tar vi priserna.\"" : {
+
+    },
+    "\"Snyggt! Artigheten är i hamn — nu kör vi på priserna!\"" : {
+
+    },
+    "/%lld" : {
+
+    },
+    "%@ %@" : {
+      "localizations" : {
+        "sv" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "%1$@ %2$@"
+          }
+        }
+      }
+    },
+    "%@ TILL MÅLET" : {
+
+    },
+    "%@ tipsar: %@" : {
+      "localizations" : {
+        "sv" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "%1$@ tipsar: %2$@"
+          }
+        }
+      }
+    },
+    "%@, lägg till ord" : {
+
+    },
+    "%@, plats %lld, ta bort ord" : {
+      "localizations" : {
+        "sv" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "%1$@, plats %2$lld, ta bort ord"
+          }
+        }
+      }
+    },
+    "%@, redan använt" : {
+
+    },
+    "%@s bedömning" : {
+
+    },
+    "%lld" : {
+
+    },
+    "%lld / 2000 tecken" : {
+
+    },
+    "%lld av %lld" : {
+      "localizations" : {
+        "sv" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "%1$lld av %2$lld"
+          }
+        }
+      }
+    },
+    "%lld av %lld svar · sedan sammanfattar vi" : {
+      "localizations" : {
+        "sv" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "%1$lld av %2$lld svar · sedan sammanfattar vi"
+          }
+        }
+      }
+    },
+    "%lld av 100" : {
+
+    },
+    "%lld min" : {
+
+    },
+    "%lld min · skriva" : {
+
+    },
+    "%lld/5" : {
+
+    },
+    "Alla %lld" : {
+
+    },
+    "Alla meningar är klara!" : {
+
+    },
+    "Ändra mitt svar" : {
+
+    },
+    "Animation" : {
+
+    },
+    "Ansiktsformer" : {
+
+    },
+    "Använd den här planen igen" : {
+
+    },
+    "Använd din egen OpenAI API-nyckel. Samtalen debiteras ditt API-konto." : {
+
+    },
+    "Appen begär inte att OpenAI sparar en konversation. OpenAI kan ändå behålla API-data enligt sina datavillkor." : {
+
+    },
+    "Återställ din plan" : {
+
+    },
+    "Återställ plan från senaste kunskapskoll" : {
+
+    },
+    "Återställ planen" : {
+
+    },
+    "Återställ zoom" : {
+
+    },
+    "av %lld" : {
+
+    },
+    "Avbryt" : {
+
+    },
+    "Avsluta inspelning" : {
+
+    },
+    "Avsluta och sammanfatta" : {
+
+    },
+    "Avsluta rundan" : {
+
+    },
+    "Be Milo om en ledtråd" : {
+
+    },
+    "Blick och tal" : {
+
+    },
+    "Blunda" : {
+
+    },
+    "Börja lära med Milo" : {
+
+    },
+    "Börja lektion %lld" : {
+
+    },
+    "Börja om meningen" : {
+
+    },
+    "Bra övat — här är din sammanfattning" : {
+
+    },
+    "Bygg meningen" : {
+
+    },
+    "Bygg om planen från din senaste kunskapskoll? Den nuvarande planen sparas i arkivet och dina avklarade lektioner följer med." : {
+
+    },
+    "Byt OpenAI API-nyckel" : {
+
+    },
+    "Byt plan" : {
+
+    },
+    "Byt till den här planen? Din nuvarande plan arkiveras." : {
+
+    },
+    "Ciao, %@!" : {
+
+    },
+    "Ciao! Milo här." : {
+
+    },
+    "Dela bedömning som JSON" : {
+
+    },
+    "Det här fungerar redan" : {
+
+    },
+    "Det här har du tränat" : {
+
+    },
+    "Det här kan du" : {
+
+    },
+    "Det kunde jag" : {
+
+    },
+    "Diktera på %@" : {
+
+    },
+    "DIN ITALIENSKA · %@" : {
+
+    },
+    "Din kunskapskoll" : {
+
+    },
+    "Din lärare Milo" : {
+
+    },
+    "Din nuvarande plan arkiveras när du byter, så du kan gå tillbaka igen. Avklarade lektioner och sparade samtal följer med varje plan." : {
+
+    },
+    "Din nya studieplan är klar" : {
+
+    },
+    "Din rutt" : {
+
+    },
+    "Din senaste kunskapskoll gav %lld lektioner, men din aktiva plan har %lld. Du kan bygga om planen från kunskapskollen." : {
+      "localizations" : {
+        "sv" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "Din senaste kunskapskoll gav %1$lld lektioner, men din aktiva plan har %2$lld. Du kan bygga om planen från kunskapskollen."
+          }
+        }
+      }
+    },
+    "Din studieplan, dina kunskapskollar och samtal sparas lokalt. För varje svar skickar appen bara den aktuella lektionen, en kort lärandesammanfattning och de senaste meddelandena till OpenAI. Kunskapskollen använder sina sex svar och din nuvarande plan." : {
+
+    },
+    "Dina avklarade lektioner ligger kvar och går att repetera." : {
+
+    },
+    "Dina framsteg är sparade. Du kan gå vidare." : {
+
+    },
+    "Dina framsteg är sparade. Vill du ha nya meningar på samma lektion kan %@ skapa fler." : {
+
+    },
+    "Dina markeringar är sparade. Repetera gärna de ord du vill befästa." : {
+
+    },
+    "Dina studier" : {
+
+    },
+    "Dina studier kunde inte öppnas" : {
+
+    },
+    "Ditt namn" : {
+
+    },
+    "Ditt namn (valfritt)" : {
+
+    },
+    "Ditt nästa steg" : {
+
+    },
+    "Ditt språk" : {
+
+    },
+    "Dölj exempel" : {
+
+    },
+    "Dra ett ord till en plats, eller tryck för att lägga sist." : {
+
+    },
+    "DU ÄR HÄR" : {
+
+    },
+    "Du har klarat hela planen" : {
+
+    },
+    "En liten rättning" : {
+
+    },
+    "En ny kunskapskoll kan ge en uppdaterad plan. Dina tidigare studier sparas." : {
+
+    },
+    "Farlig zon" : {
+
+    },
+    "Fastnar du? Be mig om en ledtråd, så provar vi igen." : {
+
+    },
+    "Förbereder uppläsning…" : {
+
+    },
+    "Föreslå andra vägar" : {
+
+    },
+    "Förklara för mig på" : {
+
+    },
+    "Förklaringar på" : {
+
+    },
+    "Försök igen" : {
+
+    },
+    "FÖRSÖK IGEN · DU FÅR HJÄLP PÅ VÄGEN" : {
+
+    },
+    "Försök läsa upp igen" : {
+
+    },
+    "Fortsätt lektion %lld" : {
+
+    },
+    "Fortsätt min kunskapskoll" : {
+
+    },
+    "Fortsätt öva med Milo" : {
+
+    },
+    "Fortsätt på din väg" : {
+
+    },
+    "FRÅGA %lld AV 6 · TA DET I DIN TAKT" : {
+
+    },
+    "Framsteg" : {
+
+    },
+    "Gör din första skrivövning så visas sammanfattningen här." : {
+
+    },
+    "Hälsa på Milo" : {
+
+    },
+    "Hej! Jag är Milo." : {
+
+    },
+    "HISTORIK" : {
+
+    },
+    "Humör" : {
+
+    },
+    "HUR SÄGER DU?" : {
+
+    },
+    "Inga lektioner än" : {
+
+    },
+    "Inställningar" : {
+
+    },
+    "ITALIENSKA" : {
+
+    },
+    "Jag lär mig" : {
+
+    },
+    "Jag lyssnar. Ta det i din takt." : {
+
+    },
+    "Jag vet inte ännu" : {
+
+    },
+    "Jag vill lära mig" : {
+
+    },
+    "Kamerafokus" : {
+
+    },
+    "Klar" : {
+
+    },
+    "Klar · repetera när du vill" : {
+
+    },
+    "Klarar mig" : {
+
+    },
+    "Klipp" : {
+
+    },
+    "Kontrollera" : {
+
+    },
+    "KUNDE" : {
+
+    },
+    "Kunde inte öppna dina studier" : {
+
+    },
+    "Kunskapskollar" : {
+
+    },
+    "Lägg först" : {
+
+    },
+    "Lägg till din OpenAI API-nyckel i Inställningar för att fortsätta planen." : {
+
+    },
+    "Lägg till din OpenAI API-nyckel i Inställningar för att skapa fler meningar." : {
+
+    },
+    "Lägg till din OpenAI API-nyckel i Inställningar för att skapa fler övningar." : {
+
+    },
+    "Lägg till din OpenAI API-nyckel i Inställningar." : {
+
+    },
+    "Lägger till det du säger i textrutan" : {
+
+    },
+    "LangLearn" : {
+
+    },
+    "Läs mer" : {
+
+    },
+    "Låst tills lektionen före är klar" : {
+
+    },
+    "Låt Milo tala" : {
+
+    },
+    "Lek och repetera" : {
+
+    },
+    "Lektion %lld" : {
+
+    },
+    "Lektion %lld av %lld" : {
+      "localizations" : {
+        "sv" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "Lektion %1$lld av %2$lld"
+          }
+        }
+      }
+    },
+    "Lektion klar!" : {
+
+    },
+    "Lektionssammanfattning" : {
+
+    },
+    "Licens för Snow" : {
+
+    },
+    "Lite %@ i taget. Vi tar nästa steg tillsammans." : {
+
+    },
+    "Lite van" : {
+
+    },
+    "Lugn konversation" : {
+
+    },
+    "Lyssna" : {
+
+    },
+    "Lyssna och tala har inte testats i kunskapskollen — de staplarna är en försiktig gissning." : {
+
+    },
+    "Lyssna på %@" : {
+
+    },
+    "Lyssna på Milos %@" : {
+
+    },
+    "MER ÖVNING" : {
+
+    },
+    "Mikrofonen kunde inte startas. Du kan skriva i stället." : {
+
+    },
+    "Milo" : {
+
+    },
+    "MILO · DIN %@LÄRARE" : {
+
+    },
+    "Milo är en AI-lärare i LangLearn. Svaren skapas med OpenAI." : {
+
+    },
+    "Milo bygger på karaktären Snow av Blender Studio (CC BY 4.0)." : {
+
+    },
+    "Milo förbereder ditt nästa steg…" : {
+
+    },
+    "Milo funderar på din kunskapskoll…" : {
+
+    },
+    "Milo funderar på vad du behöver…" : {
+
+    },
+    "Milo funderar…" : {
+
+    },
+    "Milo gör plats för dina studier…" : {
+
+    },
+    "Milo hjälper dig att öva, rätta och prova igen. Anpassa tonen så att den passar dig." : {
+
+    },
+    "Milo planerar dina tio lektioner…" : {
+
+    },
+    "Milo skapar fler övningar…" : {
+
+    },
+    "Milo skapar ordkort och meningar utifrån lektionen och dina senaste svar. Detta använder ditt OpenAI API-konto." : {
+
+    },
+    "Milo skapar ordkort och meningar…" : {
+
+    },
+    "Milo skriver nya meningar…" : {
+
+    },
+    "Milo skriver nya ordkort och meningar på samma lektion och undviker dem du redan har." : {
+
+    },
+    "Milo tittar på din mening…" : {
+
+    },
+    "Milo undervisar på %@ och förklarar på %@. Varje språk har sin egen studieplan: byter du språk ligger dina nuvarande studier kvar och kommer tillbaka när du byter tillbaka." : {
+      "localizations" : {
+        "sv" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "Milo undervisar på %1$@ och förklarar på %2$@. Varje språk har sin egen studieplan: byter du språk ligger dina nuvarande studier kvar och kommer tillbaka när du byter tillbaka."
+          }
+        }
+      }
+    },
+    "Milo undervisar på %@ och förklarar, rättar och sammanfattar på %@. Appens egna texter är på svenska." : {
+      "localizations" : {
+        "sv" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "Milo undervisar på %1$@ och förklarar, rättar och sammanfattar på %2$@. Appens egna texter är på svenska."
+          }
+        }
+      }
+    },
+    "Milo utgår från den här lektionen och undviker meningar du redan har. Detta använder ditt OpenAI API-konto." : {
+
+    },
+    "Milos studio" : {
+
+    },
+    "MILOS VAL" : {
+
+    },
+    "Min studieplan" : {
+
+    },
+    "Mitt lärande" : {
+
+    },
+    "Nästa lektion: %@" : {
+
+    },
+    "Nästa mening" : {
+
+    },
+    "Nästa steg" : {
+
+    },
+    "Nästan — prova igen" : {
+
+    },
+    "Nivån anpassas efter din senaste kunskapskoll. Du kan göra en ny från Min studieplan." : {
+
+    },
+    "Nollställ ansiktet" : {
+
+    },
+    "NU" : {
+
+    },
+    "Ny studieplan" : {
+
+    },
+    "Nybörjare" : {
+
+    },
+    "Nyckeln är sparad. Anslutningen kontrolleras vid nästa svar." : {
+
+    },
+    "Nyckeln sparas i Nyckelringen på den här enheten. Dina meddelanden och relevant lärandehistorik skickas till OpenAI när du ber Milo om ett svar. Studieplanen och samtalen sparas lokalt i appen." : {
+
+    },
+    "Om" : {
+
+    },
+    "OpenAI" : {
+
+    },
+    "OpenAI API-nyckel" : {
+
+    },
+    "OpenAI:s datavillkor" : {
+
+    },
+    "Öppna inställningar" : {
+
+    },
+    "Öppna lektionen" : {
+
+    },
+    "Öppna Milos karaktärsstudio" : {
+
+    },
+    "Ordkort" : {
+
+    },
+    "Ordkort och bygg meningar" : {
+
+    },
+    "Ordkorten hjälper dig att minnas. Prova några efter lektionen." : {
+
+    },
+    "Öva" : {
+
+    },
+    "Öva igen" : {
+
+    },
+    "ÖVA IGEN" : {
+
+    },
+    "ÖVA ITALIENSKA · ETT STEG I TAGET" : {
+
+    },
+    "Öva med Milo" : {
+
+    },
+    "Öva med ordkort och meningar" : {
+
+    },
+    "Öva ord och bygg meningar från din lektion. När övningarna är skapade kan du spela utan internet." : {
+
+    },
+    "Passet är sparat. Öva vidare innan du går till nästa lektion." : {
+
+    },
+    "Peppig" : {
+
+    },
+    "Prova %@ härnäst — ordet är markerat nedan." : {
+
+    },
+    "Prova en gång till" : {
+
+    },
+    "Prova nästa gång" : {
+
+    },
+    "Radera alla mina studier" : {
+
+    },
+    "Radera alla studier på alla språk och börja om? Allt du har gjort tas bort permanent." : {
+
+    },
+    "Radera allt" : {
+
+    },
+    "Rak" : {
+
+    },
+    "Rätt! Bra jobbat." : {
+
+    },
+    "Rätta även stavning" : {
+
+    },
+    "Rättad mening: %@" : {
+
+    },
+    "Rättad text: %@" : {
+
+    },
+    "Rättat i din text" : {
+
+    },
+    "Rundan är klar!" : {
+
+    },
+    "Så hanterar OpenAI API-data" : {
+
+    },
+    "Så ser din %@ ut" : {
+
+    },
+    "SÄG DET PÅ ITALIENSKA" : {
+
+    },
+    "Säg gärna att du inte vet. Då hittar vi en bra plats att börja." : {
+
+    },
+    "Sammanfattningen är sparad" : {
+
+    },
+    "Samtal" : {
+
+    },
+    "Skapa 10 lektioner" : {
+
+    },
+    "Skapa fler meningar" : {
+
+    },
+    "Skapa fler övningar" : {
+
+    },
+    "Skapa mina övningar" : {
+
+    },
+    "Skicka svar" : {
+
+    },
+    "Skriftligt underlag från %@ · inte ett CEFR-prov" : {
+
+    },
+    "Skriv ditt svar…" : {
+
+    },
+    "Skriv på %@…" : {
+
+    },
+    "Småpratar" : {
+
+    },
+    "Småpratar – variant 2" : {
+
+    },
+    "Snow-modell och lokal systemröst. Studion gör inga API-anrop." : {
+
+    },
+    "Spara nyckel" : {
+
+    },
+    "Spara och börja samtalet" : {
+
+    },
+    "Sparade samtal" : {
+
+    },
+    "Spela en gång till" : {
+
+    },
+    "Spela igen från början" : {
+
+    },
+    "Spela klippet från början" : {
+
+    },
+    "Språk" : {
+
+    },
+    "Starta om appen och kontrollera ledigt lagringsutrymme. Dina sparade data har inte raderats." : {
+
+    },
+    "Stoppa Milo" : {
+
+    },
+    "Stoppa uppläsningen" : {
+
+    },
+    "Svep vänster för att öva igen, höger för känt." : {
+
+    },
+    "Ta bort API-nyckeln" : {
+
+    },
+    "Ta bort nyckeln" : {
+
+    },
+    "Ta bort nyckeln från den här enheten? Dina studier finns kvar." : {
+
+    },
+    "Taligenkänning är inte tillgänglig här. Du kan skriva i stället." : {
+
+    },
+    "Tar bort dina studieplaner på alla språk, med lektioner, samtal, övningar och kunskapskollar, från den här enheten. Din API-nyckel påverkas inte. Det går inte att ångra." : {
+
+    },
+    "Testa mina kunskaper igen" : {
+
+    },
+    "Texten hamnar i rutan — granska den innan du skickar." : {
+
+    },
+    "Tidigare skrivövningar" : {
+
+    },
+    "Tidigare studieplaner" : {
+
+    },
+    "Till min studieplan" : {
+
+    },
+    "Tillbaka" : {
+
+    },
+    "Tittar omkring" : {
+
+    },
+    "Tittar omkring – variant 2" : {
+
+    },
+    "Tom plats %lld" : {
+
+    },
+    "Ton" : {
+
+    },
+    "Tryck på Milo för ett tips" : {
+
+    },
+    "Uppskattat från dina skriftliga svar, %@" : {
+
+    },
+    "Uppskattat från dina skriftliga svar." : {
+
+    },
+    "Vad ska jag öva härnäst?" : {
+
+    },
+    "Välj olika språk för att lära dig och för förklaringarna." : {
+
+    },
+    "Välj vilket språk du vill lära dig, så hjälper jag dig med det. Sex korta frågor hjälper mig att förstå vad du redan kan. Sedan får du en egen studieplan och övar %@ genom samtal, med hjälp och rättningar längs vägen." : {
+
+    },
+    "Vänd kortet" : {
+
+    },
+    "Väntar lugnt" : {
+
+    },
+    "Väntar på Milos svar" : {
+
+    },
+    "Varm" : {
+
+    },
+    "Vi provar en gång till tillsammans." : {
+
+    },
+    "Visa ett möjligt svar" : {
+
+    },
+    "Visa fallback-bilden" : {
+
+    },
+    "Visa kunskapskollen" : {
+
+    },
+    "Visa min studieplan" : {
+
+    },
+    "Visa svenska" : {
+
+    },
+    "Visar ett nytt studietips" : {
+
+    }
+  },
+  "version" : "1.1"
+}

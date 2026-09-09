@@ -2,7 +2,7 @@
 
 Run:
   MILO_ASSET_ROOT="/path/to/milo" Blender -b --factory-startup \
-    --python Scripts/milo/build_all.py -- /absolute/path/to/ItaLearn
+    --python Scripts/milo/build_all.py -- /absolute/path/to/LangLearn
 """
 from __future__ import annotations
 
@@ -25,7 +25,7 @@ SOURCES = verified_sources(ROOT)
 ART = ROOT / "Art/Milo"
 EXPORT = ART / "Export"
 WORKING = ART / "Working"
-RESOURCES = ROOT / "ItaLearn/Resources"
+RESOURCES = ROOT / "LangLearn/Resources"
 for directory in (EXPORT / "preview", WORKING, RESOURCES):
     directory.mkdir(parents=True, exist_ok=True)
 
@@ -721,8 +721,8 @@ def main() -> None:
     (EXPORT / "clips.json").write_text(json.dumps({"debugOnly": True, "clips": manifest["clips"]}, indent=2) + "\n")
 
     portrait_pose = clips[0][2][len(clips[0][2]) // 2]
-    render_portrait(runtime_rig, runtime_objects, ROOT / "ItaLearn/Assets.xcassets/Milo.imageset/milo.png", portrait_pose, False, True)
-    render_portrait(runtime_rig, runtime_objects, ROOT / "ItaLearn/Assets.xcassets/MiloThinking.imageset/milo-thinking.png", portrait_pose, True, True)
+    render_portrait(runtime_rig, runtime_objects, ROOT / "LangLearn/Assets.xcassets/Milo.imageset/milo.png", portrait_pose, False, True)
+    render_portrait(runtime_rig, runtime_objects, ROOT / "LangLearn/Assets.xcassets/MiloThinking.imageset/milo-thinking.png", portrait_pose, True, True)
     identity_pose = [Quaternion() for _ in JOINT_NAMES]
     render_portrait(runtime_rig, runtime_objects, EXPORT / "preview/Rest_Pose.png", identity_pose, False)
     render_portrait(runtime_rig, runtime_objects, EXPORT / "preview/Face_CloseUp.png", identity_pose, False, True)

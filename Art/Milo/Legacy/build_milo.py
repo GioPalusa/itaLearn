@@ -6,7 +6,7 @@ import bpy, math, json, sys
 from pathlib import Path
 from mathutils import Vector
 ROOT=Path(sys.argv[sys.argv.index('--')+1])
-ART=ROOT/'Art/Milo'; RES=ROOT/'ItaLearn/Resources'
+ART=ROOT/'Art/Milo'; RES=ROOT/'LangLearn/Resources'
 ART.mkdir(parents=True,exist_ok=True); RES.mkdir(parents=True,exist_ok=True)
 bpy.context.preferences.filepaths.save_version=0
 bpy.ops.object.select_all(action='SELECT'); bpy.ops.object.delete(use_global=False)
@@ -185,7 +185,7 @@ for name,loc,power,size in [('Key',(-3,-4,5),450,4),('Fill',(3,-2,3),250,3),('Ri
 bpy.ops.object.camera_add(location=(.45,-5,2.5)); camera=bpy.context.object; aim(camera,(0,0,1.17)); camera.data.type='ORTHO'; camera.data.ortho_scale=2.85; scene.camera=camera
 scene.view_settings.view_transform='AgX'; scene.render.image_settings.file_format='PNG'; scene.render.image_settings.color_mode='RGBA'
 bpy.ops.wm.save_as_mainfile(filepath=str(ART/'Milo.blend'))
-scene.render.filepath=str(ROOT/'ItaLearn/Assets.xcassets/Milo.imageset/milo.png'); bpy.ops.render.render(write_still=True)
+scene.render.filepath=str(ROOT/'LangLearn/Assets.xcassets/Milo.imageset/milo.png'); bpy.ops.render.render(write_still=True)
 arm.pose.bones['head'].rotation_euler.z=.12; arm.pose.bones['forearm_L'].rotation_euler.x=-1.1
-scene.render.filepath=str(ROOT/'ItaLearn/Assets.xcassets/MiloThinking.imageset/milo-thinking.png'); bpy.ops.render.render(write_still=True)
+scene.render.filepath=str(ROOT/'LangLearn/Assets.xcassets/MiloThinking.imageset/milo-thinking.png'); bpy.ops.render.render(write_still=True)
 print('MILO_MANIFEST',json.dumps(manifest))
