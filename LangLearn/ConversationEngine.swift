@@ -17,16 +17,27 @@ final class LessonSpeechInput {
     private var transcriber: SpeechTranscriber?
     private var audioEngine: AVAudioEngine?
     private var inputContinuation: AsyncStream<AnalyzerInput>.Continuation?
-    private var converter: AnalyzerInputConverter?
+    private var feed: AnalyzerFeed?
     private var resultsTask: Task<String, Never>?
     private var analysisTask: Task<Void, Never>?
 
-    func begin(in language: LearningLanguage = .italian) async {
+    /// Dictation needs `AnalyzerInputConverter`, which arrived in iOS 27. Rather
+    /// than hand-rolling the conversion for one older release, the feature is
+    /// simply absent below it and the UI hides the microphone.
+    static var isSupported: Bool {
+        if #available(iOS 27.0, visionOS 27.0, *) { SpeechTranscriber.isAvailable } else { false }
+    }
+
+    func begin(in language: LearningLanguage) async {
         self.language = language
         guard !isListening && !isPreparing else { return }
         isPreparing = true
         errorMessage = nil
         defer { isPreparing = false }
+        guard #available(iOS 27.0, visionOS 27.0, *) else {
+            errorMessage = "Diktering kräver iOS 27. Du kan skriva i stället."
+            return
+        }
         guard SpeechTranscriber.isAvailable else {
             errorMessage = "Taligenkänning är inte tillgänglig här. Du kan skriva i stället."
             return
@@ -99,14 +110,15 @@ final class LessonSpeechInput {
         try await AssetInventory.reserve(locale: supported)
     }
 
+    @available(iOS 27.0, visionOS 27.0, *)
     private func startTranscribing() async throws {
         let transcriber = SpeechTranscriber(locale: transcriptionLocale, preset: .progressiveTranscription)
-        let converter = try await AnalyzerInputConverter.converter(compatibleWith: [transcriber])
+        let feed = try await Self.makeFeed(for: transcriber)
         let analyzer = SpeechAnalyzer(modules: [transcriber])
 
         self.transcriber = transcriber
         self.analyzer = analyzer
-        self.converter = converter
+        self.feed = feed
 
         let (inputs, continuation) = AsyncStream<AnalyzerInput>.makeStream()
         inputContinuation = continuation
@@ -138,7 +150,7 @@ final class LessonSpeechInput {
             mode: .spokenAudio,
             options: [.defaultToSpeaker, .allowBluetoothHFP, .duckOthers]
         )
-        // Activating synchronously blocks the main thread; the async form does not.
+        // Activating synchronously blocks the calling thread; the async form does not.
         try await audioSession.activate(options: [])
 #endif
 
@@ -147,17 +159,17 @@ final class LessonSpeechInput {
         let inputNode = engine.inputNode
 
         // The tap runs on the audio render thread. AVAudioEngine serialises it,
-        // so the converter is only ever touched from that one thread.
+        // so the feed is only ever touched from that one thread.
         //
         // iOS 27 deprecates this in favour of the throwing installTapOnBus:…:error:block:,
         // which this SDK only exposes under its `__`-prefixed name, so keep the classic tap.
-        nonisolated(unsafe) let tapConverter = converter
+        nonisolated(unsafe) let tapFeed = feed
         inputNode.installTap(
             onBus: 0,
             bufferSize: 4096,
             format: inputNode.outputFormat(forBus: 0)
         ) { buffer, time in
-            guard let inputs = try? tapConverter.convert(buffer, at: time) else { return }
+            guard let inputs = try? tapFeed.convert(buffer, time) else { return }
             for input in inputs {
                 continuation.yield(input)
             }
@@ -176,8 +188,8 @@ final class LessonSpeechInput {
         audioEngine?.stop()
         audioEngine = nil
 
-        if let converter, let continuation = inputContinuation {
-            for input in (try? converter.flush()) ?? [] {
+        if let feed, let continuation = inputContinuation {
+            for input in (try? feed.flush()) ?? [] {
                 continuation.yield(input)
             }
         }
@@ -190,7 +202,7 @@ final class LessonSpeechInput {
         analyzer = nil
         transcriber = nil
         resultsTask = nil
-        converter = nil
+        feed = nil
         return heard
     }
 
@@ -207,10 +219,12 @@ final class LessonSpeechInput {
         resultsTask = nil
         analysisTask?.cancel()
         analysisTask = nil
-        converter = nil
+        feed = nil
 
 #if os(iOS) || os(visionOS)
-        _ = try? await AVAudioSession.sharedInstance().deactivate(options: .notifyOthersOnDeactivation)
+        if #available(iOS 27.0, visionOS 27.0, *) {
+            _ = try? await AVAudioSession.sharedInstance().deactivate(options: .notifyOthersOnDeactivation)
+        }
 #endif
     }
 
@@ -221,3 +235,24 @@ final class LessonSpeechInput {
 }
 
 private enum ConversationError: Error { case localeUnsupported }
+
+/// Turns microphone buffers into analyzer input.
+///
+/// The work is done by `AnalyzerInputConverter`, which exists only from iOS 27.
+/// It is captured inside these closures rather than stored on the engine,
+/// because its name cannot be spelled at all at the app's deployment target.
+struct AnalyzerFeed {
+    let convert: (AVAudioPCMBuffer, AVAudioTime?) throws -> [AnalyzerInput]
+    let flush: () throws -> [AnalyzerInput]
+}
+
+@available(iOS 27.0, visionOS 27.0, *)
+extension LessonSpeechInput {
+    fileprivate static func makeFeed(for transcriber: SpeechTranscriber) async throws -> AnalyzerFeed {
+        let converter = try await AnalyzerInputConverter.converter(compatibleWith: [transcriber])
+        return AnalyzerFeed(
+            convert: { try converter.convert($0, at: $1) },
+            flush: { try converter.flush() }
+        )
+    }
+}

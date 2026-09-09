@@ -53,12 +53,26 @@ final class SpeechNarrator: NSObject, AVAudioPlayerDelegate {
         utterance.voice = Self.voice(for: language)
         utterance.rate = AVSpeechUtteranceDefaultSpeechRate * 0.85
         utterance.postUtteranceDelay = 0.1
-        synthesizer.write(utterance, toBufferCallback: Self.bufferHandler(writer: writer) { [weak self] result in
-            Task { @MainActor in self?.prepared(result, token: token) }
+        synthesizer.write(utterance, toBufferCallback: Self.bufferHandler(writer: writer) { result in
+            Self.deliverPreparation(result: result, token: token, to: self)
         })
-        timeoutTask = Task { [weak self] in
+        timeoutTask = Task.detached(priority: .utility) { [token] in
             do { try await Task.sleep(for: .seconds(30)) } catch { return }
-            self?.fail(token)
+            await Self.timeoutFail(token: token, on: self)
+        }
+    }
+
+    nonisolated private static func deliverPreparation(
+        result: Result<URL, Error>, token: UUID, to narrator: SpeechNarrator
+    ) {
+        Task { @MainActor [result, token] in
+            narrator.prepared(result, token: token)
+        }
+    }
+
+    nonisolated private static func timeoutFail(token: UUID, on narrator: SpeechNarrator) async {
+        await MainActor.run {
+            narrator.fail(token)
         }
     }
 

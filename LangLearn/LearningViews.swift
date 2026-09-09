@@ -1128,7 +1128,7 @@ struct AdaptiveChatView: View {
 
             HStack(alignment: .bottom, spacing: 10) {
                 // Writing is the lesson; dictation is one way to fill the same field.
-                if !isAssessment { micButton }
+                if !isAssessment && LessonSpeechInput.isSupported { micButton }
 
                 TextField(isAssessment ? "Skriv ditt svar…" : "Skriv på \(settings.targetLanguage.displayName.lowercased())…", text: $draft, axis: .vertical)
                     .lineLimit(1...5)

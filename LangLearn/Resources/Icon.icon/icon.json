@@ -12,8 +12,15 @@
     {
       "layers" : [
         {
-          "image-name" : "langlearn-logo.svg",
-          "name" : "langlearn-logo"
+          "image-name" : "Codex Image Sep 10, 2026, 12_38_58 AM.png",
+          "name" : "Codex Image Sep 10, 2026, 12_38_58 AM",
+          "position" : {
+            "scale" : 0.73,
+            "translation-in-points" : [
+              0,
+              0
+            ]
+          }
         }
       ],
       "refractivity" : {
