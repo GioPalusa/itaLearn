@@ -9,7 +9,7 @@ let package = Package(
     targets: [
         .target(
             name: "LangLearnCore", path: "LangLearn",
-            exclude: ["Assets.xcassets", "Resources", "MiloScene.swift", "MiloDemoView.swift", "MiloSpeechView.swift", "MiloView.swift", "ContentView.swift", "ConversationEngine.swift", "ConversationView.swift", "CorrectionDiff.swift", "HomeView.swift", "LangLearn.entitlements", "LangLearnDebug.entitlements", "ItalianTutor.swift", "JourneyRoute.swift", "LearningViews.swift", "PracticeViews.swift", "LessonCatalog.swift", "LessonCatalogView.swift", "LessonHistoryView.swift", "LessonView.swift", "Localizable.xcstrings", "MyApp.swift", "OnboardingView.swift", "PaywallView.swift", "SettingsView.swift"],
+            exclude: ["Assets.xcassets", "Resources", "MiloScene.swift", "MiloDemoView.swift", "MiloSpeechView.swift", "MiloView.swift", "ContentView.swift", "ConversationEngine.swift", "CorrectionDiff.swift", "LangLearn.entitlements", "LangLearnDebug.entitlements", "JourneyRoute.swift", "LearningViews.swift", "PracticeViews.swift", "LessonHistoryView.swift", "Localizable.xcstrings", "MyApp.swift", "OnboardingView.swift", "SettingsView.swift"],
             sources: ["SpeechNarrator.swift","DesignSystem.swift", "LessonDialogue.swift","MiloAnimation.swift", "MiloClipLibrary.swift", "LearningLanguage.swift", "TeacherIdentity.swift","PracticeModels.swift", "LearningMarkdown.swift", "LearningModels.swift", "LearningStore.swift", "LearningService.swift", "OpenAIClient.swift", "OpenAIKeyStore.swift", "TutorSettings.swift", "LessonRecord.swift"],
             swiftSettings: [.defaultIsolation(MainActor.self), .enableUpcomingFeature("BareSlashRegexLiterals")]
         ),
