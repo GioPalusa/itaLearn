@@ -1,30 +1,62 @@
 # Milo, LangLearn's teacher
 
-Milo is an original lavender fox with large plum eyes, a cream muzzle and a golden scarf. The learner meets Milo in setup, the study plan, lesson introductions, assistant messages, loading states and lesson summaries. Tapping Milo on the study plan cycles through four local study tips. Teaching and assessment prompts share the same identity; underlying model IDs and assessment rules are unchanged. Settings still disclose the OpenAI provider, API billing and data handling.
+Milo uses Snow v4.2 from Blender Studio (CC-BY-4.0), retaining the supplied
+face, hair, clothing and proportions. Settings contains credits and the local
+character studio. Rendering uses bundled assets without a network request.
+Generated portraits match the model and serve as compact and Reduce Motion
+fallbacks. Existing learner data and model configuration are preserved.
 
-## Assets and animation
+## Animation and studio
 
-Created with the built-in image-generation tool, not the API/CLI fallback. Both PNGs retain transparent alpha and are bundled in the app; displaying and animating Milo makes no network request.
+RealityKit loads the model once, clones it for each visible teacher, and applies
+sampled skeletal motion plus fifteen independent facial morphs. Six original
+idle recordings are joined by a standing wave and an in-place walk. Greetings
+wave once and settle into idle; the home character can take a short bounded
+walk. Transitions blend from the current pose. Inactive scenes stop animation.
 
-- `LangLearn/Assets.xcassets/Milo.imageset/milo.png`: welcoming pose, 1254 × 1254.
-- `LangLearn/Assets.xcassets/MiloThinking.imageset/milo-thinking.png`: matching thoughtful pose with notebook.
-- `LangLearn/MiloView.swift`: static avatar, gentle greeting sway, thinking bob, celebratory hop, and a bounded 12-point sideways wander on the home greeting. These are whole-character SwiftUI transforms, not frame-by-frame limb animation.
-- `LangLearn/TeacherIdentity.swift`: shared model-facing persona.
+The mouth deformation includes lips, jaw, teeth, gums and tongue. Speech
+amplitude drives opening; it is not phoneme-aligned lip sync. Blinking and gaze
+are independent. Both eyes rotate in head space, compensating for their
+opposite bind rolls. A portable iris/pupil material preserves color, and explicit double-sided
+rendering prevents RealityKit from culling the recessed pupil surface. The exporter evaluates Snow's actual rig and animation slot
+instead of exporting shapes whose names exist but whose geometry stays neutral.
+Key, fill and rim lights illuminate both sides of the face. Hands use all three
+skin texture tiles instead of sampling the body tile for every UV region.
 
-Animations render only while the view is mounted and the scene is active. System Reduce Motion selects the static artwork. Repeated chat avatars stay still. The home mascot button has a VoiceOver label and hint; decorative images are hidden from accessibility. The greeting stacks vertically at accessibility text sizes and otherwise reserves a fixed mascot area beside wrapping text. It never floats over lesson controls.
+The studio keeps its preview visible above scrolling controls. It exposes face
+zoom, body pause, clip replay, stage walking, mouth opening, gaze, independent
+face shapes and reset. It is accessible from Settings or a Debug launch with
+`--milo-demo` and uses only local system speech.
 
-Existing saved conversations and plans are preserved. Their original wording is not rewritten; newly generated answers use Milo's identity.
+## Sources and validation
 
-## Final generation prompts
+See `Scripts/milo/README.md` for reproducible export commands and rig invariants.
+Paths and hashes are pinned in `Art/Milo/sources.json`. The artist-owned master
+and original files are preserved. Generated exports are copied to app resources.
 
-Welcoming pose:
+The walk comes from the free Standard edition of
+[Quaternius Universal Animation Library](https://quaternius.com/packs/universalanimationlibrary.html),
+licensed CC0. Downloaded files, license and provenance are under
+`Art/Milo/Source/Quaternius`. The wave and idles use the supplied local mocap.
 
-> Create one original polished mobile app mascot asset for LangLearn: Milo, a cute friendly baby lavender fox Italian language teacher. Single full-body character, enormous expressive deep plum eyes with crisp white catchlights, rounded triangular ears, soft cream muzzle and belly, little dark plum nose, friendly modest open smile, short rounded paws, fluffy curled tail with cream tip, warm golden yellow small scarf. Lavender fur #8070B8 and darker purple accents #564797, very subtle rosy cheeks. One forepaw raised in a welcoming wave, standing facing viewer in gentle three-quarter view. Premium 2D cartoon illustration, clean confident rounded outlines, smooth flat colors with restrained soft shading, charming and approachable for adults as well as children, legible at 64 px. Distinct original fox silhouette, not an owl, not resembling existing app mascots. Entire body, both ears and tail fully visible, centered within square with 10 percent clear padding. Isolated on a genuine transparent alpha background. No text, no letters, no logo, no scene, no background shapes, no cast floor shadow. Deliver a single production-ready transparent PNG mascot asset.
+Run `swift test --filter MiloTests` and `Scripts/milo/test_rig.py` in Blender.
+They check real asset loading, facial displacement, independent controls, reset,
+clip transitions and bounded walking. Compare before/after geometry in the
+studio as well: a successful build and named blend shapes alone do not prove
+visible animation.
 
-Thinking pose (welcoming PNG used as the identity reference):
+Debug render fixtures `--milo-demo --milo-face-check` and
+`--milo-demo --milo-motion-check` change the same live state as the studio
+controls after launch. The face sequence covers neutral, open mouth, closed
+lids, both gaze directions on each axis, and reset. It labels the active pose.
+These support repeatable simulator captures without modifying learner data.
 
-> Create a second matching animation-state asset of this EXACT same original character Milo. Preserve identical lavender fox identity, huge deep plum eyes, cream muzzle/belly and tail tip, golden yellow scarf, proportions and rendering style. Change ONLY the pose/expression to thoughtful and helpful: mouth in a small gentle closed smile, one little forepaw resting by the chin, the other holding a small closed cream notebook with no markings. Eyes looking slightly upward as if preparing a helpful explanation. Full body, entire ears feet and tail visible; same front three-quarter view and same square canvas, character fits with clear padding. Genuine transparent alpha background, no background or text or lettering, isolated production PNG for a mobile app. This is a friendly thinking pose, not worried or sad.
-
-## Validation
-
-The Xcode build and the 30 existing core tests passed. iPhone 17 Pro previews were rendered and inspected for the home page, loading poses, onboarding and accessibility text sizes. Source review covers the Reduce Motion, active-scene and view-lifecycle gates. Physical-device animation, VoiceOver interaction and a live model response with the new persona still need hands-on verification.
+Validated on 2026-09-10: the iOS Simulator Debug build succeeded, all ten
+`MiloTests` and five Blender rig tests passed, and exported assets matched the
+copies in the built app. iPhone 18 Pro simulator captures verified face zoom,
+mouth opening, eyelid closure, gaze, reset, waving, walking, turning and the
+return to idle. The render fixtures exercise the controls' state bindings;
+physical-device rendering, touch/drag interaction and live speech playback
+were not verified in this pass.
+Selected simulator captures and a motion recording are saved under
+`Art/Milo/Validation/2026-09-10`.

@@ -10,7 +10,7 @@ def repository_root(argv: list[str]) -> Path:
     if "--" not in argv:
         raise RuntimeError("Pass the repository root after --")
     root = Path(argv[argv.index("--") + 1]).resolve()
-    if not (root / "LangLearn.xcodeproj").exists():
+    if not (root / "LanguLearn.xcodeproj").exists():
         raise RuntimeError(f"Not an LangLearn checkout: {root}")
     return root
 
@@ -24,7 +24,7 @@ def verified_sources(root: Path) -> dict[str, Path]:
         raise RuntimeError(f"Set {variable} to the external Milo asset directory")
     resolved: dict[str, Path] = {}
     for name, record in manifest["sources"].items():
-        path = Path(record["path"].replace("${MILO_ASSET_ROOT}", asset_root)).resolve()
+        path = Path(record["path"].replace("${MILO_ASSET_ROOT}", asset_root).replace("${REPOSITORY_ROOT}", str(root))).resolve()
         if not path.is_file():
             raise RuntimeError(f"Missing source {name}: {path}")
         digest = hashlib.sha256(path.read_bytes()).hexdigest()

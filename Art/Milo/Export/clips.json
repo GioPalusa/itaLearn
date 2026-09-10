@@ -3,39 +3,51 @@
   "clips": [
     {
       "name": "Idle_Neutral_A",
-      "frames": 759,
+      "frames": 757,
       "fps": 30,
       "loops": true
     },
     {
       "name": "Idle_LookAround",
-      "frames": 1014,
+      "frames": 1012,
       "fps": 30,
       "loops": true
     },
     {
       "name": "Idle_Chatting",
-      "frames": 806,
+      "frames": 804,
       "fps": 30,
       "loops": true
     },
     {
       "name": "Idle_Watching",
-      "frames": 813,
+      "frames": 811,
       "fps": 30,
       "loops": true
     },
     {
       "name": "Idle_Chatting02",
-      "frames": 1256,
+      "frames": 1254,
       "fps": 30,
       "loops": true
     },
     {
       "name": "Idle_LookAround02",
-      "frames": 1003,
+      "frames": 1001,
       "fps": 30,
       "loops": true
+    },
+    {
+      "name": "Walk",
+      "frames": 41,
+      "fps": 30,
+      "loops": true
+    },
+    {
+      "name": "Wave",
+      "frames": 106,
+      "fps": 30,
+      "loops": false
     }
   ]
 }

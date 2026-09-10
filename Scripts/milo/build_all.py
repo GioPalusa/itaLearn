@@ -18,6 +18,7 @@ from mathutils import Matrix, Quaternion, Vector
 
 sys.path.insert(0, str(Path(__file__).parent))
 from sources import repository_root, safe_output, verified_sources
+from face_export import bake_face
 
 
 ROOT = repository_root(sys.argv)
@@ -117,28 +118,6 @@ def evaluated_copy(source: bpy.types.Object, name: str) -> bpy.types.Object:
     duplicate.select_set(True)
     bpy.context.view_layer.objects.active = duplicate
     bpy.ops.object.convert(target="MESH")
-    return duplicate
-
-
-def retained_head_copy(source: bpy.types.Object, name: str) -> bpy.types.Object:
-    duplicate = source.copy()
-    duplicate.data = source.data.copy()
-    duplicate.name = name
-    bpy.context.collection.objects.link(duplicate)
-    duplicate.hide_viewport = False
-    duplicate.hide_render = False
-    duplicate.hide_set(False)
-    duplicate.parent = None
-    for modifier in list(duplicate.modifiers):
-        if modifier.type == "ARMATURE":
-            duplicate.modifiers.remove(modifier)
-        else:
-            modifier.show_viewport = modifier.show_render
-            if modifier.type == "SUBSURF":
-                modifier.levels = modifier.render_levels = 0
-    if duplicate.data.shape_keys and duplicate.data.shape_keys.animation_data:
-        for driver in duplicate.data.shape_keys.animation_data.drivers:
-            driver.mute = True
     return duplicate
 
 
@@ -266,72 +245,15 @@ def make_runtime_rig(source_rig: bpy.types.Object) -> bpy.types.Object:
     return rig
 
 
-def bake_face_shapes(source_rig: bpy.types.Object, source_head: bpy.types.Object, runtime_head: bpy.types.Object) -> list[str]:
-    target_sources = {
-        "browRaiseL": ["RIG-snow-EyebrowsUp.L"],
-        "browRaiseR": ["RIG-snow-EyebrowsUp.R"],
-        "browDownL": ["RIG-snow-EyebrowsDown.L"],
-        "browDownR": ["RIG-snow-EyebrowsDown.R"],
-        "smileL": ["Smile.L"],
-        "smileR": ["Smile.R"],
-        "cheekRaiseL": ["RIG-snow-CheekRaise.L"],
-        "cheekRaiseR": ["RIG-snow-CheekRaise.R"],
-        "mouthWide": ["RIG-snow-LipsWide.L", "RIG-snow-LipsWide.R"],
-        "mouthNarrow": ["RIG-snow-LipsNarrow.L", "RIG-snow-LipsNarrow.R"],
-        "mouthPucker": ["RIG-snow-LipsNarrow.L", "RIG-snow-LipsNarrow.R"],
-        "mouthFV": ["RIG-snow-Lip_Lower_RollIn"],
-    }
-    basis = runtime_head.data.shape_keys.key_blocks.get("Basis") if runtime_head.data.shape_keys else None
-    if basis is None:
-        basis = runtime_head.shape_key_add(name="Basis")
-    basis.interpolation = "KEY_LINEAR"
-    for target, source_names in target_sources.items():
-        reset_source_face(source_rig, source_head)
-        for source_name in source_names:
-            key = source_head.data.shape_keys.key_blocks.get(source_name)
-            if key:
-                key.value = 1
-        bpy.context.view_layer.update()
-        evaluated = source_head.evaluated_get(bpy.context.evaluated_depsgraph_get())
-        mesh = evaluated.to_mesh()
-        shape = runtime_head.shape_key_add(name=target)
-        shape.value = 0
-        for index, vertex in enumerate(mesh.vertices):
-            if index < len(shape.data):
-                shape.data[index].co = vertex.co
-        evaluated.to_mesh_clear()
-    reset_source_face(source_rig, source_head)
-    action = bpy.data.actions.get("Eyemask Closed")
-    closed_positions = None
-    if action:
-        source_rig.animation_data_create()
-        source_rig.animation_data.action = action
-        bpy.context.scene.frame_set(round(action.frame_range[1]))
-        bpy.context.view_layer.update()
-        evaluated = source_head.evaluated_get(bpy.context.evaluated_depsgraph_get())
-        mesh = evaluated.to_mesh()
-        closed_positions = [vertex.co.copy() for vertex in mesh.vertices]
-        evaluated.to_mesh_clear()
-    for target, left in (("blinkL", True), ("blinkR", False)):
-        shape = runtime_head.shape_key_add(name=target)
-        shape.value = 0
-        if closed_positions and len(closed_positions) == len(shape.data):
-            for index, position in enumerate(closed_positions):
-                if (position.x >= 0) == left:
-                    shape.data[index].co = position
-    reset_source_face(source_rig, source_head)
-    return list(target_sources) + ["blinkL", "blinkR"]
-
-
 MATERIAL_COLORS = {
     "body": (0.58, 0.31, 0.19, 1),
     "head": (0.58, 0.31, 0.19, 1),
     "shirt": (0.12, 0.105, 0.10, 1),
     "pants": (0.22, 0.26, 0.33, 1),
     "shoes": (0.10, 0.28, 0.32, 1),
-    "teeth": (0.96, 0.92, 0.82, 1),
-    "gums": (0.55, 0.15, 0.16, 1),
-    "tongue": (0.66, 0.18, 0.22, 1),
+    "teeth": (0.78, 0.72, 0.65, 1),
+    "gums": (0.22, 0.025, 0.03, 1),
+    "tongue": (0.28, 0.045, 0.06, 1),
     "eyes": (0.94, 0.96, 0.98, 1),
     "eye_dots": (0.07, 0.035, 0.02, 1),
     "hair": (0.006, 0.003, 0.002, 1),
@@ -414,9 +336,9 @@ def assign_runtime_material(obj: bpy.types.Object, source_name: str) -> None:
         bake_head_color(obj)
         return
     if source_name in (
-        "GEO-snow-eyes", "GEO-snow-hair_base", "GEO-snow-eyebrows",
+        "GEO-snow-hair_base", "GEO-snow-eyebrows",
     ):
-        # Preserve Snow's authored iris, pupil and hair materials.
+        # Preserve Snow's hair materials; eyes get a portable diffuse material.
         return
     render_uv_name = ""
     for index, uv_layer in enumerate(obj.data.uv_layers):
@@ -433,20 +355,35 @@ def assign_runtime_material(obj: bpy.types.Object, source_name: str) -> None:
         shader.inputs["Base Color"].default_value = MATERIAL_COLORS[key]
         shader.inputs["Roughness"].default_value = 0.58
         if key == "eyes":
-            shader.inputs["Coat Weight"].default_value = 0.35
+            shader.inputs["Coat Weight"].default_value = 0.1
+            shader.inputs["Roughness"].default_value = 0.38
         if source_filename := TEXTURE_SOURCE.get(key):
             source_path = SOURCES["snow"].parent / "textures" / source_filename
-            image = bpy.data.images.load(str(source_path), check_existing=False)
-            image.scale(1024, 1024)
+            if key == "body":
+                # Snow's hands use tile 1003; wrapping every UV onto tile 1002
+                # samples empty/dark texels. Flatten all three UDIMs to one atlas.
+                import numpy as np
+                tiles = []
+                for tile in (1001, 1002, 1003):
+                    part = bpy.data.images.load(str(source_path.with_name(f"skin_diffuse.{tile}.png")), check_existing=False)
+                    part.scale(1024, 1024)
+                    pixels = np.empty(1024 * 1024 * 4, dtype=np.float32)
+                    part.pixels.foreach_get(pixels)
+                    tiles.append(pixels.reshape(1024, 1024, 4))
+                image = bpy.data.images.new("Milo_body_atlas", width=3072, height=1024)
+                image.pixels.foreach_set(np.concatenate(tiles, axis=1).ravel())
+                for uv in obj.data.uv_layers["UVMap"].data:
+                    uv.uv.x /= 3
+                render_uv_name = "UVMap"
+            else:
+                image = bpy.data.images.load(str(source_path), check_existing=False)
+                image.scale(1024, 1024)
             texture_path = EXPORT / "textures" / f"{key}_base.png"
             texture_path.parent.mkdir(parents=True, exist_ok=True)
             image.filepath_raw = str(texture_path)
             image.file_format = "PNG"
             image.save()
             RUNTIME_TEXTURES[key] = texture_path.name
-            if key == "body" and obj.data.uv_layers.active:
-                for uv in obj.data.uv_layers.active.data:
-                    uv.uv.x %= 1
         else:
             image = None
         if image:
@@ -493,19 +430,37 @@ MIXAMO = {
 
 
 def retarget_clip(
-    path: Path, runtime_rig: bpy.types.Object,
+    path: Path, runtime_rig: bpy.types.Object, action_name=None, seconds=None, stabilize_torso=False,
 ) -> list[list[Quaternion]]:
     before = set(bpy.data.objects)
-    bpy.ops.import_scene.fbx(filepath=str(path), use_anim=True)
+    mapping = MIXAMO
+    if path.suffix == ".gltf":
+        bpy.ops.import_scene.gltf(filepath=str(path))
+        mapping = {"hips": "DEF-hips", "spine": "DEF-spine.001", "chest": "DEF-spine.003",
+                   "neck": "DEF-neck", "head": "DEF-head"}
+        for side in ("L", "R"):
+            for target, source_bone in (("clavicle", "shoulder"), ("upper_arm", "upper_arm"),
+                ("forearm", "forearm"), ("hand", "hand"), ("upper_leg", "thigh"),
+                ("lower_leg", "shin"), ("foot", "foot"), ("toe", "toe")):
+                mapping[target + "_" + side] = "DEF-" + source_bone + "." + side
+    else:
+        bpy.ops.import_scene.fbx(filepath=str(path), use_anim=True)
     imported = [obj for obj in set(bpy.data.objects) - before if obj.type == "ARMATURE"]
     if not imported:
         raise RuntimeError(f"No armature in {path}")
     source = imported[0]
+    if action_name:
+        source.animation_data.action = bpy.data.actions[action_name]
+        source.animation_data.action_slot = source.animation_data.action.slots[0]
+        for track in source.animation_data.nla_tracks:
+            track.mute = True
     action = source.animation_data.action
     start, end = action.frame_range
     source_fps = bpy.context.scene.render.fps / bpy.context.scene.render.fps_base
+    if seconds:
+        start, end = start + seconds[0] * source_fps, start + seconds[1] * source_fps
     frame_count = max(2, round((end - start) / source_fps * FPS) + 1)
-    source_names = {bone.name.split(":")[-1]: bone.name for bone in source.data.bones}
+    source_names = {bone.name.split(":")[-1].removeprefix("Character1_"): bone.name for bone in source.data.bones}
     target_rest_world = {
         name: runtime_rig.matrix_world @ runtime_rig.data.bones[name].matrix_local
         for name in JOINT_NAMES
@@ -517,7 +472,7 @@ def retarget_clip(
         bpy.context.view_layer.update()
         desired_world: dict[str, Matrix] = {"root": target_rest_world["root"]}
         for name in JOINT_NAMES[1:]:
-            source_short = MIXAMO.get(name)
+            source_short = mapping.get(name)
             if source_short and source_short in source_names:
                 source_name = source_names[source_short]
                 source_rest = (source.matrix_world @ source.data.bones[source_name].matrix_local).to_quaternion()
@@ -525,6 +480,11 @@ def retarget_clip(
                 # Transfer the motion in world space. Snow and Mixamo have
                 # different bone roll/local axes despite sharing a T bind pose.
                 world_delta = source_pose @ source_rest.inverted()
+                if stabilize_torso:
+                    chest_name = source_names[mapping["chest"]]
+                    chest_rest = (source.matrix_world @ source.data.bones[chest_name].matrix_local).to_quaternion()
+                    chest_pose = (source.matrix_world @ source.pose.bones[chest_name].matrix).to_quaternion()
+                    world_delta = chest_rest @ chest_pose.inverted() @ world_delta
                 target_rest = target_rest_world[name]
                 desired_rotation = world_delta @ target_rest.to_quaternion()
                 desired_world[name] = Matrix.LocRotScale(
@@ -626,10 +586,12 @@ def main() -> None:
                     modifier.levels = modifier.render_levels = 0
 
     runtime_rig = make_runtime_rig(source_rig)
+    face_copies, blend_shapes = bake_face(source_rig)
     export_names = {
-        "Milo_Head": ["GEO-snow-head"],
+        "Milo_Head": ["GEO-snow-head", "GEO-snow-teeth_upper", "GEO-snow-teeth_lower",
+                      "GEO-snow-gums_upper", "GEO-snow-gums_lower", "GEO-snow-tongue", "GEO-snow-eyebrows"],
         "Milo_Eyes": ["GEO-snow-eyes"],
-        "Milo_Hair": ["GEO-snow-hair_base", "GEO-snow-eyebrows"],
+        "Milo_Hair": ["GEO-snow-hair_base"],
         "Milo_Body": [
             "GEO-snow-body", "GEO-snow-pants", "GEO-snow-shirt", "GEO-snow-shoes_base",
             "GEO-snow-shoes_bottom", "GEO-snow-shoes_parts",
@@ -638,17 +600,17 @@ def main() -> None:
     runtime_objects: list[bpy.types.Object] = []
     for output_name, names in export_names.items():
         copies = [
-            retained_head_copy(bpy.data.objects[name], name + "_runtime")
-            if name == "GEO-snow-head"
+            face_copies[name]
+            if name in face_copies
             else evaluated_copy(bpy.data.objects[name], name + "_runtime")
             for name in names
         ]
         for copy, source_name in zip(copies, names):
-            collapse_weights(copy)
+            if source_name not in face_copies:
+                collapse_weights(copy)
             assign_runtime_material(copy, source_name)
         runtime_objects.append(join(copies, output_name))
     runtime_head = next(obj for obj in runtime_objects if obj.name == "Milo_Head")
-    blend_shapes = bake_face_shapes(source_rig, source_head, runtime_head)
     for obj in runtime_objects:
         obj.parent = runtime_rig
         modifier = obj.modifiers.new("Milo skin", "ARMATURE")
@@ -672,10 +634,24 @@ def main() -> None:
         ("Idle_Watching", True, retarget_clip(SOURCES["idle_watching"], runtime_rig)),
         ("Idle_Chatting02", True, retarget_clip(SOURCES["idle_chatting_02"], runtime_rig)),
         ("Idle_LookAround02", True, retarget_clip(SOURCES["idle_look_around_02"], runtime_rig)),
+        ("Walk", True, retarget_clip(SOURCES["walk_cc0"], runtime_rig, action_name="Walk_Loop")),
+        ("Wave", False, retarget_clip(SOURCES["wave"], runtime_rig, seconds=(8.5, 12), stabilize_torso=True)),
     ]
+    # These six verified recordings begin with a bind-pose calibration and
+    # one interpolated sample, before the first captured pose at sample two.
+    # Exclude both before making loops or using idle as a standing wave base.
+    clips = [(name, loops, frames[2:] if name.startswith("Idle_") and
+              all(abs(q.w) > .9999 for q in frames[0]) else frames)
+             for name, loops, frames in clips]
+    # The waving take was seated; retain standing legs and torso from the idle.
+    idle = clips[3][2][0]
+    for frame in clips[-1][2]:
+        for index, name in enumerate(JOINT_NAMES):
+            if not (name.endswith("_L") and any(token in name for token in ("clavicle", "upper_arm", "forearm", "hand"))):
+                frame[index] = idle[index].copy()
     # Blend the tail into the first pose to avoid a jump when an idle repeats.
-    for _, loops, frames in clips:
-        if loops:
+    for name, loops, frames in clips:
+        if loops and name != "Walk":
             blend_frames = min(round(FPS * 0.4), len(frames) - 1)
             for offset in range(blend_frames + 1):
                 index = len(frames) - 1 - blend_frames + offset
@@ -728,6 +704,10 @@ def main() -> None:
     render_portrait(runtime_rig, runtime_objects, EXPORT / "preview/Face_CloseUp.png", identity_pose, False, True)
     for name, _, frames in clips:
         render_portrait(runtime_rig, runtime_objects, EXPORT / "preview" / f"{name}.png", frames[len(frames) // 2], False)
+    for name, values in [("Open", {"mouthOpen": 1}), ("Blink", {"blinkL": 1, "blinkR": 1}), ("Smile", {"smileL": 1, "smileR": 1})]:
+        for key in runtime_head.data.shape_keys.key_blocks:
+            key.value = values.get(key.name, 0)
+        render_portrait(runtime_rig, runtime_objects, EXPORT / "preview" / f"Face_{name}.png", identity_pose, False, True)
     print("MILO_MANIFEST", json.dumps(manifest))
 
 

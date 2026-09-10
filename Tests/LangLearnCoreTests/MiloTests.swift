@@ -51,13 +51,17 @@ struct MiloTests {
         let library = try MiloClipLibrary(contentsOf: root.appendingPathComponent("LangLearn/Resources/MiloClips.bin"))
         #expect(library.fps == 30)
         #expect(library.jointNames.count == 33)
-        #expect(Set(library.clips.keys) == Set(["Idle_Neutral_A", "Idle_LookAround", "Idle_LookAround02", "Idle_Chatting", "Idle_Chatting02", "Idle_Watching"]))
+        #expect(Set(library.clips.keys) == Set(["Idle_Neutral_A", "Idle_LookAround", "Idle_LookAround02", "Idle_Chatting", "Idle_Chatting02", "Idle_Watching", "Walk", "Wave"]))
         let rootIndex = try #require(library.jointNames.firstIndex(of: "root"))
         for clip in library.clips.values {
-            #expect(clip.duration > 3)
-            #expect(clip.loops)
-            for (first, last) in zip(clip.frames.first ?? [], clip.frames.last ?? []) {
-                #expect(abs(simd_dot(first.vector, last.vector)) > 0.9999)
+            #expect(clip.duration > 1)
+            for frame in clip.frames {
+                #expect(frame.allSatisfy { abs(simd_length($0.vector) - 1) < 0.0001 })
+            }
+            if clip.loops {
+                for (first, last) in zip(clip.frames.first ?? [], clip.frames.last ?? []) {
+                    #expect(abs(simd_dot(first.vector, last.vector)) > 0.9999)
+                }
             }
             #expect(clip.hipsOffsets.allSatisfy { abs($0.x) < 0.0001 && abs($0.z) < 0.0001 })
             #expect(clip.frames.allSatisfy { abs($0[rootIndex].angle) < 0.0001 })
@@ -65,10 +69,74 @@ struct MiloTests {
             let repeated = clip.sample(time: 0)
             #expect(first.rotations[rootIndex].vector == repeated.rotations[rootIndex].vector)
         }
+        #expect(library.clips["Walk"]?.loops == true)
+        #expect(library.clips["Wave"]?.loops == false)
+        let restingArm = try #require(library.jointNames.firstIndex(of: "upper_arm_R"))
+        for (name, clip) in library.clips where name.hasPrefix("Idle_") || name == "Wave" {
+            #expect(try #require(clip.frames.first)[restingArm].angle > 1, "Free arm must not inherit the source T-pose: \(name)")
+        }
     }
 
     @Test func invalidClipMagicIsRejected() {
         #expect(throws: MiloClipError.invalidMagic) { try MiloClipLibrary(data: Data("NOPE".utf8)) }
+    }
+
+    @Test func studioFaceControlsWorkWithPausedIdleAndResetToNeutral() throws {
+        let library = try MiloClipLibrary(contentsOf: root.appendingPathComponent("LangLearn/Resources/MiloClips.bin"))
+        var animator = MiloAnimator(library: library)
+        var controls = MiloDebugControls(mouthOpening: 0, pausesBody: true)
+        animator.configure(mood: .idle, mouth: 0, wanders: false, debug: controls)
+        let neutral = animator.sample(delta: 0)
+        controls.mouthOpening = 1
+        controls.gaze = [0.2, -0.15]
+        controls.forcesBlink = true
+        animator.configure(mood: .idle, mouth: 0, wanders: false, debug: controls)
+        let adjusted = animator.sample(delta: 0)
+        #expect(adjusted.face["mouthOpen"] == 1)
+        #expect(adjusted.face["blinkL"] == 1 && adjusted.face["blinkR"] == 1)
+        #expect(adjusted.joints["eye_L"]?.vector != neutral.joints["eye_L"]?.vector)
+        #expect(adjusted.joints["eye_R"]?.vector == adjusted.joints["eye_L"]?.vector)
+        #expect(adjusted.joints["spine"]?.vector == neutral.joints["spine"]?.vector)
+        controls.mouthOpening = 0
+        controls.forcesBlink = false
+        controls.gaze = .zero
+        controls.face = ["blinkL": 0, "blinkR": 0, "smileL": 0]
+        animator.configure(mood: .idle, mouth: 0, wanders: false, debug: controls)
+        let reset = animator.sample(delta: 0)
+        #expect(reset.face["mouthOpen"] == 0 && reset.face["blinkL"] == 0 && reset.face["smileL"] == 0)
+        #expect(reset.joints["eye_L"]?.vector == neutral.joints["eye_L"]?.vector)
+    }
+
+    @Test func switchingClipsStartsFromLastBodyPoseAndGreetingDoesNotRestartOnRefresh() throws {
+        let library = try MiloClipLibrary(contentsOf: root.appendingPathComponent("LangLearn/Resources/MiloClips.bin"))
+        var animator = MiloAnimator(library: library)
+        animator.configure(mood: .walking, mouth: 0, wanders: false)
+        for _ in 0..<20 { _ = animator.sample(delta: 1 / 30) }
+        let before = animator.sample(delta: 0)
+        animator.configure(mood: .greeting, mouth: 0, wanders: false)
+        let beginning = animator.sample(delta: 0)
+        #expect(abs(simd_dot(try #require(before.joints["upper_arm_L"]).vector, try #require(beginning.joints["upper_arm_L"]).vector)) > 0.99999)
+        for _ in 0..<150 { _ = animator.sample(delta: 1 / 30) }
+        let settled = animator.sample(delta: 0)
+        animator.configure(mood: .greeting, mouth: 0.2, wanders: false)
+        let refreshed = animator.sample(delta: 0)
+        #expect(settled.joints["upper_arm_L"]?.vector == refreshed.joints["upper_arm_L"]?.vector)
+    }
+
+    @Test func walkingMovesBothLegsAndStaysOnStage() throws {
+        let library = try MiloClipLibrary(contentsOf: root.appendingPathComponent("LangLearn/Resources/MiloClips.bin"))
+        var animator = MiloAnimator(library: library)
+        animator.configure(mood: .walking, mouth: 0, wanders: true)
+        var positions: [Float] = []
+        var legs: [SIMD4<Float>] = []
+        for _ in 0..<300 {
+            let pose = animator.sample(delta: 1 / 30)
+            positions.append(pose.stageOffset.x)
+            legs.append(try #require(pose.joints["upper_leg_L"]).vector)
+            #expect(abs(pose.stageOffset.x) <= 0.42 && pose.stageYaw.isFinite)
+        }
+        #expect(try #require(positions.min()) < -0.4 && #require(positions.max()) > 0.4)
+        #expect(simd_distance(legs[20], legs[40]) > 0.1)
     }
 
     @Test func animatorKeepsFaceIndependentFromBodyAndBoundsHomeMovement() throws {
@@ -94,7 +162,7 @@ struct MiloTests {
         #expect(manifest["jointCount"] as? Int == 33)
         #expect(manifest["triangles"] as? Int ?? .max <= 62_000)
         #expect(Set(manifest["meshes"] as? [String] ?? []) == Set(["Milo_Body", "Milo_Head", "Milo_Eyes", "Milo_Hair"]))
-        #expect((manifest["blendShapes"] as? [String] ?? []).count == 14)
+        #expect((manifest["blendShapes"] as? [String] ?? []).count == 15)
         #expect((manifest["textures"] as? [String] ?? []).contains("head_base.png"))
         #expect(!FileManager.default.fileExists(atPath: root.appendingPathComponent("LangLearn/Resources/clips.json").path))
     }
@@ -113,9 +181,21 @@ struct MiloTests {
             ["DEF-", "MCH-", "ORG-", "FK-", "IK-", "STR-", "mixamorig:"].contains { name.hasPrefix($0) }
         })
         let shapes = Set(models.flatMap { $0.components[BlendShapeWeightsComponent.self]?.weightSet.flatMap(\.weightNames) ?? [] })
-        #expect(Set(["blinkL", "blinkR", "smileL", "smileR", "mouthWide", "mouthFV"]).isSubset(of: shapes))
+        #expect(Set(["mouthOpen", "blinkL", "blinkR", "smileL", "smileR", "mouthWide", "mouthFV"]).isSubset(of: shapes))
         for model in models where !model.jointNames.isEmpty {
             #expect(model.jointTransforms.count == model.jointNames.count)
+            let left = try #require(model.jointNames.firstIndex { $0.hasSuffix("/eye_L") })
+            let right = try #require(model.jointNames.firstIndex { $0.hasSuffix("/eye_R") })
+            // Snow's two eye bones have opposite rolls. Horizontal gaze must
+            // preserve their alignment rather than send one up and one down.
+            let library = try MiloClipLibrary(contentsOf: root.appendingPathComponent("LangLearn/Resources/MiloClips.bin"))
+            var animator = MiloAnimator(library: library)
+            animator.configure(mood: .idle, mouth: 0, wanders: false, debug: MiloDebugControls(gaze: [0.3, 0]))
+            let pose = animator.sample(delta: 0)
+            let leftDirection = pose.jointRotation(for: "eye_L", resting: model.jointTransforms[left].rotation).act([0, 1, 0])
+            let rightDirection = pose.jointRotation(for: "eye_R", resting: model.jointTransforms[right].rotation).act([0, 1, 0])
+            #expect(simd_dot(leftDirection, rightDirection) > 0.995)
+            #expect(abs(leftDirection.y - rightDirection.y) < 0.01)
         }
     }
 }

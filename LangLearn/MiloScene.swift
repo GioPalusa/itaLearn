@@ -59,6 +59,8 @@ final class MiloScene {
     private let stage = Entity()
     private var characterPivot: Entity?
     private var baseScale: Float = 1
+    private var zoom: Float = 1
+    private var faceFocus = SIMD3<Float>(0, 0.8, 0)
 
     var rigSummary: String {
         let joints = Set(models.flatMap { $0.jointIndices.keys }).count
@@ -94,6 +96,20 @@ final class MiloScene {
         pivot.scale = SIMD3(repeating: baseScale)
         characterPivot = pivot
         stage.addChild(pivot)
+        if let rig = models.first, let eye = rig.jointIndices["eye_L"] {
+            // Skinned visualBounds can describe the whole skeleton, even for
+            // the eye mesh. Derive the focus from the actual eye bind joint.
+            let eyePath = rig.entity.jointNames[eye]
+            let ancestors = rig.entity.jointNames.indices.filter {
+                let path = rig.entity.jointNames[$0]
+                return eyePath == path || eyePath.hasPrefix(path + "/")
+            }.sorted { rig.entity.jointNames[$0].count < rig.entity.jointNames[$1].count }
+            var bind = matrix_identity_float4x4
+            for index in ancestors { bind *= rig.rest[index].matrix }
+            let point = SIMD3<Float>(bind.columns.3.x, bind.columns.3.y, bind.columns.3.z)
+            faceFocus = rig.entity.convert(position: point, to: pivot) * baseScale
+            faceFocus.x = 0
+        }
 
         let scene = Entity()
         scene.addChild(stage)
@@ -104,13 +120,19 @@ final class MiloScene {
         camera.look(at: .zero, from: [0.12, 0.06, 4], relativeTo: nil)
         scene.addChild(camera)
         let key = DirectionalLight()
-        key.light.intensity = 2200
+        key.light.intensity = 1800
+        key.light.color = .init(red: 1, green: 0.95, blue: 0.89, alpha: 1)
         key.look(at: .zero, from: [-3, 4, 5], relativeTo: nil)
         scene.addChild(key)
         let fill = DirectionalLight()
-        fill.light.intensity = 900
-        fill.look(at: .zero, from: [3, 1, 2], relativeTo: nil)
+        fill.light.intensity = 1800
+        fill.light.color = .init(red: 0.90, green: 0.94, blue: 1, alpha: 1)
+        fill.look(at: .zero, from: [2, 2, 5], relativeTo: nil)
         scene.addChild(fill)
+        let rim = DirectionalLight()
+        rim.light.intensity = 1000
+        rim.look(at: .zero, from: [1, 3, -3], relativeTo: nil)
+        scene.addChild(rim)
         return scene
     }
 
@@ -119,10 +141,12 @@ final class MiloScene {
         debug: MiloDebugControls? = nil, restart: Bool = false, zoom: Float = 1
     ) {
         animator?.configure(mood: mood, mouth: mouth, wanders: wanders, debug: debug, restart: restart)
-        let clampedZoom = min(3, max(1, zoom.isFinite ? zoom : 1))
+        let clampedZoom = min(4.5, max(1, zoom.isFinite ? zoom : 1))
+        self.zoom = clampedZoom
         characterPivot?.scale = SIMD3(repeating: baseScale * clampedZoom)
         // Keep the face near the camera's optical center while the body grows.
-        characterPivot?.position.y = -0.34 * (clampedZoom - 1)
+        let focusAmount = min(1, (clampedZoom - 1) / 1.5)
+        characterPivot?.position = -faceFocus * clampedZoom * focusAmount
         // Apply slider-driven face/gaze changes immediately instead of waiting
         // for the next SceneEvents.Update callback.
         if var animator {
@@ -142,13 +166,12 @@ final class MiloScene {
     func apply(pose: MiloPose, smoothingDelta: Double) {
         let smoothing = Float(1 - exp(-max(0, smoothingDelta) * 12))
         stage.position += (pose.stageOffset - stage.position) * smoothing
+        stage.orientation = simd_slerp(stage.orientation, simd_quatf(angle: pose.stageYaw, axis: [0, 1, 0]), smoothing)
         for model in models {
             var joints = model.rest
             let current = model.entity.jointTransforms
             for (name, index) in model.jointIndices where index < joints.count {
-                if let rotation = pose.joints[name] {
-                    joints[index].rotation = model.rest[index].rotation * rotation
-                }
+                joints[index].rotation = pose.jointRotation(for: name, resting: model.rest[index].rotation)
                 if name == "hips" { joints[index].translation += pose.hipsOffset }
             }
             for index in joints.indices where index < current.count {
@@ -171,6 +194,16 @@ final class MiloScene {
 
     private func collectModels(in entity: Entity) {
         if let model = entity as? ModelEntity, !model.jointNames.isEmpty {
+            if var mesh = model.model {
+                mesh.materials = mesh.materials.map { material in
+                    guard var physical = material as? PhysicallyBasedMaterial else { return material }
+                    // Snow's recessed pupil is authored as a double-sided
+                    // surface. Preserve this when RealityKit imports the skin.
+                    physical.faceCulling = .none
+                    return physical
+                }
+                model.model = mesh
+            }
             let indices = Dictionary(uniqueKeysWithValues: model.jointNames.enumerated().map { index, path in
                 (path.split(separator: "/").last.map(String.init) ?? path, index)
             })
@@ -229,7 +262,7 @@ struct MiloRealityView: View {
             }
         }
         .onChange(of: trigger) {
-            scene.configure(mood: mood, mouth: mouth, wanders: wanders, debug: debug, restart: true)
+            scene.configure(mood: mood, mouth: mouth, wanders: wanders, debug: debug, restart: true, zoom: zoom)
         }
         .onDisappear { scene.stop() }
         .allowsHitTesting(false)

@@ -1,6 +1,18 @@
 {
   "assetRootEnv": "MILO_ASSET_ROOT",
   "sources": {
+    "walk_cc0": {
+      "path": "${REPOSITORY_ROOT}/Art/Milo/Source/Quaternius/AnimationLibrary_Godot_Standard.gltf",
+      "sha256": "0ff075c7ad6855c5c2c37a171592ee8f0d6ab2f58259e2be77a9b63dd8027765"
+    },
+    "walk_cc0_buffer": {
+      "path": "${REPOSITORY_ROOT}/Art/Milo/Source/Quaternius/AnimationLibrary_Godot_Standard.bin",
+      "sha256": "6e65377d81558333c4093dbb144a48fd19019343d82b1a3a7992a98ec0e0543c"
+    },
+    "wave": {
+      "path": "${MILO_ASSET_ROOT}/Movements & Animations/Rokoko_Free_Mocap_FBX_263/Rokoko Studio Legacy Mocap (older)/Sitting/Pilot_Wave_HUMANIK_769.fbx",
+      "sha256": "5b8f67fffc0a6b70747afec39715957973fe62a282e6549c3df81709020ba8be"
+    },
     "snow": {
       "path": "${MILO_ASSET_ROOT}/Snow/snow_v4.2.blend",
       "sha256": "80fd0a81bca90f0efdcdcb98422df0e198ae57f4a1c239e13fb795922779b1fc"

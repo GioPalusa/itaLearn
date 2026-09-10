@@ -13,12 +13,15 @@ struct MiloDemoView: View {
     @State private var gazeX: Float = 0
     @State private var gazeY: Float = 0
     @State private var zoom: Float = 1
+    @State private var pausesBody = false
+    @State private var walksAcrossStage = false
     @State private var blink = false
     @State private var face = Dictionary(uniqueKeysWithValues: Self.shapes.map { ($0, Float.zero) })
     @State private var trigger = 0
     @State private var narrator = SpeechNarrator()
     @State private var still = false
     @State private var rigStatus = "Laddar Snow…"
+    @State private var renderCheck = ""
     @Environment(\.scenePhase) private var scenePhase
 
     private var debug: MiloDebugControls {
@@ -26,13 +29,14 @@ struct MiloDemoView: View {
             clipName: clipName,
             gaze: SIMD2(gazeX, gazeY),
             forcesBlink: blink,
-            face: face.filter { $0.value > 0 }
+            face: face, mouthOpening: narrator.isSpeaking ? nil : mouth,
+            pausesBody: pausesBody, walksAcrossStage: walksAcrossStage && clipName == "Walk"
         )
     }
 
     var body: some View {
-        ScrollView {
-            VStack(spacing: 18) {
+        VStack(spacing: 0) {
+            VStack(spacing: 6) {
                 MiloView(
                     mood: still ? .still : narrator.isSpeaking ? .speaking : mood,
                     size: 280, wanders: false,
@@ -42,16 +46,27 @@ struct MiloDemoView: View {
                     onRigStatus: { rigStatus = $0 }
                 )
                 Text(rigStatus).font(.caption.monospaced()).foregroundStyle(.secondary)
-
+                if !renderCheck.isEmpty { Text(renderCheck).font(.caption.monospaced()) }
+            }
+            .frame(maxWidth: .infinity)
+            .padding(.bottom, 8)
+            ScrollView {
+              VStack(spacing: 18) {
                 GroupBox("Kamerafokus") {
-                    valueSlider("Zoom mot ansiktet", value: $zoom, range: 1...3)
-                    Button("Återställ zoom") { zoom = 1 }
+                    valueSlider("Zoom mot ansiktet", value: $zoom, range: 1...4.5)
+                    HStack {
+                        Button("Hela Milo") { zoom = 1 }
+                        Spacer()
+                        Button("Ansiktet") { zoom = 3.8; pausesBody = true }
+                    }
                         .font(.subheadline)
                 }
 
                 GroupBox("Animation") {
                     VStack(spacing: 12) {
                         Picker("Klipp", selection: $clipName) {
+                            Text("Går").tag("Walk")
+                            Text("Vinkar").tag("Wave")
                             Text("Väntar lugnt").tag("Idle_Watching")
                             Text("Lugn konversation").tag("Idle_Neutral_A")
                             Text("Tittar omkring").tag("Idle_LookAround")
@@ -67,6 +82,8 @@ struct MiloDemoView: View {
                         Button("Spela klippet från början") { trigger += 1 }
                             .buttonStyle(.borderedProminent).tint(LangLearn.purple)
                         Toggle("Visa fallback-bilden", isOn: $still)
+                        Toggle("Pausa kroppen", isOn: $pausesBody)
+                        if clipName == "Walk" { Toggle("Gå över scenen", isOn: $walksAcrossStage) }
                     }
                 }
 
@@ -96,6 +113,9 @@ struct MiloDemoView: View {
                         Button("Nollställ ansiktet") {
                             face = Dictionary(uniqueKeysWithValues: Self.shapes.map { ($0, Float.zero) })
                             blink = false
+                            mouth = 0
+                            gazeX = 0
+                            gazeY = 0
                         }
                     }
                 }
@@ -105,13 +125,56 @@ struct MiloDemoView: View {
                 if let error = narrator.errorMessage { Text(error).foregroundStyle(.red) }
             }
             .padding(20)
+            }
         }
         .langlearnCanvas()
         .navigationTitle("Milos studio")
         .navigationBarTitleDisplayMode(.inline)
         .onDisappear { narrator.stop() }
         .onChange(of: scenePhase) { if scenePhase != .active { narrator.stop() } }
+#if DEBUG
+        .task {
+            // Reproducible render checks use the same @State bindings as the
+            // sliders, after the live view has loaded; no learner data changes.
+            guard ProcessInfo.processInfo.arguments.contains("--milo-face-check") else { return }
+            zoom = 3.8
+            pausesBody = true
+            guard await waitForLiveRig() else { return }
+            for step in 0..<8 {
+                do { try await Task.sleep(for: .seconds(5)) } catch { return }
+                renderCheck = ["Neutral", "Munöppning 1", "Blunda", "Blick vänster", "Blick höger", "Blick ned", "Blick upp", "Nollställd"][step]
+                mouth = step == 1 ? 1 : 0
+                blink = step == 2
+                gazeX = step == 3 ? -0.3 : step == 4 ? 0.3 : 0
+                gazeY = step == 5 ? -0.2 : step == 6 ? 0.2 : 0
+            }
+        }
+        .task {
+            guard ProcessInfo.processInfo.arguments.contains("--milo-motion-check") else { return }
+            guard await waitForLiveRig() else { return }
+            clipName = "Wave"
+            do {
+                try await Task.sleep(for: .seconds(5))
+                clipName = "Walk"
+                try await Task.sleep(for: .seconds(5))
+                walksAcrossStage = true
+                try await Task.sleep(for: .seconds(10))
+                walksAcrossStage = false
+                clipName = "Idle_Watching"
+            } catch { return }
+        }
+#endif
     }
+
+#if DEBUG
+    private func waitForLiveRig() async -> Bool {
+        for _ in 0..<200 {
+            if rigStatus.contains("klipp") { return true }
+            do { try await Task.sleep(for: .milliseconds(100)) } catch { return false }
+        }
+        return false
+    }
+#endif
 
     private func binding(for name: String) -> Binding<Float> {
         Binding(get: { face[name, default: 0] }, set: { face[name] = $0 })

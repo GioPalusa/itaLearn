@@ -38,9 +38,10 @@ checks alone do not establish the device's rendered appearance.
 ## Idle motion and facial color
 
 Six clips from `EVERYDAY-IDLES-MOCAP` are sampled at 30 fps while preserving
-their source duration: Conversation, LookingAround, LookingAround02,
+their source timing: Conversation, LookingAround, LookingAround02,
 Chatting, Chatting02 and WatchingSomething. The last 0.4 seconds blend into
-the opening pose for a continuous loop. Their source paths and checksums
+the opening pose for a continuous loop. Two calibration samples (T-pose and
+its transition) are removed before the loop is built. Their source paths and checksums
 are recorded in `Art/Milo/sources.json`.
 
 Snow's skin and lip node graphs are baked without lighting into
@@ -48,3 +49,29 @@ Snow's skin and lip node graphs are baked without lighting into
 source's alternate tattoo UV must not become the bake destination. The
 exported head uses a direct image-to-base-color material supported by USDZ,
 without relying on Blender shader groups or UDIM evaluation in the app.
+
+## Walking, waving and facial motion
+
+`Walk` is the free CC0 `Walk_Loop` from Quaternius' Universal Animation Library
+Standard. Downloaded glTF, binary, license and provenance are under
+`Art/Milo/Source/Quaternius`; hashes are checked before export. Native loop timing
+is preserved. `Wave` uses the supplied Rokoko Pilot Wave recording, seconds
+8.5–12: the left arm is retargeted relative to the chest, with the standing body
+from WatchingSomething. It plays once before returning to idle. Runtime clip
+transitions blend from the currently displayed pose.
+
+`face_export.py` evaluates Snow's actual rig, including its action slot, at the
+expression's final frame. Fifteen neutral-relative morphs share a mesh with the
+head, eyebrows, teeth, gums and tongue. The old export could list blink shapes
+without any eyelid motion. `mouthOpen` bakes jaw and lip deformation together;
+the runtime must not also rotate the jaw. Gaze uses independent eye joints with deltas in common head space: Snow's
+eye bind rolls differ. Eyes use a direct iris texture material for USDZ. Runtime materials explicitly
+preserve double-sided rendering so the recessed pupil does not disappear.
+Regression tests require substantial eyelid motion on the correct side and
+moving teeth, rather than checking shape names alone.
+
+The studio keeps its preview visible while scrolling controls, with face zoom,
+body pause, direct mouth opening, eyelids, gaze, replay and walking across the
+stage. Speech amplitude drives mouth opening, not phoneme-accurate lip sync.
+Key/fill/rim lighting reveals both facial sides. Hand skin uses a three-tile
+atlas instead of incorrectly sampling only the body texture tile.

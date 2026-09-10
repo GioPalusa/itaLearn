@@ -10,6 +10,27 @@ import build_all as milo
 
 
 class ArmRigTests(unittest.TestCase):
+    def test_face_shapes_deform_geometry_and_include_mouth_interior(self):
+        bpy.ops.wm.open_mainfile(filepath=str(milo.WORKING / "Milo_Generated.blend"))
+        head = bpy.data.objects["Milo_Head"]
+        keys = head.data.shape_keys.key_blocks
+        self.assertEqual(len(keys), 16)  # neutral + fifteen evaluated poses
+        neck = [vertex for vertex in head.data.vertices if vertex.co.z < 1.4]
+        self.assertTrue(neck)
+        self.assertTrue(any(any(head.vertex_groups[link.group].name == "chest" and link.weight > .5 for link in vertex.groups) for vertex in neck))
+        basis = keys[0].data
+        for key in list(keys)[1:]:
+            delta = max((point.co - base.co).length for point, base in zip(key.data, basis))
+            self.assertGreater(delta, .001, key.name)
+        # Lids must move on their own side, not copy a common neutral/Fixholes offset.
+        for name, sign in (("blinkL", 1), ("blinkR", -1)):
+            moved = [(base.co, (point.co - base.co).length) for point, base in zip(keys[name].data, basis)]
+            self.assertGreater(max(delta for co, delta in moved if co.x * sign > .012), .02)
+            self.assertLess(max(delta for co, delta in moved if co.x * sign < -.012), .00001)
+        lower_teeth = next(i for i, slot in enumerate(head.material_slots) if slot.material.name == "Milo_teeth_PBR")
+        tooth_vertices = {i for polygon in head.data.polygons if polygon.material_index == lower_teeth for i in polygon.vertices}
+        self.assertGreater(max((keys["mouthOpen"].data[i].co - basis[i].co).length for i in tooth_vertices), .02)
+
     def test_head_has_baked_color_on_render_uv(self):
         bpy.ops.wm.open_mainfile(filepath=str(milo.WORKING / "Milo_Generated.blend"))
         head = bpy.data.objects["Milo_Head"]
