@@ -43,7 +43,7 @@ final class LessonSpeechInput {
             return
         }
         guard await requestMicrophoneAccess() else {
-            errorMessage = "Ge LangLearn mikrofonåtkomst i enhetens inställningar, eller skriv i stället."
+            errorMessage = "Ge LanguLearn mikrofonåtkomst i enhetens inställningar, eller skriv i stället."
             return
         }
         do {

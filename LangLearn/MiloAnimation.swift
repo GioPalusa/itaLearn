@@ -2,7 +2,7 @@ import Foundation
 import simd
 
 nonisolated enum MiloMood: String, CaseIterable, Sendable {
-    case still, idle, greeting, thinking, listening, speaking, encouraging, celebrating, walking
+    case still, idle, greeting, thinking, listening, speaking, encouraging, celebrating, walking, laughing, applauding
 }
 
 nonisolated struct MiloDebugControls: Equatable, Sendable {
@@ -36,6 +36,7 @@ nonisolated struct MiloPose: Sendable {
 nonisolated struct MiloAnimator: Sendable {
     private let library: MiloClipLibrary
     private(set) var mood: MiloMood = .idle
+    private(set) var completedReaction = false
     private var elapsed: Double = 0
     private var previousBody: [simd_quatf]?
     private var lastBody: [simd_quatf]?
@@ -55,12 +56,13 @@ nonisolated struct MiloAnimator: Sendable {
         debug: MiloDebugControls? = nil, restart: Bool = false
     ) {
         let requested = debug?.clipName ?? Self.clipName(for: mood)
-        if requested != configuredClip || restart {
+        if requested != configuredClip || mood != self.mood || restart {
             previousBody = lastBody
             configuredClip = requested
             activeClip = library.clips[requested] == nil ? "Idle_Neutral_A" : requested
             elapsed = 0
             transitionElapsed = 0
+            completedReaction = false
         }
         self.mood = mood
         self.mouth = mouth.isFinite ? min(1, max(0, mouth)) : 0
@@ -87,6 +89,7 @@ nonisolated struct MiloAnimator: Sendable {
             activeClip = "Idle_Watching"
             elapsed = 0
             transitionElapsed = 0
+            completedReaction = true
         }
         guard let clip = library.clips[activeClip] ?? library.clips.values.first else { return .neutral }
         var body = clip.sample(time: elapsed)
@@ -98,6 +101,8 @@ nonisolated struct MiloAnimator: Sendable {
         lastBody = body.rotations
         var joints = Dictionary(uniqueKeysWithValues: zip(library.jointNames, body.rotations))
         let t = Float(clock)
+        let laughing = mood == .laughing && !completedReaction
+        let applauding = mood == .applauding && !completedReaction
         let gazeTargets: [SIMD2<Float>] = [.zero, [0.09, 0.02], .zero, [-0.07, -0.03], .zero]
         let target = debug?.gaze ?? gazeTargets[Int(clock / 2.3) % gazeTargets.count]
         if debug != nil { gazePosition = target } else { gazePosition += (target - gazePosition) * Float(1 - exp(-dt * 16)) }
@@ -114,7 +119,8 @@ nonisolated struct MiloAnimator: Sendable {
         joints["head"] = (joints["head"] ?? simd_quatf(angle: 0, axis: [0, 1, 0])) * headOverlay
         // Full jaw/lip/teeth deformation is baked from Snow into mouthOpen.
         // Applying the old jaw bone as well would deform the mouth twice.
-        let opening = debug?.mouthOpening ?? (mood == .speaking ? mouth : 0)
+        let laughPulse = max(0, sin(Float(elapsed) * 15))
+        let opening = debug?.mouthOpening ?? (laughing ? 0.18 + 0.28 * laughPulse : mood == .speaking ? mouth : 0)
 
         let blinkPhase = t.truncatingRemainder(dividingBy: 17)
         let blink = [Float(3.1), 7.8, 10.4, 16.2].map { max(0, 1 - abs(blinkPhase - $0) / 0.12) }.max() ?? 0
@@ -134,6 +140,16 @@ nonisolated struct MiloAnimator: Sendable {
             "mouthPucker": mood == .speaking ? max(0, sin(t * 7)) * mouth * 0.22 : 0,
             "mouthFV": mood == .speaking ? max(0, sin(t * 5 + 1)) * mouth * 0.18 : 0,
         ]
+        if laughing || applauding {
+            face["smileL"] = laughing ? 0.55 : 0.38
+            face["smileR"] = laughing ? 0.50 : 0.35
+            face["cheekRaiseL"] = 0.12
+            face["cheekRaiseR"] = 0.12
+        }
+        if laughing {
+            face["blinkL"] = max(blink, 0.20 + 0.16 * laughPulse)
+            face["blinkR"] = face["blinkL"]
+        }
         for (name, value) in debug?.face ?? [:] { face[name] = value.isFinite ? min(1, max(0, value)) : 0 }
         if debug?.forcesBlink == true { face["blinkL"] = 1; face["blinkR"] = 1 }
         var stageOffset = SIMD3<Float>.zero
@@ -151,6 +167,8 @@ nonisolated struct MiloAnimator: Sendable {
         switch mood {
         case .greeting: "Wave"
         case .walking: "Walk"
+        case .laughing: "Laugh"
+        case .applauding: "Applaud"
         case .encouraging: "Idle_Chatting"
         case .celebrating: "Idle_Chatting02"
         case .thinking: "Idle_LookAround02"

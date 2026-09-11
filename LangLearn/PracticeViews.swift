@@ -32,7 +32,7 @@ struct LessonPracticeView: View {
                         Button("Skapa fler övningar", systemImage: "sparkles") {
                             generator.extendPractice(store: store, sessionID: sessionID, settings: settings)
                         }
-                        .buttonStyle(LangLearnSecondaryButtonStyle())
+                        .buttonStyle(LanguLearnSecondaryButtonStyle())
                         .disabled(!access.hasKey)
                         Text(access.hasKey
                              ? "Milo skriver nya ordkort och meningar på samma lektion och undviker dem du redan har."
@@ -44,13 +44,13 @@ struct LessonPracticeView: View {
                         guard let sessionID else { return }
                         generator.generatePractice(store: store, sessionID: sessionID, settings: settings)
                     }
-                    .buttonStyle(LangLearnPrimaryButtonStyle())
+                    .buttonStyle(LanguLearnPrimaryButtonStyle())
                     .disabled(generator.isWorking || sessionID == nil)
                     Text("Milo skapar ordkort och meningar utifrån lektionen och dina senaste svar. Detta använder ditt OpenAI API-konto.").font(.footnote).foregroundStyle(.secondary)
                     if generator.isWorking { MiloLoadingView(message: "Milo skapar ordkort och meningar…") }
                 }
                 if let error = errorMessage ?? generator.errorMessage {
-                    Text(error).foregroundStyle(LangLearn.red)
+                    Text(error).foregroundStyle(LanguLearn.red)
                     Button("Försök igen") {
                         prepare()
                         if let sessionID { generator.generatePractice(store: store, sessionID: sessionID, settings: settings) }
@@ -58,7 +58,7 @@ struct LessonPracticeView: View {
                 }
             }.padding(20).frame(maxWidth: 760).frame(maxWidth: .infinity)
         }
-        .langlearnCanvas().navigationTitle("Lek och repetera")
+        .langulearnCanvas().navigationTitle("Lek och repetera")
         .task { prepare() }
         .onDisappear { generator.cancel() }
         .onChange(of: access.revision) { generator.cancel() }
@@ -81,10 +81,10 @@ struct LessonPracticeView: View {
     }
     private func activityCard(_ title: String, subtitle: String, icon: String, count: String) -> some View {
         VStack(alignment: .leading, spacing: 12) {
-            Label(title, systemImage: icon).font(.title2.bold()).foregroundStyle(LangLearn.purple)
+            Label(title, systemImage: icon).font(.title2.bold()).foregroundStyle(LanguLearn.purple)
             Text(subtitle).foregroundStyle(.primary)
             Text(count).font(.caption).foregroundStyle(.secondary)
-        }.langlearnCard()
+        }.langulearnCard()
     }
 }
 
@@ -133,11 +133,11 @@ struct FlashcardPracticeView: View {
             }
 
             if let errorMessage {
-                Text(errorMessage).font(.il(13)).foregroundStyle(LangLearn.red).padding(.horizontal, 16)
+                Text(errorMessage).font(.il(13)).foregroundStyle(LanguLearn.red).padding(.horizontal, 16)
             }
         }
         .frame(maxWidth: 760).frame(maxWidth: .infinity)
-        .langlearnCanvas()
+        .langulearnCanvas()
         .hideNavigationBar()
         .onAppear(perform: restoreIfNeeded)
         .onDisappear { narrator.stop(); persist() }
@@ -201,7 +201,7 @@ struct FlashcardPracticeView: View {
                 .font(.il(12, .bold)).tracking(0.6)
                 .foregroundStyle(.white)
                 .padding(.horizontal, 12).padding(.vertical, 7)
-                .background(dragOffset.width < 0 ? LangLearn.magenta : LangLearn.green, in: .capsule)
+                .background(dragOffset.width < 0 ? LanguLearn.magenta : LanguLearn.green, in: .capsule)
                 .padding(18)
                 .opacity(magnitude)
         }
@@ -209,7 +209,7 @@ struct FlashcardPracticeView: View {
 
     private func faceCard(_ card: Flashcard) -> some View {
         Button {
-            withAnimation(reduceMotion ? nil : LangLearnMotion.move) { revealed.toggle() }
+            withAnimation(reduceMotion ? nil : LanguLearnMotion.move) { revealed.toggle() }
         } label: {
             VStack(spacing: 0) {
                 HStack {
@@ -218,7 +218,7 @@ struct FlashcardPracticeView: View {
                         else { Text("HUR SÄGER DU?") }
                     }
                     .font(.il(11, .semibold)).tracking(0.88)
-                    .foregroundStyle(LangLearn.magenta)
+                    .foregroundStyle(LanguLearn.magenta)
                     Spacer(minLength: 0)
                     if revealed {
                         Button { narrator.stop(); narrator.speak(card.answer, in: settings.targetLanguage) } label: {
@@ -226,9 +226,9 @@ struct FlashcardPracticeView: View {
                                 Image(systemName: "speaker.wave.2").font(.system(size: 12, weight: .semibold))
                                 Text("Lyssna").font(.il(13, .semibold))
                             }
-                            .foregroundStyle(LangLearn.purple)
+                            .foregroundStyle(LanguLearn.purple)
                             .padding(.horizontal, 11).frame(height: 30)
-                            .background(LangLearn.purple.opacity(0.1), in: .capsule)
+                            .background(LanguLearn.purple.opacity(0.1), in: .capsule)
                         }
                         .buttonStyle(.plain)
                     }
@@ -237,7 +237,7 @@ struct FlashcardPracticeView: View {
                 VStack(spacing: 12) {
                     Text(revealed ? card.answer : card.cue)
                         .font(.il(revealed ? 44 : 34, .bold))
-                        .foregroundStyle(LangLearn.ink)
+                        .foregroundStyle(LanguLearn.ink)
                         .multilineTextAlignment(.center)
                         .minimumScaleFactor(0.5)
                     if revealed {
@@ -249,7 +249,7 @@ struct FlashcardPracticeView: View {
                 .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .center)
                 .padding(.vertical, 14)
 
-                Rectangle().fill(LangLearn.hairline).frame(height: 1)
+                Rectangle().fill(LanguLearn.hairline).frame(height: 1)
 
                 HStack(spacing: 8) {
                     Image(systemName: "arrow.trianglehead.2.clockwise.rotate.90")
@@ -263,8 +263,8 @@ struct FlashcardPracticeView: View {
             .rotation3DEffect(.degrees(revealed ? 180 : 0), axis: (x: 0, y: 1, z: 0))
             .padding(.horizontal, 22).padding(.vertical, 26)
             .frame(maxWidth: .infinity, minHeight: 284)
-            .background(LangLearn.card, in: .rect(cornerRadius: 22))
-            .overlay { RoundedRectangle(cornerRadius: 22).strokeBorder(LangLearn.cardBorder, lineWidth: 1) }
+            .background(LanguLearn.card, in: .rect(cornerRadius: 22))
+            .overlay { RoundedRectangle(cornerRadius: 22).strokeBorder(LanguLearn.cardBorder, lineWidth: 1) }
             .shadow(color: .black.opacity(0.08), radius: 6, y: 6)
             // The card turns; the content above turns back.
             .rotation3DEffect(.degrees(revealed ? 180 : 0), axis: (x: 0, y: 1, z: 0))
@@ -293,10 +293,10 @@ struct FlashcardPracticeView: View {
                         Image(systemName: "arrow.trianglehead.clockwise").font(.system(size: 14, weight: .semibold))
                         Text("Öva igen").font(.il(16, .semibold))
                     }
-                    .foregroundStyle(LangLearn.purple)
+                    .foregroundStyle(LanguLearn.purple)
                     .frame(maxWidth: .infinity, minHeight: 52)
-                    .background(LangLearn.card, in: .capsule)
-                    .overlay { Capsule().strokeBorder(LangLearn.purple.opacity(0.24), lineWidth: 1) }
+                    .background(LanguLearn.card, in: .capsule)
+                    .overlay { Capsule().strokeBorder(LanguLearn.purple.opacity(0.24), lineWidth: 1) }
                 }
                 .buttonStyle(.plain)
 
@@ -307,8 +307,8 @@ struct FlashcardPracticeView: View {
                     }
                     .foregroundStyle(.white)
                     .frame(maxWidth: .infinity, minHeight: 52)
-                    .background(LangLearn.purple, in: .capsule)
-                    .shadow(color: LangLearn.purple.opacity(0.28), radius: 4, y: 4)
+                    .background(LanguLearn.purple, in: .capsule)
+                    .shadow(color: LanguLearn.purple.opacity(0.28), radius: 4, y: 4)
                 }
                 .buttonStyle(.plain)
             }
@@ -321,13 +321,13 @@ struct FlashcardPracticeView: View {
     @ViewBuilder private var finished: some View {
         VStack(spacing: 16) {
             Label("Rundan är klar!", systemImage: "checkmark.circle.fill")
-                .font(.il(28, .bold)).foregroundStyle(LangLearn.deepGreen)
+                .font(.il(28, .bold)).foregroundStyle(LanguLearn.deepGreen)
             Text("Dina markeringar är sparade. Repetera gärna de ord du vill befästa.")
-                .multilineTextAlignment(.center).foregroundStyle(LangLearn.inkSecondary)
+                .multilineTextAlignment(.center).foregroundStyle(LanguLearn.inkSecondary)
             Button("Spela en gång till") {
                 queue = liveCards.shuffled(); index = 0; revealed = false; persist()
             }
-            .buttonStyle(LangLearnPrimaryButtonStyle())
+            .buttonStyle(LanguLearnPrimaryButtonStyle())
         }
         .padding(20).frame(maxHeight: .infinity)
     }
@@ -341,7 +341,7 @@ struct FlashcardPracticeView: View {
             }
             narrator.stop()
             if !known { queue.append(card) }
-            withAnimation(reduceMotion ? nil : LangLearnMotion.move) {
+            withAnimation(reduceMotion ? nil : LanguLearnMotion.move) {
                 index += 1; revealed = false
             }
             errorMessage = nil
@@ -428,10 +428,10 @@ struct SentencePracticeView: View {
             .padding(.horizontal, 16).padding(.bottom, 40)
             .frame(maxWidth: 760).frame(maxWidth: .infinity)
         }
-        .langlearnCanvas()
+        .langulearnCanvas()
         .hideNavigationBar()
-        .motion(LangLearnMotion.settle, checked)
-        .motion(LangLearnMotion.settle, correct)
+        .motion(LanguLearnMotion.settle, checked)
+        .motion(LanguLearnMotion.settle, correct)
         .onAppear(perform: restoreIfNeeded)
         .onChange(of: currentPuzzleID) {
             if let puzzle = currentPuzzle { resyncIfPuzzleChanged(puzzle) }
@@ -447,13 +447,13 @@ struct SentencePracticeView: View {
     @ViewBuilder private func round(_ puzzle: SentencePuzzle) -> some View {
         VStack(alignment: .leading, spacing: 0) {
             Text("SÄG DET PÅ \(settings.targetLanguage.displayName.uppercased())")
-                .font(.il(11, .semibold)).tracking(0.88).foregroundStyle(LangLearn.magenta)
+                .font(.il(11, .semibold)).tracking(0.88).foregroundStyle(LanguLearn.magenta)
             Text(puzzle.cue)
-                .font(.il(24, .bold)).foregroundStyle(LangLearn.ink)
+                .font(.il(24, .bold)).foregroundStyle(LanguLearn.ink)
                 .padding(.top, 8)
                 .fixedSize(horizontal: false, vertical: true)
         }
-        .langlearnCard()
+        .langulearnCard()
         .padding(.top, 16)
 
         slotArea(puzzle).padding(.top, 18)
@@ -469,24 +469,24 @@ struct SentencePracticeView: View {
         }
         if chat.isWorking { MiloLoadingView(message: "Milo tittar på din mening…").padding(.top, 12) }
         if let error = errorMessage ?? chat.errorMessage {
-            Text(error).font(.il(13)).foregroundStyle(LangLearn.red).padding(.top, 12)
+            Text(error).font(.il(13)).foregroundStyle(LanguLearn.red).padding(.top, 12)
         }
 
         VStack(spacing: 12) {
             if correct {
                 Button(index + 1 == livePuzzles.count ? "Avsluta rundan" : "Nästa mening") { advance() }
-                    .buttonStyle(LangLearnPrimaryButtonStyle())
+                    .buttonStyle(LanguLearnPrimaryButtonStyle())
             } else {
                 Button("Kontrollera") { check(puzzle) }
-                    .buttonStyle(LangLearnPrimaryButtonStyle())
+                    .buttonStyle(LanguLearnPrimaryButtonStyle())
                     .disabled(assembly.selected.isEmpty || chat.isWorking)
                 if checked, access.hasKey, progress?.hint(for: puzzle.id) == nil {
                     Button("Be Milo om en ledtråd", systemImage: "lightbulb") { askForHint(puzzle) }
-                        .buttonStyle(LangLearnSecondaryButtonStyle())
+                        .buttonStyle(LanguLearnSecondaryButtonStyle())
                         .disabled(chat.isWorking)
                 }
                 Button("Börja om meningen") { move { assembly.reset() } }
-                    .font(.il(16, .semibold)).foregroundStyle(LangLearn.purple)
+                    .font(.il(16, .semibold)).foregroundStyle(LanguLearn.purple)
                     .frame(maxWidth: .infinity)
             }
         }
@@ -540,7 +540,7 @@ struct SentencePracticeView: View {
 
             Rectangle().fill(Color.black.opacity(0.12)).frame(height: 1).padding(.top, 12)
             Text("Dra ett ord till en plats, eller tryck för att lägga sist.")
-                .font(.il(13)).foregroundStyle(LangLearn.inkTertiary)
+                .font(.il(13)).foregroundStyle(LanguLearn.inkTertiary)
                 .padding(.top, 10)
         }
     }
@@ -562,7 +562,7 @@ struct SentencePracticeView: View {
         }
         .overlay(alignment: .leading) {
             if targetedSlot == position {
-                Capsule().fill(LangLearn.magenta).frame(width: 4, height: 40).offset(x: -5)
+                Capsule().fill(LanguLearn.magenta).frame(width: 4, height: 40).offset(x: -5)
             }
         }
         .accessibilityLabel("\(puzzle.words[tile]), plats \(position + 1), ta bort ord")
@@ -573,11 +573,11 @@ struct SentencePracticeView: View {
         let highlighted = isNext || targeted
         return RoundedRectangle(cornerRadius: 12)
             .strokeBorder(
-                highlighted ? LangLearn.purple.opacity(targeted ? 0.9 : 0.4) : Color.black.opacity(0.16),
+                highlighted ? LanguLearn.purple.opacity(targeted ? 0.9 : 0.4) : Color.black.opacity(0.16),
                 style: StrokeStyle(lineWidth: 2, dash: [6, 4])
             )
             .background(
-                highlighted ? LangLearn.purple.opacity(targeted ? 0.14 : 0.06) : .clear,
+                highlighted ? LanguLearn.purple.opacity(targeted ? 0.14 : 0.06) : .clear,
                 in: .rect(cornerRadius: 12)
             )
             .frame(width: slotWidth(at: position, puzzle: puzzle), height: 44)
@@ -601,8 +601,8 @@ struct SentencePracticeView: View {
         Text(word)
             .font(.il(19, .semibold)).foregroundStyle(.white)
             .padding(.horizontal, 14).frame(height: 44)
-            .background(LangLearn.purple, in: .rect(cornerRadius: 12))
-            .shadow(color: LangLearn.purple.opacity(0.22), radius: 4, y: 4)
+            .background(LanguLearn.purple, in: .rect(cornerRadius: 12))
+            .shadow(color: LanguLearn.purple.opacity(0.22), radius: 4, y: 4)
     }
 
     // MARK: - Bank
@@ -639,12 +639,12 @@ struct SentencePracticeView: View {
                 move { assembly.place(tile, wordCount: puzzle.words.count) }
             } label: {
                 Text(puzzle.words[tile])
-                    .font(.il(18, .semibold)).foregroundStyle(LangLearn.purple)
+                    .font(.il(18, .semibold)).foregroundStyle(LanguLearn.purple)
                     .padding(.horizontal, 15).frame(height: 44)
-                    .background(LangLearn.card, in: .rect(cornerRadius: 12))
+                    .background(LanguLearn.card, in: .rect(cornerRadius: 12))
                     .overlay {
                         RoundedRectangle(cornerRadius: 12)
-                            .strokeBorder(highlighted ? LangLearn.magenta : LangLearn.cardBorder,
+                            .strokeBorder(highlighted ? LanguLearn.magenta : LanguLearn.cardBorder,
                                           lineWidth: highlighted ? 2 : 1)
                     }
                     .shadow(color: .black.opacity(0.06), radius: 4, y: 4)
@@ -674,7 +674,7 @@ struct SentencePracticeView: View {
         VStack(alignment: .leading, spacing: 10) {
             Label(correct ? "Rätt! Bra jobbat." : "Nästan — prova igen",
                   systemImage: correct ? "checkmark.circle.fill" : "arrow.counterclockwise")
-                .font(.headline).foregroundStyle(correct ? LangLearn.deepGreen : LangLearn.purple)
+                .font(.headline).foregroundStyle(correct ? LanguLearn.deepGreen : LanguLearn.purple)
             Text(puzzle.explanation)
             if correct {
                 Button("Lyssna", systemImage: "speaker.wave.2") {
@@ -685,7 +685,7 @@ struct SentencePracticeView: View {
                 Button(showAnswer ? "Dölj exempel" : "Visa ett möjligt svar") { showAnswer.toggle() }
                 if showAnswer { Text(puzzle.answers[0].joined(separator: " ")).bold() }
             }
-        }.langlearnCard()
+        }.langulearnCard()
     }
 
     /// Milo's tip, styled as the quiet inline note the design asks for.
@@ -693,15 +693,15 @@ struct SentencePracticeView: View {
         VStack(alignment: .leading, spacing: 8) {
             HStack(alignment: .top, spacing: 10) {
                 Image(systemName: "sparkles")
-                    .font(.system(size: 13)).foregroundStyle(LangLearn.purple).padding(.top, 2)
+                    .font(.system(size: 13)).foregroundStyle(LanguLearn.purple).padding(.top, 2)
                 VStack(alignment: .leading, spacing: 6) {
                     Text("\(TeacherIdentity.name) tipsar: \(hint.hint)")
                         .font(.il(13)).foregroundStyle(Color.black.opacity(0.66))
                     Text(hint.encouragement)
-                        .font(.il(13)).foregroundStyle(LangLearn.inkTertiary)
+                        .font(.il(13)).foregroundStyle(LanguLearn.inkTertiary)
                     if !hint.nextWord.isEmpty {
                         Text("Prova \(hint.nextWord) härnäst — ordet är markerat nedan.")
-                            .font(.il(13, .semibold)).foregroundStyle(LangLearn.magenta)
+                            .font(.il(13, .semibold)).foregroundStyle(LanguLearn.magenta)
                     }
                 }
             }
@@ -709,7 +709,7 @@ struct SentencePracticeView: View {
         .padding(.horizontal, 14).padding(.vertical, 12)
         .frame(maxWidth: .infinity, alignment: .leading)
         .background(.white.opacity(0.6), in: .rect(cornerRadius: 14))
-        .overlay { RoundedRectangle(cornerRadius: 14).strokeBorder(LangLearn.cardBorder, lineWidth: 1) }
+        .overlay { RoundedRectangle(cornerRadius: 14).strokeBorder(LanguLearn.cardBorder, lineWidth: 1) }
     }
 
     // MARK: - Round completion
@@ -724,15 +724,15 @@ struct SentencePracticeView: View {
                 Button("Skapa fler meningar", systemImage: "sparkles") {
                     chat.extendPractice(store: store, sessionID: sessionID, settings: settings)
                 }
-                .buttonStyle(LangLearnPrimaryButtonStyle())
+                .buttonStyle(LanguLearnPrimaryButtonStyle())
                 .disabled(!access.hasKey || progress == nil)
                 Text(access.hasKey
                      ? "Milo utgår från den här lektionen och undviker meningar du redan har. Detta använder ditt OpenAI API-konto."
                      : "Lägg till din OpenAI API-nyckel i Inställningar för att skapa fler meningar.")
                     .font(.footnote).foregroundStyle(.secondary)
             }
-            Button("Spela igen från början") { index = 0; reset() }.buttonStyle(LangLearnSecondaryButtonStyle())
-            if let error = chat.errorMessage { Text(error).foregroundStyle(LangLearn.red) }
+            Button("Spela igen från början") { index = 0; reset() }.buttonStyle(LanguLearnSecondaryButtonStyle())
+            if let error = chat.errorMessage { Text(error).foregroundStyle(LanguLearn.red) }
         }
     }
 
@@ -753,7 +753,7 @@ struct SentencePracticeView: View {
 
     /// Every change to the sentence animates and persists the same way.
     private func move(_ change: () -> Void) {
-        withAnimation(reduceMotion ? nil : LangLearnMotion.move) { change() }
+        withAnimation(reduceMotion ? nil : LanguLearnMotion.move) { change() }
         checked = false
         persistPosition()
     }
@@ -801,7 +801,7 @@ struct SentencePracticeView: View {
         assembly.reset()
         checked = false; correct = false; showAnswer = false
         errorMessage = nil; targetedSlot = nil
-        withAnimation(reduceMotion ? nil : LangLearnMotion.move) { index += 1 }
+        withAnimation(reduceMotion ? nil : LanguLearnMotion.move) { index += 1 }
         bankOrder = livePuzzles.indices.contains(index)
             ? Array(livePuzzles[index].words.indices).shuffled()
             : []
@@ -872,11 +872,12 @@ struct WordFlowLayout: Layout {
 struct LessonSummaryCard: View {
     let summary: LessonWrapUp
     let mastered: Bool
+    @State private var milo = MiloController()
     var body: some View {
         VStack(alignment: .leading, spacing: 16) {
-            MiloView(mood: mastered ? .celebrating : .greeting, size: 92).frame(maxWidth: .infinity)
+            MiloAvatarView(controller: milo, size: 112).frame(maxWidth: .infinity)
             Label(mastered ? "Lektion klar!" : "Bra övat — här är din sammanfattning", systemImage: mastered ? "checkmark.seal.fill" : "book.closed")
-                .font(.title2.bold()).foregroundStyle(LangLearn.purple)
+                .font(.title2.bold()).foregroundStyle(LanguLearn.purple)
             LearningMarkdownText(summary.summary)
             if !summary.strengths.isEmpty {
                 Text("Det här har du tränat").font(.headline)
@@ -886,7 +887,8 @@ struct LessonSummaryCard: View {
             ForEach(Array(summary.nextSteps.enumerated()), id: \.offset) { _, text in LearningMarkdownText("• " + text) }
             Text(mastered ? "Dina framsteg är sparade. Du kan gå vidare." : "Passet är sparat. Öva vidare innan du går till nästa lektion.")
                 .font(.footnote).foregroundStyle(.secondary)
-        }.langlearnCard()
+        }.langulearnCard()
+        .task { if mastered { milo.applaud() } else { milo.encourage() } }
     }
 }
 
@@ -898,7 +900,7 @@ struct LessonSummaryCard: View {
             strengths: ["Du hittar rätt klockslag på skylten.", "Du använder **alle** framför klockslag."],
             nextSteps: ["Fortsätt med korta och artiga resemeningar."], demonstratedObjectives: [0, 1], readyToAdvance: true
         ), mastered: true).padding(20)
-    }.langlearnCanvas().preferredColorScheme(.light)
+    }.langulearnCanvas().preferredColorScheme(.light)
 }
 
 #Preview("Bygg en italiensk mening") {
@@ -912,7 +914,7 @@ struct LessonSummaryCard: View {
     }
     .environment(LearningStore())
     .environment(TutorSettings(store: UserDefaults(suiteName: "LangLearn.preview")!))
-    .preferredColorScheme(.light).tint(LangLearn.purple)
+    .preferredColorScheme(.light).tint(LanguLearn.purple)
 }
 
 #Preview("Ordkort") {
@@ -923,6 +925,6 @@ struct LessonSummaryCard: View {
     }
     .environment(LearningStore())
     .environment(TutorSettings(store: UserDefaults(suiteName: "LangLearn.preview")!))
-    .preferredColorScheme(.light).tint(LangLearn.purple)
+    .preferredColorScheme(.light).tint(LanguLearn.purple)
 }
 #endif

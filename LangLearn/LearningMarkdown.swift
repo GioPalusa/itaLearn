@@ -20,7 +20,7 @@ nonisolated enum LearningMarkdown {
                   let start = text[searchFrom...].range(of: String(open)),
                   let end = text[start.upperBound...].range(of: String(close)) {
                 let span = start.lowerBound..<end.upperBound
-                text[span].foregroundColor = LangLearn.purple
+                text[span].foregroundColor = LanguLearn.purple
                 text[span].inlinePresentationIntent = .stronglyEmphasized
                 searchFrom = end.upperBound
             }

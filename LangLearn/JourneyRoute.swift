@@ -74,7 +74,7 @@ struct JourneyRoute: View {
                 route
                     .trimmedPath(from: 0, to: travelled)
                     .stroke(
-                        LangLearn.purple,
+                        LanguLearn.purple,
                         style: StrokeStyle(lineWidth: 4 * scale, lineCap: .round)
                     )
 
@@ -91,7 +91,7 @@ struct JourneyRoute: View {
 
                     Text("DU ÄR HÄR")
                         .font(.system(size: 10 * scale, weight: .semibold))
-                        .foregroundStyle(LangLearn.magenta)
+                        .foregroundStyle(LanguLearn.magenta)
                         .fixedSize()
                         .position(
                             x: min(max(markerX, labelInset), proxy.size.width - labelInset),
@@ -111,20 +111,20 @@ struct JourneyRoute: View {
     private func stopMarker(for index: Int) -> some View {
         if index < currentIndex {
             Circle()
-                .fill(LangLearn.purple)
+                .fill(LanguLearn.purple)
                 .frame(width: 14, height: 14)
         } else if index == currentIndex {
             ZStack {
                 Circle()
-                    .strokeBorder(LangLearn.magenta, lineWidth: 3)
+                    .strokeBorder(LanguLearn.magenta, lineWidth: 3)
                     .frame(width: 24, height: 24)
                 Circle()
-                    .fill(LangLearn.magenta)
+                    .fill(LanguLearn.magenta)
                     .frame(width: 14, height: 14)
             }
         } else {
             Circle()
-                .fill(LangLearn.card)
+                .fill(LanguLearn.card)
                 .frame(width: 12, height: 12)
                 .overlay {
                     Circle().strokeBorder(Color.black.opacity(0.18), lineWidth: 2)
@@ -136,5 +136,5 @@ struct JourneyRoute: View {
 #Preview {
     JourneyRoute(currentIndex: 3, totalStops: 8)
         .padding()
-        .background(LangLearn.card)
+        .background(LanguLearn.card)
 }

@@ -75,3 +75,13 @@ body pause, direct mouth opening, eyelids, gaze, replay and walking across the
 stage. Speech amplitude drives mouth opening, not phoneme-accurate lip sync.
 Key/fill/rim lighting reveals both facial sides. Hand skin uses a three-tile
 atlas instead of incorrectly sampling only the body texture tile.
+
+`Laugh` and `Applaud` use the supplied ClassicTV Mixamo recordings, cropped to
+seconds 3–7 and 3–8 respectively. They retain Snow's bind-relative retargeting.
+The runtime layers a smile and rhythmic mouth/eyelid movement over laughter.
+Both clips play once; source hashes are pinned with the other recordings.
+
+To rebuild clips and manifests using the existing generated rig, without
+rebaking textures or touching the Blender master, append `--clips-only` after
+the repository argument to `build_all.py`. This also renders the two new body
+previews. A complete export calls the same clip builder.

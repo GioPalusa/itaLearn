@@ -34,7 +34,7 @@ struct LearningPathView: View {
                     }
                     Text("\(plan.lessons.count == 1 ? "EN LEKTION" : "\(plan.lessons.count) LEKTIONER") TILL MÅLET")
                         .font(.il(13, .semibold)).tracking(0.26)
-                        .foregroundStyle(LangLearn.inkTertiary)
+                        .foregroundStyle(LanguLearn.inkTertiary)
                         .padding(.top, 6).padding(.horizontal, 2)
                         .appearsInSequence(3)
                     route(plan).appearsInSequence(4)
@@ -47,7 +47,7 @@ struct LearningPathView: View {
             .padding(.horizontal, 16).padding(.top, 6).padding(.bottom, 40)
             .frame(maxWidth: 760).frame(maxWidth: .infinity)
         }
-        .langlearnCanvas()
+        .langulearnCanvas()
         .hideNavigationBar()
         .sheet(isPresented: $showingSettings) { SettingsView() }
         .sheet(isPresented: $showingLanguages) { LanguageSwitcherView() }
@@ -67,7 +67,7 @@ struct LearningPathView: View {
                     showingLanguages = true
                 }
                 Text("Min studieplan")
-                    .font(.il(32, .bold)).foregroundStyle(LangLearn.ink)
+                    .font(.il(32, .bold)).foregroundStyle(LanguLearn.ink)
             }
             .frame(maxWidth: .infinity, alignment: .leading)
 
@@ -76,8 +76,8 @@ struct LearningPathView: View {
                     .font(.system(size: 18))
                     .foregroundStyle(Color.black.opacity(0.6))
                     .frame(width: 40, height: 40)
-                    .background(LangLearn.card, in: .circle)
-                    .overlay { Circle().strokeBorder(LangLearn.cardBorder, lineWidth: 1) }
+                    .background(LanguLearn.card, in: .circle)
+                    .overlay { Circle().strokeBorder(LanguLearn.cardBorder, lineWidth: 1) }
                     .shadow(color: .black.opacity(0.06), radius: 4, y: 4)
             }
             .buttonStyle(.plain)
@@ -94,11 +94,11 @@ struct LearningPathView: View {
                 ProgressRing(completed: plan.completedLessonIDs.count, total: plan.lessons.count)
                 VStack(alignment: .leading, spacing: 5) {
                     Text(plan.profile.goal)
-                        .font(.il(21, .bold)).foregroundStyle(LangLearn.ink)
+                        .font(.il(21, .bold)).foregroundStyle(LanguLearn.ink)
                         .fixedSize(horizontal: false, vertical: true)
                     if let emphasis = plan.profile.focusAreas.first {
                         Text(emphasis)
-                            .font(.il(14)).foregroundStyle(LangLearn.inkSecondary)
+                            .font(.il(14)).foregroundStyle(LanguLearn.inkSecondary)
                             .fixedSize(horizontal: false, vertical: true)
                     }
                 }
@@ -116,16 +116,16 @@ struct LearningPathView: View {
                         }
                     }
                     .frame(maxWidth: .infinity, minHeight: 48)
-                    .background(LangLearn.purple, in: .capsule)
-                    .shadow(color: LangLearn.purple.opacity(0.28), radius: 4, y: 4)
+                    .background(LanguLearn.purple, in: .capsule)
+                    .shadow(color: LanguLearn.purple.opacity(0.28), radius: 4, y: 4)
                 }
                 .buttonStyle(.plain)
             }
         }
         .padding(18)
         .frame(maxWidth: .infinity)
-        .background(LangLearn.card, in: .rect(cornerRadius: 18))
-        .overlay { RoundedRectangle(cornerRadius: 18).strokeBorder(LangLearn.cardBorder, lineWidth: 1) }
+        .background(LanguLearn.card, in: .rect(cornerRadius: 18))
+        .overlay { RoundedRectangle(cornerRadius: 18).strokeBorder(LanguLearn.cardBorder, lineWidth: 1) }
         .shadow(color: .black.opacity(0.08), radius: 6, y: 6)
     }
 
@@ -139,11 +139,11 @@ struct LearningPathView: View {
         Button { showingRationale = true } label: {
             VStack(alignment: .leading, spacing: 6) {
                 HStack(spacing: 8) {
-                    Image(systemName: "sparkles").font(.system(size: 13)).foregroundStyle(LangLearn.purple)
+                    Image(systemName: "sparkles").font(.system(size: 13)).foregroundStyle(LanguLearn.purple)
                     Text("\(TeacherIdentity.name)s bedömning")
-                        .font(.il(15, .semibold)).foregroundStyle(LangLearn.ink)
+                        .font(.il(15, .semibold)).foregroundStyle(LanguLearn.ink)
                     Spacer(minLength: 0)
-                    Text("Läs mer").font(.il(14)).foregroundStyle(LangLearn.purple)
+                    Text("Läs mer").font(.il(14)).foregroundStyle(LanguLearn.purple)
                 }
                 Text(assessment.result.rationale)
                     .font(.il(14)).foregroundStyle(Color.black.opacity(0.66))
@@ -151,12 +151,12 @@ struct LearningPathView: View {
                 Text("Skriftligt underlag från \(assessment.createdAt.formatted(.dateTime.day().month())) · inte ett CEFR-prov")
                     .font(.il(12)).foregroundStyle(Color.black.opacity(0.45))
                     .padding(.top, 8)
-                    .overlay(alignment: .top) { Rectangle().fill(LangLearn.hairline).frame(height: 1) }
+                    .overlay(alignment: .top) { Rectangle().fill(LanguLearn.hairline).frame(height: 1) }
             }
             .padding(14)
             .frame(maxWidth: .infinity, alignment: .leading)
             .background(.white.opacity(0.62), in: .rect(cornerRadius: 16))
-            .overlay { RoundedRectangle(cornerRadius: 16).strokeBorder(LangLearn.cardBorder, lineWidth: 1) }
+            .overlay { RoundedRectangle(cornerRadius: 16).strokeBorder(LanguLearn.cardBorder, lineWidth: 1) }
         }
         .buttonStyle(.plain)
     }
@@ -215,7 +215,7 @@ struct LearningPathView: View {
                         .foregroundStyle(Color.black.opacity(0.55))
                         .strikethrough(true, color: Color.black.opacity(0.22))
                     Text("Klar · repetera när du vill")
-                        .font(.il(12)).foregroundStyle(LangLearn.green)
+                        .font(.il(12)).foregroundStyle(LanguLearn.green)
                 }
                 .frame(maxWidth: .infinity, alignment: .leading)
                 Image(systemName: "chevron.forward")
@@ -234,32 +234,32 @@ struct LearningPathView: View {
                 HStack(spacing: 8) {
                     Text("NU")
                         .font(.il(10, .semibold)).tracking(0.6)
-                        .foregroundStyle(LangLearn.purple)
+                        .foregroundStyle(LanguLearn.purple)
                         .padding(.horizontal, 8).padding(.vertical, 4)
-                        .background(LangLearn.purple.opacity(0.1), in: .capsule)
+                        .background(LanguLearn.purple.opacity(0.1), in: .capsule)
                     if let minutes = lesson.estimatedMinutes {
                         Text("\(minutes) min · skriva")
-                            .font(.il(12)).foregroundStyle(LangLearn.inkTertiary)
+                            .font(.il(12)).foregroundStyle(LanguLearn.inkTertiary)
                     }
                     Spacer(minLength: 0)
                     Image(systemName: "chevron.forward")
-                        .font(.system(size: 12, weight: .semibold)).foregroundStyle(LangLearn.purple)
+                        .font(.system(size: 12, weight: .semibold)).foregroundStyle(LanguLearn.purple)
                 }
                 Text(lesson.title)
-                    .font(.il(17, .semibold)).foregroundStyle(LangLearn.ink)
+                    .font(.il(17, .semibold)).foregroundStyle(LanguLearn.ink)
                     .multilineTextAlignment(.leading)
                 LearningMarkdownText(lesson.summary)
-                    .font(.il(13)).foregroundStyle(LangLearn.inkSecondary)
+                    .font(.il(13)).foregroundStyle(LanguLearn.inkSecondary)
                     .multilineTextAlignment(.leading)
             }
             .padding(14).padding(.leading, 6)
             .frame(maxWidth: .infinity, alignment: .leading)
-            .background(LangLearn.card, in: .rect(cornerRadius: 14))
+            .background(LanguLearn.card, in: .rect(cornerRadius: 14))
             .overlay(alignment: .leading) {
-                Rectangle().fill(LangLearn.purple).frame(width: 4)
+                Rectangle().fill(LanguLearn.purple).frame(width: 4)
             }
             .clipShape(.rect(cornerRadius: 14))
-            .overlay { RoundedRectangle(cornerRadius: 14).strokeBorder(LangLearn.purple.opacity(0.22), lineWidth: 1) }
+            .overlay { RoundedRectangle(cornerRadius: 14).strokeBorder(LanguLearn.purple.opacity(0.22), lineWidth: 1) }
             .shadow(color: .black.opacity(0.06), radius: 4, y: 4)
         }
         .buttonStyle(.plain)
@@ -269,7 +269,7 @@ struct LearningPathView: View {
         VStack(spacing: 0) {
             ForEach(Array(plan.lessons.enumerated()), id: \.element.id) { position, lesson in
                 if !plan.completedLessonIDs.contains(lesson.id) && lesson.id != currentID {
-                    if position > 0 { Rectangle().fill(LangLearn.hairline).frame(height: 1) }
+                    if position > 0 { Rectangle().fill(LanguLearn.hairline).frame(height: 1) }
                     HStack(spacing: 10) {
                         Text("\(position + 1)")
                             .font(.ilMono(11, .semibold))
@@ -294,7 +294,7 @@ struct LearningPathView: View {
 
     /// Offered once the whole plan is done: keep the same path and add to it.
     private var continueCard: some View {
-        PlanDirectionPicker(planner: planner).langlearnCard()
+        PlanDirectionPicker(planner: planner).langulearnCard()
     }
 
     private var reassessButton: some View {
@@ -305,9 +305,9 @@ struct LearningPathView: View {
                     Text(store.state.assessment == nil ? "Testa mina kunskaper igen" : "Fortsätt min kunskapskoll")
                         .font(.il(16, .semibold))
                 }
-                .foregroundStyle(LangLearn.purple)
+                .foregroundStyle(LanguLearn.purple)
                 .frame(maxWidth: .infinity, minHeight: 46)
-                .background(LangLearn.purple.opacity(0.1), in: .capsule)
+                .background(LanguLearn.purple.opacity(0.1), in: .capsule)
             }
             .buttonStyle(.plain)
 
@@ -331,9 +331,9 @@ private struct RouteRail: View {
                 Image(systemName: "checkmark")
                     .font(.system(size: 12, weight: .bold)).foregroundStyle(.white)
                     .frame(width: 26, height: 26)
-                    .background(LangLearn.green, in: .circle)
+                    .background(LanguLearn.green, in: .circle)
             } else {
-                Circle().fill(LangLearn.purple).frame(width: 26, height: 26)
+                Circle().fill(LanguLearn.purple).frame(width: 26, height: 26)
                     .overlay { Circle().strokeBorder(.white, lineWidth: 8).blendMode(.destinationOut) }
                     .compositingGroup()
             }
@@ -355,10 +355,10 @@ private struct RouteRail: View {
         let done = min(Double(completed) / Double(total), 1)
         let through = currentIndex.map { min(Double($0 + 1) / Double(total), 1) } ?? done
         return [
-            .init(color: LangLearn.green, location: 0),
-            .init(color: LangLearn.green, location: done),
-            .init(color: LangLearn.purple, location: done),
-            .init(color: LangLearn.purple, location: through),
+            .init(color: LanguLearn.green, location: 0),
+            .init(color: LanguLearn.green, location: done),
+            .init(color: LanguLearn.purple, location: done),
+            .init(color: LanguLearn.purple, location: through),
             .init(color: Color.black.opacity(0.12), location: through),
             .init(color: Color.black.opacity(0.12), location: 1)
         ]
@@ -377,7 +377,7 @@ struct LessonOverviewView: View {
                 LearningMarkdownText(lesson.summary).font(.title3)
                 NavigationLink { LessonPracticeView(lesson: lesson) } label: {
                     Label("Ordkort och bygg meningar", systemImage: "rectangle.on.rectangle.angled")
-                }.buttonStyle(LangLearnSecondaryButtonStyle())
+                }.buttonStyle(LanguLearnSecondaryButtonStyle())
                 LearningBulletCard(title: "Det här övar du", items: lesson.objectives)
                 LearningBulletCard(title: "Du är klar när du kan", items: lesson.successCriteria)
                 LearningBulletCard(title: "Ord att använda", items: lesson.vocabulary)
@@ -386,11 +386,11 @@ struct LessonOverviewView: View {
                 } label: {
                     Label("Öppna lektionen", systemImage: "bubble.left.and.bubble.right")
                 }
-                .buttonStyle(LangLearnPrimaryButtonStyle())
+                .buttonStyle(LanguLearnPrimaryButtonStyle())
             }
             .padding(20).padding(.bottom, 40).frame(maxWidth: 760).frame(maxWidth: .infinity)
         }
-        .langlearnCanvas()
+        .langulearnCanvas()
         .navigationTitle(lesson.title)
         .inlineNavigationTitle()
     }
@@ -421,7 +421,7 @@ struct LearningProgressView: View {
                 }
                 Text("HISTORIK")
                     .font(.il(13, .semibold)).tracking(0.26)
-                    .foregroundStyle(LangLearn.inkTertiary)
+                    .foregroundStyle(LanguLearn.inkTertiary)
                     .padding(.top, 6).padding(.horizontal, 2)
                     .appearsInSequence(4)
                 historyCard.appearsInSequence(5)
@@ -429,20 +429,20 @@ struct LearningProgressView: View {
             .padding(.horizontal, 16).padding(.top, 6).padding(.bottom, 40)
             .frame(maxWidth: 760).frame(maxWidth: .infinity)
         }
-        .langlearnCanvas()
+        .langulearnCanvas()
         .hideNavigationBar()
     }
 
     private var header: some View {
         HStack(spacing: 12) {
             Text("Mitt lärande")
-                .font(.il(32, .bold)).foregroundStyle(LangLearn.ink)
+                .font(.il(32, .bold)).foregroundStyle(LanguLearn.ink)
                 .frame(maxWidth: .infinity, alignment: .leading)
             if let cefr = plan?.profile.cefr {
                 Text(cefr)
                     .font(.il(14, .bold)).foregroundStyle(.white)
                     .padding(.horizontal, 12).frame(height: 32)
-                    .background(LangLearn.brandGradient, in: .capsule)
+                    .background(LanguLearn.brandGradient, in: .capsule)
             }
         }
         .padding(.horizontal, 2).padding(.top, 6)
@@ -464,11 +464,11 @@ struct LearningProgressView: View {
         VStack(alignment: .leading, spacing: 0) {
             HStack(spacing: 8) {
                 Image(systemName: "checkmark")
-                    .font(.system(size: 11, weight: .bold)).foregroundStyle(LangLearn.deepGreen)
+                    .font(.system(size: 11, weight: .bold)).foregroundStyle(LanguLearn.deepGreen)
                     .frame(width: 22, height: 22)
-                    .background(LangLearn.green.opacity(0.16), in: .circle)
+                    .background(LanguLearn.green.opacity(0.16), in: .circle)
                 Text("Det här kan du")
-                    .font(.il(17, .semibold)).foregroundStyle(LangLearn.ink)
+                    .font(.il(17, .semibold)).foregroundStyle(LanguLearn.ink)
                 Spacer(minLength: 0)
                 Text("\(strengths.count)")
                     .font(.ilMono(13)).foregroundStyle(Color.black.opacity(0.4))
@@ -480,10 +480,10 @@ struct LearningProgressView: View {
                     .font(.il(15)).foregroundStyle(Color.black.opacity(0.88))
                     .frame(maxWidth: .infinity, alignment: .leading)
                     .padding(.vertical, 11)
-                    .overlay(alignment: .top) { Rectangle().fill(LangLearn.hairline).frame(height: 1) }
+                    .overlay(alignment: .top) { Rectangle().fill(LanguLearn.hairline).frame(height: 1) }
             }
         }
-        .langlearnCard()
+        .langulearnCard()
     }
 
     // MARK: - Next steps
@@ -492,10 +492,10 @@ struct LearningProgressView: View {
         VStack(alignment: .leading, spacing: 0) {
             HStack(spacing: 8) {
                 Text("Nästa steg")
-                    .font(.il(17, .semibold)).foregroundStyle(LangLearn.ink)
+                    .font(.il(17, .semibold)).foregroundStyle(LanguLearn.ink)
                 Spacer(minLength: 0)
                 Text("Alla \(focusAreas.count)")
-                    .font(.il(14)).foregroundStyle(LangLearn.purple)
+                    .font(.il(14)).foregroundStyle(LanguLearn.purple)
             }
             .padding(.bottom, 12)
 
@@ -518,17 +518,17 @@ struct LearningProgressView: View {
                                 Text("Öva")
                                     .font(.il(14, .semibold)).foregroundStyle(.white)
                                     .padding(.horizontal, 14).frame(height: 34)
-                                    .background(LangLearn.purple, in: .capsule)
+                                    .background(LanguLearn.purple, in: .capsule)
                             }
                             .buttonStyle(.plain)
                         }
                     }
                     .padding(12)
-                    .background(LangLearn.purple.opacity(0.07), in: .rect(cornerRadius: 12))
+                    .background(LanguLearn.purple.opacity(0.07), in: .rect(cornerRadius: 12))
                 }
             }
         }
-        .langlearnCard()
+        .langulearnCard()
     }
 
     private func practiceCaption(_ lesson: PlannedLesson) -> String {
@@ -571,7 +571,7 @@ struct LearningProgressView: View {
     private func historyRow(_ icon: String, _ title: LocalizedStringKey, detail: String) -> some View {
         HStack(spacing: 10) {
             Image(systemName: icon)
-                .font(.system(size: 15)).foregroundStyle(LangLearn.purple).frame(width: 17)
+                .font(.system(size: 15)).foregroundStyle(LanguLearn.purple).frame(width: 17)
             Text(title)
                 .font(.il(15)).foregroundStyle(Color.black.opacity(0.88))
                 .frame(maxWidth: .infinity, alignment: .leading)
@@ -596,11 +596,11 @@ private struct SkillBarsCard: View {
     var body: some View {
         VStack(alignment: .leading, spacing: 0) {
             Text("Så ser din \(settings.targetLanguage.displayName.lowercased()) ut")
-                .font(.il(17, .semibold)).foregroundStyle(LangLearn.ink)
+                .font(.il(17, .semibold)).foregroundStyle(LanguLearn.ink)
             // The formatted date already ends in a period, so only add one without it.
             Text(assessmentDate.map { "Uppskattat från dina skriftliga svar, \($0)" }
                  ?? "Uppskattat från dina skriftliga svar.")
-                .font(.il(13)).foregroundStyle(LangLearn.inkSecondary)
+                .font(.il(13)).foregroundStyle(LanguLearn.inkSecondary)
                 .padding(.top, 3)
 
             HStack(alignment: .bottom, spacing: 14) {
@@ -614,7 +614,7 @@ private struct SkillBarsCard: View {
                                     .frame(height: grown
                                            ? max(proxy.size.height * Double(skill.value) / 100, 6)
                                            : 6)
-                                    .animation(reduceMotion ? nil : LangLearnMotion.fill.delay(Double(position) * 0.07),
+                                    .animation(reduceMotion ? nil : LanguLearnMotion.fill.delay(Double(position) * 0.07),
                                                value: grown)
                             }
                         }
@@ -635,16 +635,16 @@ private struct SkillBarsCard: View {
                 .font(.il(12)).foregroundStyle(Color.black.opacity(0.45))
                 .padding(.top, 22)
                 .overlay(alignment: .top) {
-                    Rectangle().fill(LangLearn.hairline).frame(height: 1).padding(.top, 12)
+                    Rectangle().fill(LanguLearn.hairline).frame(height: 1).padding(.top, 12)
                 }
         }
-        .langlearnCard()
+        .langulearnCard()
         .onAppear { grown = true }
     }
 
     private func barColor(_ value: Int, assessed: Bool) -> Color {
-        guard assessed else { return value >= 20 ? LangLearn.cyan.opacity(0.35) : Color.black.opacity(0.1) }
-        return LangLearn.cyan
+        guard assessed else { return value >= 20 ? LanguLearn.cyan.opacity(0.35) : Color.black.opacity(0.1) }
+        return LanguLearn.cyan
     }
 }
 
@@ -663,9 +663,9 @@ struct PlanDirectionPicker: View {
                 MiloView(mood: .celebrating, size: 48)
                 VStack(alignment: .leading, spacing: 2) {
                     Text("Du har klarat hela planen")
-                        .font(.il(17, .semibold)).foregroundStyle(LangLearn.ink)
+                        .font(.il(17, .semibold)).foregroundStyle(LanguLearn.ink)
                     Text(headline)
-                        .font(.il(13)).foregroundStyle(LangLearn.inkSecondary)
+                        .font(.il(13)).foregroundStyle(LanguLearn.inkSecondary)
                         .fixedSize(horizontal: false, vertical: true)
                 }
             }
@@ -682,15 +682,15 @@ struct PlanDirectionPicker: View {
                     guard let chosen = directions.options.first(where: { $0.id == chosenID(directions) }) else { return }
                     planner.extendPlan(store: store, settings: settings, direction: chosen)
                 }
-                .buttonStyle(LangLearnPrimaryButtonStyle())
+                .buttonStyle(LanguLearnPrimaryButtonStyle())
                 Button("Föreslå andra vägar") { planner.suggestDirections(store: store, settings: settings) }
-                    .font(.il(14)).foregroundStyle(LangLearn.purple)
+                    .font(.il(14)).foregroundStyle(LanguLearn.purple)
                     .frame(maxWidth: .infinity)
             } else {
                 Button("Vad ska jag öva härnäst?", systemImage: "sparkles") {
                     planner.suggestDirections(store: store, settings: settings)
                 }
-                .buttonStyle(LangLearnPrimaryButtonStyle())
+                .buttonStyle(LanguLearnPrimaryButtonStyle())
                 .disabled(!access.hasKey)
                 Text(access.hasKey
                      ? "Dina avklarade lektioner ligger kvar och går att repetera."
@@ -699,10 +699,10 @@ struct PlanDirectionPicker: View {
             }
 
             if let error = planner.errorMessage {
-                Text(error).font(.il(13)).foregroundStyle(LangLearn.red)
+                Text(error).font(.il(13)).foregroundStyle(LanguLearn.red)
             }
         }
-        .motion(LangLearnMotion.settle, planner.directions?.recommended)
+        .motion(LanguLearnMotion.settle, planner.directions?.recommended)
     }
 
     private var headline: String {
@@ -727,34 +727,34 @@ struct PlanDirectionPicker: View {
             HStack(alignment: .top, spacing: 10) {
                 Image(systemName: isSelected ? "largecircle.fill.circle" : "circle")
                     .font(.system(size: 18))
-                    .foregroundStyle(isSelected ? LangLearn.purple : Color.black.opacity(0.25))
+                    .foregroundStyle(isSelected ? LanguLearn.purple : Color.black.opacity(0.25))
                 VStack(alignment: .leading, spacing: 3) {
                     HStack(spacing: 6) {
                         Text(option.title)
-                            .font(.il(15, .semibold)).foregroundStyle(LangLearn.ink)
+                            .font(.il(15, .semibold)).foregroundStyle(LanguLearn.ink)
                             .multilineTextAlignment(.leading)
                         if recommended {
                             Text(option.consolidates ? "MER ÖVNING" : "MILOS VAL")
                                 .font(.il(10, .semibold)).tracking(0.5)
-                                .foregroundStyle(LangLearn.magenta)
+                                .foregroundStyle(LanguLearn.magenta)
                                 .padding(.horizontal, 7).padding(.vertical, 3)
-                                .background(LangLearn.magenta.opacity(0.12), in: .capsule)
+                                .background(LanguLearn.magenta.opacity(0.12), in: .capsule)
                         }
                     }
                     Text(option.rationale)
-                        .font(.il(13)).foregroundStyle(LangLearn.inkSecondary)
+                        .font(.il(13)).foregroundStyle(LanguLearn.inkSecondary)
                         .multilineTextAlignment(.leading)
                 }
                 .frame(maxWidth: .infinity, alignment: .leading)
             }
             .padding(12)
             .background(
-                isSelected ? LangLearn.purple.opacity(0.08) : Color.black.opacity(0.03),
+                isSelected ? LanguLearn.purple.opacity(0.08) : Color.black.opacity(0.03),
                 in: .rect(cornerRadius: 12)
             )
             .overlay {
                 RoundedRectangle(cornerRadius: 12)
-                    .strokeBorder(isSelected ? LangLearn.purple.opacity(0.35) : .clear, lineWidth: 1)
+                    .strokeBorder(isSelected ? LanguLearn.purple.opacity(0.35) : .clear, lineWidth: 1)
             }
         }
         .buttonStyle(.plain)
@@ -771,7 +771,7 @@ struct ArchivedPlansView: View {
     var body: some View {
         List {
             if let errorMessage {
-                Section { Text(errorMessage).foregroundStyle(LangLearn.red) }
+                Section { Text(errorMessage).foregroundStyle(LanguLearn.red) }
             }
             Section {
                 ForEach(store.state.archivedPlans.reversed()) { plan in
@@ -779,7 +779,7 @@ struct ArchivedPlansView: View {
                         Text(plan.profile.goal).font(.headline)
                         Text(detail(plan)).font(.caption).foregroundStyle(.secondary)
                         Button("Använd den här planen igen") { pendingPlanID = plan.id }
-                            .buttonStyle(LangLearnSecondaryButtonStyle())
+                            .buttonStyle(LanguLearnSecondaryButtonStyle())
                             .padding(.top, 4)
                     }
                     .padding(.vertical, 6)
@@ -849,7 +849,7 @@ struct SavedConversationsView: View {
                     }
                     .padding(20).frame(maxWidth: 760).frame(maxWidth: .infinity)
                 }
-                .langlearnCanvas().navigationTitle(lessonTitle(session))
+                .langulearnCanvas().navigationTitle(lessonTitle(session))
             } label: {
                 VStack(alignment: .leading, spacing: 3) {
                     Label(lessonTitle(session), systemImage: session.isComplete ? "checkmark.circle" : "bubble.left")
@@ -897,7 +897,7 @@ struct AssessmentDetailView: View {
             }
             .padding(20).frame(maxWidth: 760).frame(maxWidth: .infinity)
         }
-        .langlearnCanvas().navigationTitle("Din kunskapskoll")
+        .langulearnCanvas().navigationTitle("Din kunskapskoll")
     }
 }
 
@@ -914,7 +914,7 @@ private struct LearningBulletCard: View {
                 }
             }
         }
-        .langlearnCard()
+        .langulearnCard()
     }
 }
 
@@ -977,9 +977,9 @@ struct AdaptiveChatView: View {
                             MiloView(mood: .celebrating, size: 110).frame(maxWidth: .infinity)
                             Text(result.result.recommendation == .newPlan ? "Din nya studieplan är klar" : "Fortsätt på din väg")
                                 .font(.title2.bold())
-                            LearningMarkdownText(result.result.rationale).langlearnCard()
+                            LearningMarkdownText(result.result.rationale).langulearnCard()
                             NavigationLink("Visa min studieplan") { LearningPathView() }
-                                .buttonStyle(LangLearnPrimaryButtonStyle())
+                                .buttonStyle(LanguLearnPrimaryButtonStyle())
                         }
                         ForEach(messages) { message in
                             LearningMessageBubble(message: message)
@@ -999,7 +999,7 @@ struct AdaptiveChatView: View {
                         if chat.isWorking { MiloLoadingView(message: isAssessment ? "Milo funderar på din kunskapskoll…" : "Milo förbereder ditt nästa steg…", showsMascot: false) }
                         if let error = setupError ?? chat.errorMessage ?? store.errorMessage {
                             VStack(alignment: .leading, spacing: 12) {
-                                Text(error).foregroundStyle(LangLearn.red)
+                                Text(error).foregroundStyle(LanguLearn.red)
                                 Button("Försök igen") { resume() }
                                 if pendingAnswer != nil {
                                     Button("Ändra mitt svar") {
@@ -1011,21 +1011,21 @@ struct AdaptiveChatView: View {
                                 }
                                 Button("Öppna inställningar") { showingSettings = true }
                             }
-                            .langlearnCard().disabled(chat.isWorking)
+                            .langulearnCard().disabled(chat.isWorking)
                         }
                         if let session, let summary = session.wrapUp, case .lesson(let lesson) = mode {
                             LessonSummaryCard(summary: summary, mastered: session.isComplete)
                             if session.isComplete, let next = nextLesson {
                                 NavigationLink { AdaptiveChatView(mode: .lesson(next)) } label: {
                                     Label("Nästa lektion: \(next.title)", systemImage: "arrow.right")
-                                }.buttonStyle(LangLearnPrimaryButtonStyle())
+                                }.buttonStyle(LanguLearnPrimaryButtonStyle())
                             } else if !session.isComplete {
                                 Button("Fortsätt öva med Milo") { continueLesson(session.id) }
-                                    .buttonStyle(LangLearnPrimaryButtonStyle())
+                                    .buttonStyle(LanguLearnPrimaryButtonStyle())
                             }
                             NavigationLink { LessonPracticeView(lesson: lesson) } label: {
                                 Label("Öva med ordkort och meningar", systemImage: "rectangle.on.rectangle.angled")
-                            }.buttonStyle(LangLearnSecondaryButtonStyle())
+                            }.buttonStyle(LanguLearnSecondaryButtonStyle())
                             NavigationLink("Till min studieplan") { LearningPathView() }
                         }
                         Color.clear.frame(height: 1).id("latest")
@@ -1042,7 +1042,7 @@ struct AdaptiveChatView: View {
             }
             if !assessmentFinished && session?.wrapUp == nil && session?.wrapUpRequested != true { composer }
         }
-        .langlearnCanvas()
+        .langulearnCanvas()
         .navigationTitle(title)
         .compactNavigationTitle(composerFocused)
         .animation(.easeInOut(duration: 0.22), value: composerFocused)
@@ -1067,13 +1067,13 @@ struct AdaptiveChatView: View {
             if isFreeChat {
                 if !composerFocused {
                     Text("FRITT SAMTAL · MILO RÄTTAR NÄR DET BEHÖVS")
-                        .font(.caption.weight(.semibold)).foregroundStyle(LangLearn.purple)
+                        .font(.caption.weight(.semibold)).foregroundStyle(LanguLearn.purple)
                 }
             } else if isAssessment && !assessmentFinished {
                 let count = store.state.assessment?.answeredCount ?? 0
                 if !composerFocused {
                     Text("FRÅGA \(min(count + 1, 6)) AV 6 · TA DET I DIN TAKT")
-                        .font(.caption.weight(.semibold)).foregroundStyle(LangLearn.magenta)
+                        .font(.caption.weight(.semibold)).foregroundStyle(LanguLearn.magenta)
                 }
                 ProgressView(value: Double(count), total: 6)
                     .accessibilityLabel("Fråga \(min(count + 1, 6)) av 6")
@@ -1082,7 +1082,7 @@ struct AdaptiveChatView: View {
                     Text(session?.requiresRetry == true
                          ? "FÖRSÖK IGEN · DU FÅR HJÄLP PÅ VÄGEN"
                          : "ÖVA \(settings.targetLanguage.displayName.uppercased()) · ETT STEG I TAGET")
-                        .font(.caption.weight(.semibold)).foregroundStyle(LangLearn.purple)
+                        .font(.caption.weight(.semibold)).foregroundStyle(LanguLearn.purple)
                 }
                 ProgressView(value: Double(session?.achievedObjectives.count ?? 0), total: Double(lesson.objectives.count))
                 if !composerFocused {
@@ -1107,10 +1107,10 @@ struct AdaptiveChatView: View {
             if speech.isListening {
                 HStack(alignment: .top, spacing: 8) {
                     Image(systemName: "waveform")
-                        .font(.system(size: 13)).foregroundStyle(LangLearn.magenta).padding(.top, 2)
+                        .font(.system(size: 13)).foregroundStyle(LanguLearn.magenta).padding(.top, 2)
                     VStack(alignment: .leading, spacing: 2) {
                         Text(speech.partialTranscript.isEmpty ? "Lyssnar…" : speech.partialTranscript)
-                            .font(.callout).foregroundStyle(LangLearn.ink)
+                            .font(.callout).foregroundStyle(LanguLearn.ink)
                         Text("Texten hamnar i rutan — granska den innan du skickar.")
                             .font(.caption).foregroundStyle(.secondary)
                     }
@@ -1119,7 +1119,7 @@ struct AdaptiveChatView: View {
                 .transition(.opacity)
             }
             if let error = speech.errorMessage {
-                Text(error).font(.caption).foregroundStyle(LangLearn.red)
+                Text(error).font(.caption).foregroundStyle(LanguLearn.red)
             }
             if isAssessment {
                 Button("Jag vet inte ännu") { submit("Jag vet inte ännu.") }
@@ -1143,20 +1143,20 @@ struct AdaptiveChatView: View {
                 Button { submit(draft) } label: {
                     Image(systemName: "arrow.up").font(.title3.bold())
                         .foregroundStyle(.white).frame(width: 48, height: 48)
-                        .background(LangLearn.purple, in: .circle)
+                        .background(LanguLearn.purple, in: .circle)
                 }
                 .accessibilityLabel("Skicka svar")
                 .disabled(chat.isWorking || speech.isListening || speech.isPreparing || pendingAnswer != nil || draft.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty || draft.count > 2000)
             }
             if draft.count > 1800 {
                 Text("\(draft.count) / 2000 tecken").font(.caption)
-                    .foregroundStyle(draft.count > 2000 ? LangLearn.red : LangLearn.inkSecondary)
+                    .foregroundStyle(draft.count > 2000 ? LanguLearn.red : LanguLearn.inkSecondary)
             }
         }
-        .motion(LangLearnMotion.settle, speech.isListening)
+        .motion(LanguLearnMotion.settle, speech.isListening)
         .padding(16).frame(maxWidth: 760).frame(maxWidth: .infinity)
         // The surface runs to the screen edge; the controls stay above the indicator.
-        .background(LangLearn.field.ignoresSafeArea(edges: .bottom))
+        .background(LanguLearn.field.ignoresSafeArea(edges: .bottom))
     }
 
     /// Optional dictation into the same text field the learner types in.
@@ -1180,10 +1180,10 @@ struct AdaptiveChatView: View {
                         .font(.system(size: 18, weight: .medium))
                 }
             }
-            .foregroundStyle(speech.isListening ? .white : LangLearn.purple)
+            .foregroundStyle(speech.isListening ? .white : LanguLearn.purple)
             .frame(width: 48, height: 48)
             .background(
-                speech.isListening ? AnyShapeStyle(LangLearn.magenta) : AnyShapeStyle(LangLearn.purple.opacity(0.1)),
+                speech.isListening ? AnyShapeStyle(LanguLearn.magenta) : AnyShapeStyle(LanguLearn.purple.opacity(0.1)),
                 in: .circle
             )
         }
@@ -1242,8 +1242,8 @@ struct LearningMessageBubble: View {
         VStack(alignment: .leading, spacing: 12) {
             if message.role == .assistant {
                 HStack(spacing: 8) {
-                    MiloView(mood: .still, size: 32)
-                    Text(TeacherIdentity.name).font(.caption.bold()).foregroundStyle(LangLearn.purple)
+                    MiloAvatarView(mood: .still, size: 32)
+                    Text(TeacherIdentity.name).font(.caption.bold()).foregroundStyle(LanguLearn.purple)
                 }
             }
             LearningMarkdownText(message.text).font(.body)
@@ -1260,14 +1260,14 @@ struct LearningMessageBubble: View {
                 }
                 .padding(14)
                 .frame(maxWidth: .infinity, alignment: .leading)
-                .background(LangLearn.purple.opacity(0.08), in: .rect(cornerRadius: 16))
+                .background(LanguLearn.purple.opacity(0.08), in: .rect(cornerRadius: 16))
             }
             if message.needsRetry { Label("Prova en gång till", systemImage: "arrow.counterclockwise").font(.subheadline.bold()) }
         }
         .padding(18)
         .frame(maxWidth: .infinity, alignment: .leading)
-        .foregroundStyle(message.role == .user ? Color.white : LangLearn.ink)
-        .background(message.role == .user ? LangLearn.purple : .white, in: .rect(cornerRadius: 24))
+        .foregroundStyle(message.role == .user ? Color.white : LanguLearn.ink)
+        .background(message.role == .user ? LanguLearn.purple : .white, in: .rect(cornerRadius: 24))
         .padding(.leading, message.role == .user ? 36 : 0)
         .padding(.trailing, message.role == .assistant ? 12 : 0)
         .accessibilityElement(children: .contain)

@@ -14,7 +14,11 @@ import SwiftUI
         WindowGroup {
             Group {
 #if DEBUG
-                if ProcessInfo.processInfo.arguments.contains("--milo-demo") {
+                if ProcessInfo.processInfo.arguments.contains("--onboarding-preview") {
+                    OnboardingPreviewHost()
+                } else if ProcessInfo.processInfo.arguments.contains("--milo-avatar-demo") {
+                    NavigationStack { MiloAvatarDemoView() }
+                } else if ProcessInfo.processInfo.arguments.contains("--milo-demo") {
                     MiloDemoView()
                 } else { appContent }
 #else

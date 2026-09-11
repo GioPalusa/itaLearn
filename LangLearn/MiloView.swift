@@ -11,16 +11,19 @@ struct MiloView: View {
     var zoom: Float = 1
     var debug: MiloDebugControls? = nil
     var onRigStatus: ((String) -> Void)? = nil
+    var animatesWhenSmall = false
+    var onAnimationCompleted: ((Int) -> Void)? = nil
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
     @Environment(\.scenePhase) private var scenePhase
     @State private var isVisible = false
 
     var body: some View {
         Group {
-            if !reduceMotion && isVisible && scenePhase == .active && mood != .still && size > 48 {
+            if !reduceMotion && isVisible && scenePhase == .active && mood != .still && (size > 48 || animatesWhenSmall) {
                 MiloRealityView(
                     mood: mood, mouth: mouthOpening, wanders: wanders,
-                    trigger: trigger, zoom: zoom, debug: debug, onRigStatus: onRigStatus
+                    trigger: trigger, zoom: zoom, debug: debug, onRigStatus: onRigStatus,
+                    onAnimationCompleted: onAnimationCompleted
                 )
             } else {
                 Image(mood == .thinking ? "MiloThinking" : "Milo").resizable().scaledToFit()
@@ -57,7 +60,7 @@ struct MiloLoadingView: View {
             Spacer(minLength: 0)
         }
         .padding(14)
-        .background(LangLearn.purple.opacity(0.06), in: .rect(cornerRadius: 22))
+        .background(LanguLearn.purple.opacity(0.06), in: .rect(cornerRadius: 22))
         .accessibilityElement(children: .combine)
     }
 }
@@ -94,7 +97,7 @@ struct MiloGreetingCard: View {
         }
         .padding(20)
         .frame(maxWidth: .infinity, alignment: .leading)
-        .background(LangLearn.purple.opacity(0.07), in: .rect(cornerRadius: 28))
+        .background(LanguLearn.purple.opacity(0.07), in: .rect(cornerRadius: 28))
     }
 
     private var mascot: some View {
@@ -113,7 +116,7 @@ struct MiloGreetingCard: View {
     private var words: some View {
         VStack(alignment: .leading, spacing: 8) {
             Text("MILO · DIN LÄRARE I \(settings.targetLanguage.displayName.uppercased())")
-                .font(.caption2.bold()).foregroundStyle(LangLearn.purple)
+                .font(.caption2.bold()).foregroundStyle(LanguLearn.purple)
             Text(greeting).font(.title2.bold())
             Text(tips[greetingIndex]).font(.callout).fixedSize(horizontal: false, vertical: true)
             Text("Tryck på Milo för ett tips")
@@ -129,13 +132,13 @@ struct MiloGreetingCard: View {
             MiloLoadingView()
         }.padding(20)
     }
-    .langlearnCanvas()
+    .langulearnCanvas()
     .environment(TutorSettings(store: UserDefaults(suiteName: "LangLearn.milo-preview")!))
 }
 
 #Preview("Milo med större text") {
     ScrollView { MiloGreetingCard().padding(20) }
-        .langlearnCanvas()
+        .langulearnCanvas()
         .environment(TutorSettings(store: UserDefaults(suiteName: "LangLearn.milo-preview")!))
         .environment(\.dynamicTypeSize, .accessibility3)
 }

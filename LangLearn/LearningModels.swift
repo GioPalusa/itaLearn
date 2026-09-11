@@ -6,7 +6,7 @@ nonisolated enum LearningValidationError: LocalizedError {
     var errorDescription: String? {
         switch self {
         case .invalidResponse: "Lärarens svar gick inte att använda. Försök igen; din nuvarande plan finns kvar."
-        case .unsupportedVersion: "Dina sparade studier kräver en nyare version av LangLearn."
+        case .unsupportedVersion: "Dina sparade studier kräver en nyare version av LanguLearn."
         }
     }
 }

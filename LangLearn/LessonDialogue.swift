@@ -65,7 +65,7 @@ nonisolated enum LessonDialogue {
 
     /// Stable colour per speaker so the same voice reads the same way throughout.
     static func colors(for lines: [Line]) -> [String: Color] {
-        let palette = [LangLearn.purple, LangLearn.magenta, LangLearn.cyan, LangLearn.deepGreen]
+        let palette = [LanguLearn.purple, LanguLearn.magenta, LanguLearn.cyan, LanguLearn.deepGreen]
         var assigned: [String: Color] = [:]
         for name in lines.compactMap(\.speaker) where assigned[name] == nil {
             assigned[name] = palette[assigned.count % palette.count]
@@ -88,7 +88,7 @@ struct LessonDialogueView: View {
                 } else if !line.text.trimmingCharacters(in: .whitespaces).isEmpty {
                     Text(LearningMarkdown.attributed(line.text))
                         .font(.callout)
-                        .foregroundStyle(LangLearn.inkSecondary)
+                        .foregroundStyle(LanguLearn.inkSecondary)
                 }
             }
         }
@@ -97,7 +97,7 @@ struct LessonDialogueView: View {
     }
 
     private func turn(speaker: String, text: String) -> some View {
-        let tint = speaker.isEmpty ? LangLearn.purple : (colors[speaker] ?? LangLearn.purple)
+        let tint = speaker.isEmpty ? LanguLearn.purple : (colors[speaker] ?? LanguLearn.purple)
         return HStack(alignment: .top, spacing: 10) {
             RoundedRectangle(cornerRadius: 2)
                 .fill(tint)
@@ -109,7 +109,7 @@ struct LessonDialogueView: View {
                         .foregroundStyle(tint)
                 }
                 Text(LearningMarkdown.attributed(text))
-                    .foregroundStyle(LangLearn.ink)
+                    .foregroundStyle(LanguLearn.ink)
             }
             .frame(maxWidth: .infinity, alignment: .leading)
         }

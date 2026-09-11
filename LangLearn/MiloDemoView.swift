@@ -52,6 +52,8 @@ struct MiloDemoView: View {
             .padding(.bottom, 8)
             ScrollView {
               VStack(spacing: 18) {
+                NavigationLink("Prova den runda avataren") { MiloAvatarDemoView() }
+                    .buttonStyle(.borderedProminent).tint(LanguLearn.purple)
                 GroupBox("Kamerafokus") {
                     valueSlider("Zoom mot ansiktet", value: $zoom, range: 1...4.5)
                     HStack {
@@ -67,6 +69,8 @@ struct MiloDemoView: View {
                         Picker("Klipp", selection: $clipName) {
                             Text("Går").tag("Walk")
                             Text("Vinkar").tag("Wave")
+                            Text("Skrattar").tag("Laugh")
+                            Text("Applåderar").tag("Applaud")
                             Text("Väntar lugnt").tag("Idle_Watching")
                             Text("Lugn konversation").tag("Idle_Neutral_A")
                             Text("Tittar omkring").tag("Idle_LookAround")
@@ -80,7 +84,7 @@ struct MiloDemoView: View {
                             }
                         }
                         Button("Spela klippet från början") { trigger += 1 }
-                            .buttonStyle(.borderedProminent).tint(LangLearn.purple)
+                            .buttonStyle(.borderedProminent).tint(LanguLearn.purple)
                         Toggle("Visa fallback-bilden", isOn: $still)
                         Toggle("Pausa kroppen", isOn: $pausesBody)
                         if clipName == "Walk" { Toggle("Gå över scenen", isOn: $walksAcrossStage) }
@@ -127,7 +131,7 @@ struct MiloDemoView: View {
             .padding(20)
             }
         }
-        .langlearnCanvas()
+        .langulearnCanvas()
         .navigationTitle("Milos studio")
         .navigationBarTitleDisplayMode(.inline)
         .onDisappear { narrator.stop() }

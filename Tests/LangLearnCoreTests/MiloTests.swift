@@ -51,7 +51,7 @@ struct MiloTests {
         let library = try MiloClipLibrary(contentsOf: root.appendingPathComponent("LangLearn/Resources/MiloClips.bin"))
         #expect(library.fps == 30)
         #expect(library.jointNames.count == 33)
-        #expect(Set(library.clips.keys) == Set(["Idle_Neutral_A", "Idle_LookAround", "Idle_LookAround02", "Idle_Chatting", "Idle_Chatting02", "Idle_Watching", "Walk", "Wave"]))
+        #expect(Set(library.clips.keys) == Set(["Idle_Neutral_A", "Idle_LookAround", "Idle_LookAround02", "Idle_Chatting", "Idle_Chatting02", "Idle_Watching", "Walk", "Wave", "Laugh", "Applaud"]))
         let rootIndex = try #require(library.jointNames.firstIndex(of: "root"))
         for clip in library.clips.values {
             #expect(clip.duration > 1)
@@ -79,6 +79,69 @@ struct MiloTests {
 
     @Test func invalidClipMagicIsRejected() {
         #expect(throws: MiloClipError.invalidMagic) { try MiloClipLibrary(data: Data("NOPE".utf8)) }
+    }
+
+    @MainActor @Test func avatarCommandsReplaceReplayAndIgnoreStaleCompletions() throws {
+        let milo = MiloController()
+        milo.laugh()
+        let first = milo.trigger
+        milo.laugh()
+        #expect(milo.trigger != first)
+        milo.animationCompleted(trigger: first)
+        #expect(milo.mood == .laughing)
+        milo.applaud()
+        let applause = milo.trigger
+        #expect(milo.mood == .applauding)
+        milo.animationCompleted(trigger: applause)
+        #expect(milo.mood == .idle)
+        milo.wave()
+        milo.stop()
+        #expect(milo.mood == .idle)
+        #expect(!milo.narrator.isSpeaking && !milo.narrator.isPreparing)
+    }
+
+    @MainActor @Test func malformedCommandsDoNotInterruptTheAvatar() throws {
+        let milo = MiloController()
+        try milo.perform(json: Data(#"{"action":"applaud"}"#.utf8))
+        let trigger = milo.trigger
+        #expect(throws: MiloCommandError.missingSpeechText) {
+            try milo.perform(MiloCommand(action: .speak, text: "  ", language: "it"))
+        }
+        #expect(throws: MiloCommandError.unsupportedLanguage) {
+            try milo.perform(MiloCommand(action: .speak, text: "Ciao!", language: "unknown"))
+        }
+        #expect(throws: DecodingError.self) {
+            try milo.perform(json: Data(#"{"action":"invented"}"#.utf8))
+        }
+        #expect(milo.mood == .applauding && milo.trigger == trigger)
+        let speech = MiloCommand(action: .speak, text: "Ciao!", language: "it")
+        #expect(try JSONDecoder().decode(MiloCommand.self, from: JSONEncoder().encode(speech)) == speech)
+    }
+
+    @Test func reactionsAnimateThenReleaseTheirFacesAndCanReplay() throws {
+        let library = try MiloClipLibrary(contentsOf: root.appendingPathComponent("LangLearn/Resources/MiloClips.bin"))
+        for (mood, name) in [(MiloMood.laughing, "Laugh"), (.applauding, "Applaud")] {
+            let clip = try #require(library.clips[name])
+            #expect(!clip.loops)
+            let hand = try #require(library.jointNames.firstIndex(of: "hand_L"))
+            let handMotion = clip.frames.map { simd_distance($0[hand].vector, clip.frames[0][hand].vector) }.max() ?? 0
+            #expect(handMotion > 0.1)
+            var animator = MiloAnimator(library: library)
+            animator.configure(mood: mood, mouth: 0, wanders: false)
+            #expect(!animator.completedReaction)
+            let start = animator.sample(delta: 0.1)
+            #expect(start.face["smileL", default: 0] > 0.3)
+            if mood == .laughing { #expect(start.face["mouthOpen", default: 0] > 0.2) }
+            for _ in 0..<Int((clip.duration + 1) * 30) { _ = animator.sample(delta: 1 / 30) }
+            #expect(animator.completedReaction)
+            let finished = animator.sample(delta: 0)
+            #expect(finished.face["mouthOpen"] == 0)
+            #expect(finished.face["smileL", default: 0] < 0.2)
+            animator.configure(mood: mood, mouth: 0, wanders: false)
+            #expect(animator.completedReaction)
+            animator.configure(mood: mood, mouth: 0, wanders: false, restart: true)
+            #expect(!animator.completedReaction)
+        }
     }
 
     @Test func studioFaceControlsWorkWithPausedIdleAndResetToNeutral() throws {

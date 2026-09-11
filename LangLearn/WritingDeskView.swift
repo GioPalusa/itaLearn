@@ -33,7 +33,7 @@ struct WritingDeskView: View {
                     MiloLoadingView(message: "Milo läser din text…")
                 }
                 if let error = reviewer.errorMessage ?? store.errorMessage {
-                    Text(error).foregroundStyle(LangLearn.red).font(.callout)
+                    Text(error).foregroundStyle(LanguLearn.red).font(.callout)
                 }
                 if let latest, !reviewer.isWorking {
                     feedbackCard(latest)
@@ -44,13 +44,13 @@ struct WritingDeskView: View {
                     } label: {
                         Label("Tidigare texter (\(reviews.count))", systemImage: "clock.arrow.circlepath")
                     }
-                    .buttonStyle(LangLearnSecondaryButtonStyle())
+                    .buttonStyle(LanguLearnSecondaryButtonStyle())
                 }
             }
             .padding(20).padding(.bottom, 40)
             .frame(maxWidth: 760).frame(maxWidth: .infinity)
         }
-        .langlearnCanvas()
+        .langulearnCanvas()
         .scrollDismissesKeyboard(.interactively)
         .navigationTitle("Skriv och få respons")
         .inlineNavigationTitle()
@@ -59,10 +59,10 @@ struct WritingDeskView: View {
     private var editorCard: some View {
         VStack(alignment: .leading, spacing: 12) {
             Text("Skriv på \(settings.targetLanguage.displayName.lowercased())")
-                .font(.il(17, .semibold)).foregroundStyle(LangLearn.ink)
+                .font(.il(17, .semibold)).foregroundStyle(LanguLearn.ink)
             if prompt.isEmpty && trimmed.isEmpty {
                 Text("Välj en start, eller skriv om vad du vill.")
-                    .font(.il(14)).foregroundStyle(LangLearn.inkSecondary)
+                    .font(.il(14)).foregroundStyle(LanguLearn.inkSecondary)
                 WordFlowLayout(spacing: 8) {
                     ForEach(starters, id: \.self) { starter in
                         Button {
@@ -72,18 +72,18 @@ struct WritingDeskView: View {
                             Text(starter)
                                 .font(.il(14))
                                 .padding(.horizontal, 12).padding(.vertical, 7)
-                                .background(LangLearn.purple.opacity(0.10), in: .capsule)
-                                .foregroundStyle(LangLearn.purple)
+                                .background(LanguLearn.purple.opacity(0.10), in: .capsule)
+                                .foregroundStyle(LanguLearn.purple)
                         }
                         .buttonStyle(.plain)
                     }
                 }
             } else if !prompt.isEmpty {
                 HStack(spacing: 8) {
-                    Text(prompt).font(.il(14, .semibold)).foregroundStyle(LangLearn.purple)
+                    Text(prompt).font(.il(14, .semibold)).foregroundStyle(LanguLearn.purple)
                     Spacer(minLength: 0)
                     Button("Byt", systemImage: "xmark.circle.fill") { prompt = "" }
-                        .labelStyle(.iconOnly).foregroundStyle(LangLearn.inkQuaternary)
+                        .labelStyle(.iconOnly).foregroundStyle(LanguLearn.inkQuaternary)
                 }
             }
 
@@ -93,11 +93,11 @@ struct WritingDeskView: View {
                 .frame(minHeight: 180)
                 .scrollContentBackground(.hidden)
                 .padding(10)
-                .background(LangLearn.field, in: .rect(cornerRadius: 14))
+                .background(LanguLearn.field, in: .rect(cornerRadius: 14))
                 .overlay(alignment: .topLeading) {
                     if draft.isEmpty {
                         Text("Skriv några meningar…")
-                            .font(.il(17)).foregroundStyle(LangLearn.inkQuaternary)
+                            .font(.il(17)).foregroundStyle(LanguLearn.inkQuaternary)
                             .padding(.horizontal, 15).padding(.vertical, 18)
                             .allowsHitTesting(false)
                     }
@@ -105,7 +105,7 @@ struct WritingDeskView: View {
 
             HStack {
                 Text("\(trimmed.count) tecken")
-                    .font(.il(12)).foregroundStyle(LangLearn.inkQuaternary)
+                    .font(.il(12)).foregroundStyle(LanguLearn.inkQuaternary)
                 Spacer()
             }
 
@@ -113,7 +113,7 @@ struct WritingDeskView: View {
                 editorFocused = false
                 reviewer.reviewWriting(store: store, settings: settings, prompt: prompt, text: draft)
             }
-            .buttonStyle(LangLearnPrimaryButtonStyle())
+            .buttonStyle(LanguLearnPrimaryButtonStyle())
             .disabled(trimmed.isEmpty || trimmed.count > 4000 || reviewer.isWorking || !access.hasKey)
 
             Text(access.hasKey
@@ -121,23 +121,23 @@ struct WritingDeskView: View {
                  : "Lägg till din OpenAI API-nyckel i Inställningar för att få respons.")
                 .font(.footnote).foregroundStyle(.secondary)
         }
-        .langlearnCard()
+        .langulearnCard()
     }
 
     private func feedbackCard(_ review: WritingReview) -> some View {
         VStack(alignment: .leading, spacing: 14) {
             HStack {
-                Text("Milos respons").font(.il(17, .semibold)).foregroundStyle(LangLearn.ink)
+                Text("Milos respons").font(.il(17, .semibold)).foregroundStyle(LanguLearn.ink)
                 Spacer()
                 Text("\(review.feedback.score)/5")
                     .font(.ilMono(13)).monospacedDigit()
-                    .foregroundStyle(LangLearn.deepGreen)
+                    .foregroundStyle(LanguLearn.deepGreen)
                     .padding(.horizontal, 9).padding(.vertical, 4)
-                    .background(LangLearn.green.opacity(0.14), in: .capsule)
+                    .background(LanguLearn.green.opacity(0.14), in: .capsule)
             }
             WritingReviewBody(review: review)
         }
-        .langlearnCard()
+        .langulearnCard()
     }
 }
 
@@ -157,20 +157,20 @@ struct WritingReviewBody: View {
             if !review.feedback.ruleTitle.isEmpty {
                 section(LocalizedStringKey(review.feedback.ruleTitle)) {
                     Text(review.feedback.ruleExplanation)
-                        .font(.il(15)).foregroundStyle(LangLearn.inkSecondary)
+                        .font(.il(15)).foregroundStyle(LanguLearn.inkSecondary)
                 }
             }
             section("Sammanfattning") {
                 Text(review.feedback.summary)
-                    .font(.il(15)).foregroundStyle(LangLearn.inkSecondary)
+                    .font(.il(15)).foregroundStyle(LanguLearn.inkSecondary)
             }
             if !review.feedback.strengths.isEmpty {
                 section("Det här fungerar redan") {
-                    FeedbackList(items: review.feedback.strengths, color: LangLearn.green)
+                    FeedbackList(items: review.feedback.strengths, color: LanguLearn.green)
                 }
             }
             section("Prova nästa gång") {
-                FeedbackList(items: review.feedback.nextSteps, color: LangLearn.magenta)
+                FeedbackList(items: review.feedback.nextSteps, color: LanguLearn.magenta)
             }
         }
     }
@@ -178,7 +178,7 @@ struct WritingReviewBody: View {
     private func section(_ title: LocalizedStringKey,
                          @ViewBuilder content: () -> some View) -> some View {
         VStack(alignment: .leading, spacing: 8) {
-            Text(title).font(.il(15, .semibold)).foregroundStyle(LangLearn.ink)
+            Text(title).font(.il(15, .semibold)).foregroundStyle(LanguLearn.ink)
             content()
         }
     }
@@ -198,7 +198,7 @@ struct WritingHistoryView: View {
                             WritingReviewBody(review: review)
                                 .padding(20).frame(maxWidth: 720).frame(maxWidth: .infinity)
                         }
-                        .langlearnCanvas()
+                        .langulearnCanvas()
                         .navigationTitle(review.createdAt.formatted(.dateTime.day().month().year()))
                         .inlineNavigationTitle()
                     } label: {
@@ -210,7 +210,7 @@ struct WritingHistoryView: View {
             .padding(.horizontal, 16).padding(.bottom, 24)
             .frame(maxWidth: 720).frame(maxWidth: .infinity)
         }
-        .langlearnCanvas()
+        .langulearnCanvas()
         .navigationTitle("Mina texter")
         .inlineNavigationTitle()
     }
@@ -219,21 +219,21 @@ struct WritingHistoryView: View {
         VStack(alignment: .leading, spacing: 6) {
             HStack {
                 Text(review.prompt.isEmpty ? "Egen text" : review.prompt)
-                    .font(.il(17, .semibold)).foregroundStyle(LangLearn.ink)
+                    .font(.il(17, .semibold)).foregroundStyle(LanguLearn.ink)
                 Spacer()
                 Text("\(review.feedback.score)/5")
                     .font(.ilMono(13)).monospacedDigit()
-                    .foregroundStyle(LangLearn.deepGreen)
+                    .foregroundStyle(LanguLearn.deepGreen)
                     .padding(.horizontal, 9).padding(.vertical, 4)
-                    .background(LangLearn.green.opacity(0.14), in: .capsule)
+                    .background(LanguLearn.green.opacity(0.14), in: .capsule)
             }
             Text(review.text)
-                .font(.il(15)).foregroundStyle(LangLearn.inkSecondary)
+                .font(.il(15)).foregroundStyle(LanguLearn.inkSecondary)
                 .lineLimit(2).multilineTextAlignment(.leading)
             Text(review.createdAt, format: .dateTime.day().month(.wide).year())
-                .font(.il(12)).foregroundStyle(LangLearn.inkQuaternary)
+                .font(.il(12)).foregroundStyle(LanguLearn.inkQuaternary)
         }
-        .langlearnCard()
+        .langulearnCard()
         .accessibilityElement(children: .combine)
     }
 }

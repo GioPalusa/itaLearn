@@ -38,13 +38,13 @@ struct PronounGameView: View {
                     introCard
                 }
                 if let error = generator.errorMessage ?? store.errorMessage {
-                    Text(error).foregroundStyle(LangLearn.red).font(.callout)
+                    Text(error).foregroundStyle(LanguLearn.red).font(.callout)
                 }
             }
             .padding(20).padding(.bottom, 40)
             .frame(maxWidth: 700).frame(maxWidth: .infinity)
         }
-        .langlearnCanvas()
+        .langulearnCanvas()
         .navigationTitle("Pronomenspelet")
         .onDisappear { narrator.stop(); generator.cancel() }
     }
@@ -54,16 +54,16 @@ struct PronounGameView: View {
     private var introCard: some View {
         VStack(alignment: .leading, spacing: 14) {
             MiloView(size: 120).frame(maxWidth: .infinity)
-            Text("Vem gör vad?").font(.il(26, .bold)).foregroundStyle(LangLearn.ink)
+            Text("Vem gör vad?").font(.il(26, .bold)).foregroundStyle(LanguLearn.ink)
             Text("Subjektspronomen är de småord som avgör vem meningen handlar om. Milo bygger ett spel för \(settings.targetLanguage.displayName.lowercased()): du får meningar med ett hål och väljer vem som gör saken.")
-                .font(.il(15)).foregroundStyle(LangLearn.inkSecondary)
+                .font(.il(15)).foregroundStyle(LanguLearn.inkSecondary)
             if generator.isWorking {
                 MiloLoadingView(message: "Milo bygger pronomenspelet…")
             } else {
                 Button("Skapa spelet", systemImage: "sparkles") {
                     generator.generatePronounGame(store: store, settings: settings)
                 }
-                .buttonStyle(LangLearnPrimaryButtonStyle())
+                .buttonStyle(LanguLearnPrimaryButtonStyle())
                 .disabled(!access.hasKey)
                 Text(access.hasKey
                      ? "Skapas en gång per språk. Sedan kan du spela utan internet."
@@ -71,7 +71,7 @@ struct PronounGameView: View {
                     .font(.footnote).foregroundStyle(.secondary)
             }
         }
-        .langlearnCard()
+        .langulearnCard()
     }
 
     // MARK: - Playing
@@ -80,30 +80,30 @@ struct PronounGameView: View {
         VStack(alignment: .leading, spacing: 8) {
             HStack(spacing: 14) {
                 Label("\(streak)", systemImage: "flame.fill")
-                    .foregroundStyle(streak > 0 ? LangLearn.magenta : LangLearn.inkQuaternary)
+                    .foregroundStyle(streak > 0 ? LanguLearn.magenta : LanguLearn.inkQuaternary)
                     .accessibilityLabel("Svit: \(streak) rätt i rad")
                 Spacer()
                 Text("\(progress.cursor + 1) av \(progress.game.rounds.count)")
-                    .font(.ilMono(13)).foregroundStyle(LangLearn.inkSecondary)
+                    .font(.ilMono(13)).foregroundStyle(LanguLearn.inkSecondary)
             }
             .font(.il(15, .semibold))
             ProgressView(value: Double(progress.cursor), total: Double(progress.game.rounds.count))
-                .tint(LangLearn.purple)
+                .tint(LanguLearn.purple)
         }
-        .langlearnCard()
+        .langulearnCard()
     }
 
     private func roundCard(_ round: PronounRound, game: PronounGame) -> some View {
         VStack(alignment: .leading, spacing: 14) {
             Text(round.translation)
-                .font(.il(15)).foregroundStyle(LangLearn.inkSecondary)
+                .font(.il(15)).foregroundStyle(LanguLearn.inkSecondary)
             sentence(round)
             pronounChips(game, round: round)
             if let picked {
                 feedback(round, picked: picked)
             }
         }
-        .langlearnCard()
+        .langulearnCard()
     }
 
     /// The blank is the point of the exercise, so it is drawn as a slot rather
@@ -113,17 +113,17 @@ struct PronounGameView: View {
         return HStack(alignment: .firstTextBaseline, spacing: 0) {
             Text(parts.first ?? "")
             Text(picked ?? "?")
-                .foregroundStyle(picked == nil ? LangLearn.inkQuaternary : .white)
+                .foregroundStyle(picked == nil ? LanguLearn.inkQuaternary : .white)
                 .padding(.horizontal, 10).padding(.vertical, 2)
                 .background(
-                    picked == nil ? AnyShapeStyle(LangLearn.purple.opacity(0.12))
-                                  : AnyShapeStyle(isCorrect ? LangLearn.deepGreen : LangLearn.red),
+                    picked == nil ? AnyShapeStyle(LanguLearn.purple.opacity(0.12))
+                                  : AnyShapeStyle(isCorrect ? LanguLearn.deepGreen : LanguLearn.red),
                     in: .rect(cornerRadius: 8)
                 )
             Text(parts.dropFirst().joined(separator: PronounGame.blank))
         }
         .font(.il(22, .semibold))
-        .foregroundStyle(LangLearn.ink)
+        .foregroundStyle(LanguLearn.ink)
         .frame(maxWidth: .infinity, alignment: .leading)
         .accessibilityElement(children: .combine)
         .accessibilityLabel(round.sentence.replacingOccurrences(of: PronounGame.blank, with: "tomrum"))
@@ -153,26 +153,26 @@ struct PronounGameView: View {
     }
 
     private func chipInk(_ form: String, round: PronounRound) -> Color {
-        guard let picked, picked == form else { return LangLearn.ink }
+        guard let picked, picked == form else { return LanguLearn.ink }
         return .white
     }
 
     private func chipFill(_ form: String, round: PronounRound) -> AnyShapeStyle {
-        guard let picked, picked == form else { return AnyShapeStyle(LangLearn.purple.opacity(0.10)) }
-        return AnyShapeStyle(form == round.answer ? LangLearn.deepGreen : LangLearn.red)
+        guard let picked, picked == form else { return AnyShapeStyle(LanguLearn.purple.opacity(0.10)) }
+        return AnyShapeStyle(form == round.answer ? LanguLearn.deepGreen : LanguLearn.red)
     }
 
     private func feedback(_ round: PronounRound, picked: String) -> some View {
         VStack(alignment: .leading, spacing: 10) {
             Label(isCorrect ? "Rätt!" : "Inte riktigt", systemImage: isCorrect ? "checkmark.circle.fill" : "arrow.uturn.left")
                 .font(.il(15, .semibold))
-                .foregroundStyle(isCorrect ? LangLearn.deepGreen : LangLearn.red)
+                .foregroundStyle(isCorrect ? LanguLearn.deepGreen : LanguLearn.red)
             Text(isCorrect ? round.explanation : "Prova igen — vem är det som gör det här?")
-                .font(.il(15)).foregroundStyle(LangLearn.inkSecondary)
+                .font(.il(15)).foregroundStyle(LanguLearn.inkSecondary)
             if isCorrect {
                 HStack(spacing: 12) {
                     Button("Nästa", systemImage: "arrow.right") { advance() }
-                        .buttonStyle(LangLearnPrimaryButtonStyle())
+                        .buttonStyle(LanguLearnPrimaryButtonStyle())
                     if settings.targetLanguage.hasVoice {
                         Button("Lyssna", systemImage: "speaker.wave.2") {
                             narrator.stop()
@@ -192,27 +192,27 @@ struct PronounGameView: View {
     private func paradigmCard(_ game: PronounGame) -> some View {
         VStack(alignment: .leading, spacing: 10) {
             Button {
-                withAnimation(LangLearnMotion.move) { showingParadigm.toggle() }
+                withAnimation(LanguLearnMotion.move) { showingParadigm.toggle() }
             } label: {
                 HStack {
                     Text("Pronomen i \(settings.targetLanguage.displayName.lowercased())")
-                        .font(.il(15, .semibold)).foregroundStyle(LangLearn.ink)
+                        .font(.il(15, .semibold)).foregroundStyle(LanguLearn.ink)
                     Spacer()
                     Image(systemName: showingParadigm ? "chevron.up" : "chevron.down")
-                        .font(.footnote.weight(.semibold)).foregroundStyle(LangLearn.inkTertiary)
+                        .font(.footnote.weight(.semibold)).foregroundStyle(LanguLearn.inkTertiary)
                 }
                 .contentShape(.rect)
             }
             .buttonStyle(.plain)
 
             if showingParadigm {
-                Text(game.overview).font(.il(14)).foregroundStyle(LangLearn.inkSecondary)
+                Text(game.overview).font(.il(14)).foregroundStyle(LanguLearn.inkSecondary)
                 ForEach([false, true], id: \.self) { plural in
                     let group = game.pronouns.filter { $0.plural == plural }
                     if !group.isEmpty {
                         Text(plural ? "FLERTAL" : "ENTAL")
                             .font(.il(11, .semibold)).tracking(0.6)
-                            .foregroundStyle(LangLearn.inkQuaternary)
+                            .foregroundStyle(LanguLearn.inkQuaternary)
                             .padding(.top, 4)
                         ForEach(group.sorted { $0.person < $1.person }) { pronoun in
                             paradigmRow(pronoun)
@@ -221,22 +221,22 @@ struct PronounGameView: View {
                 }
             }
         }
-        .langlearnCard()
+        .langulearnCard()
     }
 
     private func paradigmRow(_ pronoun: SubjectPronoun) -> some View {
         HStack(alignment: .firstTextBaseline, spacing: 10) {
             VStack(alignment: .leading, spacing: 1) {
-                Text(pronoun.pronoun).font(.il(16, .semibold)).foregroundStyle(LangLearn.purple)
+                Text(pronoun.pronoun).font(.il(16, .semibold)).foregroundStyle(LanguLearn.purple)
                 if !pronoun.pronunciation.isEmpty {
-                    Text(pronoun.pronunciation).font(.il(11)).foregroundStyle(LangLearn.inkQuaternary)
+                    Text(pronoun.pronunciation).font(.il(11)).foregroundStyle(LanguLearn.inkQuaternary)
                 }
             }
             .frame(minWidth: 74, alignment: .leading)
             VStack(alignment: .leading, spacing: 1) {
-                Text(pronoun.meaning).font(.il(15)).foregroundStyle(LangLearn.ink)
+                Text(pronoun.meaning).font(.il(15)).foregroundStyle(LanguLearn.ink)
                 if !pronoun.note.isEmpty {
-                    Text(pronoun.note).font(.il(12)).foregroundStyle(LangLearn.inkTertiary)
+                    Text(pronoun.note).font(.il(12)).foregroundStyle(LanguLearn.inkTertiary)
                 }
             }
             Spacer(minLength: 0)
@@ -249,29 +249,29 @@ struct PronounGameView: View {
     private func finishedCard(_ progress: PronounGameProgress) -> some View {
         VStack(alignment: .leading, spacing: 12) {
             MiloView(mood: .celebrating, size: 110).frame(maxWidth: .infinity)
-            Text("Alla rundor klara").font(.il(24, .bold)).foregroundStyle(LangLearn.ink)
+            Text("Alla rundor klara").font(.il(24, .bold)).foregroundStyle(LanguLearn.ink)
             Text("\(progress.firstTryCount) av \(progress.game.rounds.count) satt direkt. Längsta svit: \(progress.bestStreak).")
-                .font(.il(15)).foregroundStyle(LangLearn.inkSecondary)
+                .font(.il(15)).foregroundStyle(LanguLearn.inkSecondary)
             Button("Spela om samma rundor", systemImage: "arrow.counterclockwise") { replay() }
-                .buttonStyle(LangLearnSecondaryButtonStyle())
+                .buttonStyle(LanguLearnSecondaryButtonStyle())
             if generator.isWorking {
                 MiloLoadingView(message: "Milo skriver nya rundor…")
             } else {
                 Button("Nya rundor", systemImage: "sparkles") {
                     generator.refreshPronounGame(store: store, settings: settings)
                 }
-                .buttonStyle(LangLearnPrimaryButtonStyle())
+                .buttonStyle(LanguLearnPrimaryButtonStyle())
                 .disabled(!access.hasKey)
             }
         }
-        .langlearnCard()
+        .langulearnCard()
     }
 
     // MARK: - Moves
 
     private func choose(_ form: String, round: PronounRound) {
         guard !isCorrect else { return }
-        withAnimation(LangLearnMotion.pop) { picked = form }
+        withAnimation(LanguLearnMotion.pop) { picked = form }
         let correct = form == round.answer
         streak = correct ? streak + 1 : 0
         try? store.updatePronouns { progress in

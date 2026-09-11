@@ -53,6 +53,7 @@ nonisolated enum MiloAssetError: Error { case missingModel, missingRig, clipRigM
 @MainActor
 final class MiloScene {
     var subscription: EventSubscription?
+    var onAnimationCompleted: (() -> Void)?
     private var models: [RiggedModel] = []
     private var animator: MiloAnimator?
     private var clipCount = 0
@@ -158,9 +159,11 @@ final class MiloScene {
 
     func update(delta: Double) {
         guard var animator else { return }
+        let hadCompleted = animator.completedReaction
         let pose = animator.sample(delta: delta)
         self.animator = animator
         apply(pose: pose, smoothingDelta: delta)
+        if !hadCompleted && animator.completedReaction { onAnimationCompleted?() }
     }
 
     func apply(pose: MiloPose, smoothingDelta: Double) {
@@ -190,7 +193,11 @@ final class MiloScene {
         }
     }
 
-    func stop() { subscription?.cancel(); subscription = nil }
+    func stop() {
+        subscription?.cancel()
+        subscription = nil
+        onAnimationCompleted = nil
+    }
 
     private func collectModels(in entity: Entity) {
         if let model = entity as? ModelEntity, !model.jointNames.isEmpty {
@@ -229,6 +236,7 @@ struct MiloRealityView: View {
     let zoom: Float
     var debug: MiloDebugControls? = nil
     var onRigStatus: ((String) -> Void)? = nil
+    var onAnimationCompleted: ((Int) -> Void)? = nil
     @State private var scene = MiloScene()
     @State private var failed = false
 
@@ -244,6 +252,7 @@ struct MiloRealityView: View {
                         try Task.checkCancellation()
                         content.add(entity)
                         scene.configure(mood: mood, mouth: mouth, wanders: wanders, debug: debug, zoom: zoom)
+                        scene.onAnimationCompleted = { [onAnimationCompleted, trigger] in onAnimationCompleted?(trigger) }
                         onRigStatus?(scene.rigSummary)
                         scene.subscription = content.subscribe(to: SceneEvents.Update.self) { event in
                             scene.update(delta: event.deltaTime)
@@ -255,6 +264,7 @@ struct MiloRealityView: View {
                         onRigStatus?("Fallback: \(error)")
                     }
                 } update: { _ in
+                    scene.onAnimationCompleted = { [onAnimationCompleted, trigger] in onAnimationCompleted?(trigger) }
                     scene.configure(mood: mood, mouth: mouth, wanders: wanders, debug: debug, zoom: zoom)
                 } placeholder: {
                     Image("Milo").resizable().scaledToFit()

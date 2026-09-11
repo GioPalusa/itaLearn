@@ -18,9 +18,9 @@ struct LanguageChip: View {
                 }
                 Image(systemName: "chevron.up.chevron.down").font(.system(size: 8, weight: .semibold))
             }
-            .foregroundStyle(LangLearn.magenta)
+            .foregroundStyle(LanguLearn.magenta)
             .padding(.horizontal, 10).padding(.vertical, 5)
-            .background(LangLearn.magenta.opacity(0.10), in: .capsule)
+            .background(LanguLearn.magenta.opacity(0.10), in: .capsule)
         }
         .buttonStyle(.plain)
         .accessibilityLabel("Språk: \(language.displayName)")
@@ -79,13 +79,13 @@ struct LanguageSwitcherView: View {
             Text(study.language.flag).font(.system(size: 26))
             VStack(alignment: .leading, spacing: 2) {
                 Text(study.language.displayName)
-                    .font(.body).foregroundStyle(LangLearn.ink)
+                    .font(.body).foregroundStyle(LanguLearn.ink)
                 Text(caption(study))
                     .font(.footnote).foregroundStyle(.secondary)
             }
             Spacer()
             if study.language == settings.chosenTarget {
-                Image(systemName: "checkmark").foregroundStyle(LangLearn.purple)
+                Image(systemName: "checkmark").foregroundStyle(LanguLearn.purple)
             }
         }
         .contentShape(.rect)
@@ -142,7 +142,7 @@ struct AddLanguageView: View {
                         } label: {
                             HStack(spacing: 12) {
                                 Text(language.flag).font(.system(size: 26))
-                                Text(language.displayName).foregroundStyle(LangLearn.ink)
+                                Text(language.displayName).foregroundStyle(LanguLearn.ink)
                                 Spacer()
                             }
                             .contentShape(.rect)

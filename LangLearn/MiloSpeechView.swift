@@ -17,7 +17,7 @@ struct MiloSpeechView: View {
     }
     var body: some View {
         HStack(spacing: 14) {
-            MiloView(mood: mood, size: 88, mouthOpening: narrator.mouthOpening)
+            MiloAvatarView(mood: mood, size: 72, mouthOpening: narrator.mouthOpening)
             VStack(alignment: .leading, spacing: 6) {
                 Text("Milo").font(.headline)
                 if narrator.isPreparing {
@@ -30,7 +30,7 @@ struct MiloSpeechView: View {
                     Text("Vi provar en gång till tillsammans.").font(.caption).foregroundStyle(.secondary)
                 }
                 if let error = narrator.errorMessage {
-                    Text(error).font(.caption).foregroundStyle(LangLearn.red)
+                    Text(error).font(.caption).foregroundStyle(LanguLearn.red)
                     Button("Försök läsa upp igen") { narrator.retry() }.font(.caption)
                 }
                 if narrator.isPreparing || narrator.isSpeaking {
@@ -54,6 +54,6 @@ private struct MiloSpeechPreview: View {
         VStack(spacing: 20) {
             MiloSpeechView(narrator: narrator)
             Button("Lyssna") { narrator.speak(LearningLanguage.italian.sampleLine, in: .italian) }
-        }.padding(24).langlearnCanvas()
+        }.padding(24).langulearnCanvas()
     }
 }

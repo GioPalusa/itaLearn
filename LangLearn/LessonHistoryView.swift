@@ -13,7 +13,7 @@ struct LessonHistoryView: View {
                     systemImage: "books.vertical",
                     description: Text("Gör din första skrivövning så visas sammanfattningen här.")
                 )
-                .langlearnCanvas()
+                .langulearnCanvas()
             } else {
                 ScrollView {
                     LazyVStack(spacing: 12) {
@@ -31,7 +31,7 @@ struct LessonHistoryView: View {
                     .padding(.bottom, 24)
                     .frame(maxWidth: .infinity)
                 }
-                .langlearnCanvas()
+                .langulearnCanvas()
             }
         }
         .navigationTitle("Mitt lärande")
@@ -46,28 +46,28 @@ private struct LessonRecordRow: View {
             HStack {
                 Text(record.lessonTitle)
                     .font(.il(17, .semibold))
-                    .foregroundStyle(LangLearn.ink)
+                    .foregroundStyle(LanguLearn.ink)
                 Spacer()
                 Text("\(record.score)/5")
                     .font(.ilMono(13))
                     .monospacedDigit()
-                    .foregroundStyle(LangLearn.deepGreen)
+                    .foregroundStyle(LanguLearn.deepGreen)
                     .padding(.horizontal, 9)
                     .padding(.vertical, 4)
-                    .background(LangLearn.green.opacity(0.14), in: .capsule)
+                    .background(LanguLearn.green.opacity(0.14), in: .capsule)
             }
 
             Text(record.summary)
                 .font(.il(15))
-                .foregroundStyle(LangLearn.inkSecondary)
+                .foregroundStyle(LanguLearn.inkSecondary)
                 .lineLimit(2)
                 .multilineTextAlignment(.leading)
 
             Text(record.completedAt, format: .dateTime.day().month(.wide).year())
                 .font(.il(12))
-                .foregroundStyle(LangLearn.inkQuaternary)
+                .foregroundStyle(LanguLearn.inkQuaternary)
         }
-        .langlearnCard()
+        .langulearnCard()
         .accessibilityElement(children: .combine)
     }
 }
@@ -95,22 +95,22 @@ private struct LessonRecordDetail: View {
                     section(LocalizedStringKey(record.ruleTitle)) {
                         Text(record.ruleExplanation)
                             .font(.il(15))
-                            .foregroundStyle(LangLearn.inkSecondary)
+                            .foregroundStyle(LanguLearn.inkSecondary)
                     }
                 }
 
                 section("Lektionssammanfattning") {
                     Text(record.summary)
                         .font(.il(15))
-                        .foregroundStyle(LangLearn.inkSecondary)
+                        .foregroundStyle(LanguLearn.inkSecondary)
                 }
 
                 section("Det här fungerar redan") {
-                    FeedbackList(items: record.strengths, color: LangLearn.green)
+                    FeedbackList(items: record.strengths, color: LanguLearn.green)
                 }
 
                 section("Prova nästa gång") {
-                    FeedbackList(items: record.nextSteps, color: LangLearn.magenta)
+                    FeedbackList(items: record.nextSteps, color: LanguLearn.magenta)
                 }
             }
             .frame(maxWidth: 720)
@@ -118,7 +118,7 @@ private struct LessonRecordDetail: View {
             .padding(.bottom, 24)
             .frame(maxWidth: .infinity)
         }
-        .langlearnCanvas()
+        .langulearnCanvas()
         .navigationTitle(record.lessonTitle)
     }
 
@@ -129,9 +129,9 @@ private struct LessonRecordDetail: View {
         VStack(alignment: .leading, spacing: 10) {
             Text(title)
                 .font(.il(15, .semibold))
-                .foregroundStyle(LangLearn.ink)
+                .foregroundStyle(LanguLearn.ink)
             content()
         }
-        .langlearnCard()
+        .langulearnCard()
     }
 }

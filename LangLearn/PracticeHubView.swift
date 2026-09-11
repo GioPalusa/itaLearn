@@ -27,22 +27,22 @@ struct PracticeHubView: View {
             VStack(alignment: .leading, spacing: 12) {
                 if let lesson {
                     Text("Välj hur du vill öva")
-                        .font(.il(15)).foregroundStyle(LangLearn.inkSecondary)
+                        .font(.il(15)).foregroundStyle(LanguLearn.inkSecondary)
                         .padding(.horizontal, 2)
 
                     NavigationLink { LessonOverviewView(lesson: lesson) } label: {
                         row("Fortsätt lektionen", lesson.title,
-                            icon: "bubble.left.and.bubble.right", tint: LangLearn.purple)
+                            icon: "bubble.left.and.bubble.right", tint: LanguLearn.purple)
                     }.buttonStyle(.plain)
 
                     NavigationLink { cardsDestination(lesson) } label: {
                         row("Ordkort", cardsCaption,
-                            icon: "rectangle.on.rectangle.angled", tint: LangLearn.cyan)
+                            icon: "rectangle.on.rectangle.angled", tint: LanguLearn.cyan)
                     }.buttonStyle(.plain)
 
                     NavigationLink { sentencesDestination(lesson) } label: {
                         row("Bygg meningar", sentencesCaption,
-                            icon: "square.grid.3x1.below.line.grid.1x2", tint: LangLearn.magenta)
+                            icon: "square.grid.3x1.below.line.grid.1x2", tint: LanguLearn.magenta)
                     }.buttonStyle(.plain)
 
                     pronounLink
@@ -50,40 +50,40 @@ struct PracticeHubView: View {
                     writingLink
                 } else {
                     Text("Du har gått igenom planen. Välj hur du vill fortsätta, eller öva vidare under tiden.")
-                        .font(.il(15)).foregroundStyle(LangLearn.inkSecondary)
+                        .font(.il(15)).foregroundStyle(LanguLearn.inkSecondary)
                         .padding(.horizontal, 2)
                     pronounLink
                     freeChatLink
                     writingLink
-                    PlanDirectionPicker(planner: planner).langlearnCard()
+                    PlanDirectionPicker(planner: planner).langulearnCard()
                     NavigationLink("Testa mina kunskaper igen") { AdaptiveChatView(mode: .assessment) }
-                        .buttonStyle(LangLearnSecondaryButtonStyle())
+                        .buttonStyle(LanguLearnSecondaryButtonStyle())
                 }
             }
             .padding(20).padding(.bottom, 40)
             .frame(maxWidth: 760).frame(maxWidth: .infinity)
         }
-        .langlearnCanvas()
+        .langulearnCanvas()
         .navigationTitle("Öva")
     }
 
     private var pronounLink: some View {
         NavigationLink { PronounGameView() } label: {
-            row("Pronomenspelet", pronounCaption, icon: "person.2.wave.2", tint: LangLearn.green)
+            row("Pronomenspelet", pronounCaption, icon: "person.2.wave.2", tint: LanguLearn.green)
         }.buttonStyle(.plain)
     }
 
     private var freeChatLink: some View {
         NavigationLink { AdaptiveChatView(mode: .freeChat) } label: {
             row("Chatta fritt med Milo", freeChatCaption,
-                icon: "bubble.left.and.text.bubble.right", tint: LangLearn.purple)
+                icon: "bubble.left.and.text.bubble.right", tint: LanguLearn.purple)
         }.buttonStyle(.plain)
     }
 
     private var writingLink: some View {
         NavigationLink { WritingDeskView() } label: {
             row("Skriv och få respons", writingCaption,
-                icon: "square.and.pencil", tint: LangLearn.magenta)
+                icon: "square.and.pencil", tint: LanguLearn.magenta)
         }.buttonStyle(.plain)
     }
 
@@ -152,14 +152,14 @@ struct PracticeHubView: View {
                 .frame(width: 44, height: 44)
                 .background(tint.opacity(0.12), in: .rect(cornerRadius: 13))
             VStack(alignment: .leading, spacing: 2) {
-                Text(title).font(.il(17, .semibold)).foregroundStyle(LangLearn.ink)
-                Text(caption).font(.il(14)).foregroundStyle(LangLearn.inkSecondary)
+                Text(title).font(.il(17, .semibold)).foregroundStyle(LanguLearn.ink)
+                Text(caption).font(.il(14)).foregroundStyle(LanguLearn.inkSecondary)
                     .lineLimit(2).multilineTextAlignment(.leading)
             }
             Spacer(minLength: 8)
             RowChevron()
         }
-        .langlearnCard()
+        .langulearnCard()
         .contentShape(.rect)
         .accessibilityElement(children: .combine)
     }

@@ -37,7 +37,7 @@ struct SettingsView: View {
                 Section {
                     Button { showingLanguages = true } label: {
                         HStack {
-                            Text("Jag lär mig").foregroundStyle(LangLearn.ink)
+                            Text("Jag lär mig").foregroundStyle(LanguLearn.ink)
                             Spacer()
                             Text(settings.targetLanguage.badge).foregroundStyle(.secondary)
                             Image(systemName: "chevron.right")
@@ -58,7 +58,7 @@ struct SettingsView: View {
                 }
                 Section("OpenAI") {
                     APIKeyForm()
-                    Text("Milo är en AI-lärare i LangLearn. Svaren skapas med OpenAI.").font(.footnote).foregroundStyle(.secondary)
+                    Text("Milo är en AI-lärare i LanguLearn. Svaren skapas med artificiell intelligens.").font(.footnote).foregroundStyle(.secondary)
                     if access.hasKey {
                         Button("Ta bort API-nyckeln", role: .destructive) { confirmRemoval = true }
                     }

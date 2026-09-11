@@ -572,6 +572,62 @@ def render_portrait(
     bpy.ops.render.render(write_still=True)
 
 
+def build_clips(runtime_rig):
+    clips = [
+        ("Idle_Neutral_A", True, retarget_clip(SOURCES["idle_neutral_a"], runtime_rig)),
+        ("Idle_LookAround", True, retarget_clip(SOURCES["idle_look_around"], runtime_rig)),
+        ("Idle_Chatting", True, retarget_clip(SOURCES["idle_chatting"], runtime_rig)),
+        ("Idle_Watching", True, retarget_clip(SOURCES["idle_watching"], runtime_rig)),
+        ("Idle_Chatting02", True, retarget_clip(SOURCES["idle_chatting_02"], runtime_rig)),
+        ("Idle_LookAround02", True, retarget_clip(SOURCES["idle_look_around_02"], runtime_rig)),
+        ("Walk", True, retarget_clip(SOURCES["walk_cc0"], runtime_rig, action_name="Walk_Loop")),
+        ("Wave", False, retarget_clip(SOURCES["wave"], runtime_rig, seconds=(8.5, 12), stabilize_torso=True)),
+        ("Laugh", False, retarget_clip(SOURCES["laugh"], runtime_rig, seconds=(3, 7))),
+        ("Applaud", False, retarget_clip(SOURCES["applaud"], runtime_rig, seconds=(3, 8))),
+    ]
+    # These six verified recordings begin with a bind-pose calibration and
+    # one interpolated sample, before the first captured pose at sample two.
+    # Exclude both before making loops or using idle as a standing wave base.
+    clips = [(name, loops, frames[2:] if name.startswith("Idle_") and
+              all(abs(q.w) > .9999 for q in frames[0]) else frames)
+             for name, loops, frames in clips]
+    # The waving take was seated; retain standing legs and torso from the idle.
+    idle = clips[3][2][0]
+    for frame in clips[7][2]:
+        for index, name in enumerate(JOINT_NAMES):
+            if not (name.endswith("_L") and any(token in name for token in ("clavicle", "upper_arm", "forearm", "hand"))):
+                frame[index] = idle[index].copy()
+    # Blend the tail into the first pose to avoid a jump when an idle repeats.
+    for name, loops, frames in clips:
+        if loops and name != "Walk":
+            blend_frames = min(round(FPS * 0.4), len(frames) - 1)
+            for offset in range(blend_frames + 1):
+                index = len(frames) - 1 - blend_frames + offset
+                t = offset / blend_frames
+                amount = t * t * (3 - 2 * t)
+                frames[index] = [q.slerp(first, amount) for q, first in zip(frames[index], frames[0])]
+    write_clips(EXPORT / "MiloClips.bin", clips)
+    shutil.copy2(EXPORT / "MiloClips.bin", RESOURCES / "MiloClips.bin")
+
+    return clips
+
+
+def rebuild_clips_only():
+    """Reuse the verified rig without rebaking or modifying artist assets."""
+    bpy.ops.wm.open_mainfile(filepath=str(WORKING / "Milo_Generated.blend"))
+    rig = next(obj for obj in bpy.data.objects if obj.type == "ARMATURE" and "upper_arm_L" in obj.data.bones)
+    objects = [bpy.data.objects[name] for name in ("Milo_Head", "Milo_Eyes", "Milo_Hair", "Milo_Body")]
+    clips = build_clips(rig)
+    manifest_path = EXPORT / "rig-manifest.json"
+    manifest = json.loads(manifest_path.read_text())
+    manifest["clips"] = [{"name": name, "frames": len(frames), "fps": FPS, "loops": loops} for name, loops, frames in clips]
+    manifest_path.write_text(json.dumps(manifest, indent=2) + "\n")
+    shutil.copy2(manifest_path, RESOURCES / "MiloRigManifest.json")
+    (EXPORT / "clips.json").write_text(json.dumps({"debugOnly": True, "clips": manifest["clips"]}, indent=2) + "\n")
+    for name, _, frames in clips[-2:]:
+        render_portrait(rig, objects, EXPORT / "preview" / f"{name}.png", frames[len(frames) // 2], False)
+
+
 def main() -> None:
     shutil.rmtree(EXPORT / "textures", ignore_errors=True)
     bpy.ops.wm.open_mainfile(filepath=str(SOURCES["snow"]))
@@ -627,39 +683,7 @@ def main() -> None:
     if not master.exists():
         shutil.copy2(generated, master)
 
-    clips = [
-        ("Idle_Neutral_A", True, retarget_clip(SOURCES["idle_neutral_a"], runtime_rig)),
-        ("Idle_LookAround", True, retarget_clip(SOURCES["idle_look_around"], runtime_rig)),
-        ("Idle_Chatting", True, retarget_clip(SOURCES["idle_chatting"], runtime_rig)),
-        ("Idle_Watching", True, retarget_clip(SOURCES["idle_watching"], runtime_rig)),
-        ("Idle_Chatting02", True, retarget_clip(SOURCES["idle_chatting_02"], runtime_rig)),
-        ("Idle_LookAround02", True, retarget_clip(SOURCES["idle_look_around_02"], runtime_rig)),
-        ("Walk", True, retarget_clip(SOURCES["walk_cc0"], runtime_rig, action_name="Walk_Loop")),
-        ("Wave", False, retarget_clip(SOURCES["wave"], runtime_rig, seconds=(8.5, 12), stabilize_torso=True)),
-    ]
-    # These six verified recordings begin with a bind-pose calibration and
-    # one interpolated sample, before the first captured pose at sample two.
-    # Exclude both before making loops or using idle as a standing wave base.
-    clips = [(name, loops, frames[2:] if name.startswith("Idle_") and
-              all(abs(q.w) > .9999 for q in frames[0]) else frames)
-             for name, loops, frames in clips]
-    # The waving take was seated; retain standing legs and torso from the idle.
-    idle = clips[3][2][0]
-    for frame in clips[-1][2]:
-        for index, name in enumerate(JOINT_NAMES):
-            if not (name.endswith("_L") and any(token in name for token in ("clavicle", "upper_arm", "forearm", "hand"))):
-                frame[index] = idle[index].copy()
-    # Blend the tail into the first pose to avoid a jump when an idle repeats.
-    for name, loops, frames in clips:
-        if loops and name != "Walk":
-            blend_frames = min(round(FPS * 0.4), len(frames) - 1)
-            for offset in range(blend_frames + 1):
-                index = len(frames) - 1 - blend_frames + offset
-                t = offset / blend_frames
-                amount = t * t * (3 - 2 * t)
-                frames[index] = [q.slerp(first, amount) for q, first in zip(frames[index], frames[0])]
-    write_clips(EXPORT / "MiloClips.bin", clips)
-    shutil.copy2(EXPORT / "MiloClips.bin", RESOURCES / "MiloClips.bin")
+    clips = build_clips(runtime_rig)
 
     bpy.ops.object.select_all(action="DESELECT")
     runtime_rig.select_set(True)
@@ -712,4 +736,7 @@ def main() -> None:
 
 
 if __name__ == "__main__":
-    main()
+    if "--clips-only" in sys.argv:
+        rebuild_clips_only()
+    else:
+        main()

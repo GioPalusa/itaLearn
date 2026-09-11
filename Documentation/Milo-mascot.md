@@ -10,7 +10,8 @@ fallbacks. Existing learner data and model configuration are preserved.
 
 RealityKit loads the model once, clones it for each visible teacher, and applies
 sampled skeletal motion plus fifteen independent facial morphs. Six original
-idle recordings are joined by a standing wave and an in-place walk. Greetings
+idle recordings are joined by a standing wave, an in-place walk, laughter and
+applause. Greetings
 wave once and settle into idle; the home character can take a short bounded
 walk. Transitions blend from the current pose. Inactive scenes stop animation.
 
@@ -60,3 +61,60 @@ physical-device rendering, touch/drag interaction and live speech playback
 were not verified in this pass.
 Selected simulator captures and a motion recording are saved under
 `Art/Milo/Validation/2026-09-10`.
+
+## Circular avatar and commands
+
+`MiloAvatarView` renders a circular face portrait at any size, including a live
+32-point avatar. It uses the same cached rig, virtual camera and speech meter.
+Use one live avatar beside the active conversation; use `mood: .still` for
+historical messages. Reduce Motion, inactive scenes and loading use the matching
+portrait. No camera permission or network call is needed.
+
+Keep one controller in the owning view's state:
+
+```swift
+@State private var milo = MiloController()
+
+// Inside body:
+MiloAvatarView(controller: milo, size: 96)
+
+// In event handlers, separately:
+milo.laugh()
+milo.applaud()
+milo.wave()
+milo.speak("Bravissimo! Proviamo ancora?", in: .italian)
+milo.stop()
+```
+
+`think()`, `listen()`, `encourage()` and `idle()` set ongoing states. Laughter,
+applause and waving play once and return to idle. Repeating a call replays it;
+a new command replaces the previous action or speech. Completion comes from
+the animation timeline, so a cold model load cannot consume the reaction.
+Disappearance/backgrounding stops speech and animation. Laughter and applause
+are visual reactions without sound effects; `speak` uses the local system voice
+and drives the mouth from the actual audio amplitude.
+
+Callers may also supply decoded function-call arguments:
+
+```swift
+try milo.perform(MiloCommand(action: .applaud))
+try milo.perform(json: Data(#"{"action":"speak","text":"Ciao!","language":"it"}"#.utf8))
+```
+
+Allowed actions are `idle`, `laugh`, `applaud`, `wave`, `think`, `listen`,
+`encourage`, `speak` and `stop`. Speech requires nonblank text and a language code
+from `LearningLanguage.catalog`. Invalid input leaves the current action intact.
+This is a local dispatch API; registering an OpenAI tool or choosing when a model
+should call it is the caller's responsibility.
+
+The chat speaker and message portraits use this component. Lesson summaries
+applaud a completed lesson. Settings → Milos studio → Prova den runda avataren
+opens the interactive demo. Debug launches can use `--milo-avatar-demo` and
+`--milo-avatar-check` for a repeatable sequence through the same controller API.
+
+Validated on 2026-09-11: simulator Debug build and thirteen `MiloTests` passed.
+Simulator captures verify circular framing, reactions returning to idle, and
+local speech entering playback with a nonzero mouth meter before returning to
+idle. Captures are under `Art/Milo/Validation/2026-09-11`. The eight existing
+clips remain byte-for-byte unchanged. Physical-device rendering, acoustic audio
+quality and touch interaction were not verified in this pass.

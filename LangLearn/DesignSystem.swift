@@ -4,7 +4,7 @@ import SwiftUI
 ///
 /// The design is specified for light appearance only, so the ink and surface
 /// colours are fixed rather than semantic. `RootView` pins the app to light.
-nonisolated enum LangLearn {
+nonisolated enum LanguLearn {
     static let purple = Color(red: 0x56 / 255, green: 0x47 / 255, blue: 0x97 / 255)
     static let magenta = Color(red: 0xC0 / 255, green: 0x33 / 255, blue: 0x8B / 255)
     static let cyan = Color(red: 0x2E / 255, green: 0xAA / 255, blue: 0xE1 / 255)
@@ -65,23 +65,23 @@ private struct LangLearnCardModifier: ViewModifier {
         content
             .padding(padding)
             .frame(maxWidth: .infinity, alignment: .leading)
-            .background(LangLearn.card, in: .rect(cornerRadius: LangLearn.cardRadius))
+            .background(LanguLearn.card, in: .rect(cornerRadius: LanguLearn.cardRadius))
             .overlay {
-                RoundedRectangle(cornerRadius: LangLearn.cardRadius)
-                    .strokeBorder(LangLearn.cardBorder, lineWidth: 1)
+                RoundedRectangle(cornerRadius: LanguLearn.cardRadius)
+                    .strokeBorder(LanguLearn.cardBorder, lineWidth: 1)
             }
             .shadow(color: .black.opacity(0.06), radius: 4, y: 4)
     }
 }
 
 extension View {
-    func langlearnCard(padding: CGFloat = 16) -> some View {
+    func langulearnCard(padding: CGFloat = 16) -> some View {
         modifier(LangLearnCardModifier(padding: padding))
     }
 
     /// The tinted canvas every screen in the design sits on.
-    func langlearnCanvas() -> some View {
-        background(LangLearn.canvas)
+    func langulearnCanvas() -> some View {
+        background(LanguLearn.canvas)
     }
 
     /// The design draws its own headers, so the system bar is hidden.
@@ -130,9 +130,9 @@ extension View {
 // MARK: - Controls
 
 /// The 50 pt filled capsule used for every primary action in the design.
-struct LangLearnPrimaryButtonStyle: ButtonStyle {
+struct LanguLearnPrimaryButtonStyle: ButtonStyle {
     @Environment(\.isEnabled) var controlIsEnabled
-    var background: AnyShapeStyle = AnyShapeStyle(LangLearn.purple)
+    var background: AnyShapeStyle = AnyShapeStyle(LanguLearn.purple)
     var foreground: Color = .white
     var isEnabled = true
 
@@ -150,9 +150,9 @@ struct LangLearnPrimaryButtonStyle: ButtonStyle {
 }
 
 /// The 38 pt tinted capsule used for the secondary pair under a correction.
-struct LangLearnSecondaryButtonStyle: ButtonStyle {
-    var tint: Color = LangLearn.purple
-    var fill: Color = LangLearn.purple.opacity(0.10)
+struct LanguLearnSecondaryButtonStyle: ButtonStyle {
+    var tint: Color = LanguLearn.purple
+    var fill: Color = LanguLearn.purple.opacity(0.10)
 
     func makeBody(configuration: Configuration) -> some View {
         configuration.label
@@ -176,7 +176,7 @@ struct GlassCircle<Content: View>: View {
             .frame(width: size, height: size)
             .background(fill, in: .circle)
             .overlay {
-                Circle().strokeBorder(LangLearn.cardBorder, lineWidth: 1)
+                Circle().strokeBorder(LanguLearn.cardBorder, lineWidth: 1)
             }
     }
 }
@@ -189,7 +189,7 @@ struct SettingsSectionHeader: View {
         Text(title)
             .font(.il(12))
             .tracking(0.24)
-            .foregroundStyle(LangLearn.inkTertiary)
+            .foregroundStyle(LanguLearn.inkTertiary)
             .frame(maxWidth: .infinity, alignment: .leading)
             .padding(.horizontal, 32)
             .padding(.bottom, 6)
@@ -202,7 +202,7 @@ struct RowSeparator: View {
 
     var body: some View {
         Rectangle()
-            .fill(LangLearn.hairline)
+            .fill(LanguLearn.hairline)
             .frame(height: 1)
             .padding(.leading, inset)
     }
@@ -218,10 +218,10 @@ struct GroupedCard<Content: View>: View {
             content
         }
         .frame(maxWidth: .infinity, alignment: .leading)
-        .background(LangLearn.card, in: .rect(cornerRadius: LangLearn.cardRadius))
+        .background(LanguLearn.card, in: .rect(cornerRadius: LanguLearn.cardRadius))
         .overlay {
-            RoundedRectangle(cornerRadius: LangLearn.cardRadius)
-                .strokeBorder(LangLearn.cardBorder, lineWidth: 1)
+            RoundedRectangle(cornerRadius: LanguLearn.cardRadius)
+                .strokeBorder(LanguLearn.cardBorder, lineWidth: 1)
         }
         .shadow(color: .black.opacity(0.06), radius: 4, y: 4)
     }
@@ -238,11 +238,11 @@ struct SettingsRow<Accessory: View>: View {
             VStack(alignment: .leading, spacing: 1) {
                 Text(title)
                     .font(.il(17))
-                    .foregroundStyle(LangLearn.ink)
+                    .foregroundStyle(LanguLearn.ink)
                 if let subtitle {
                     Text(subtitle)
                         .font(.il(13))
-                        .foregroundStyle(LangLearn.inkSecondary)
+                        .foregroundStyle(LanguLearn.inkSecondary)
                 }
             }
             .frame(maxWidth: .infinity, alignment: .leading)
@@ -260,7 +260,7 @@ struct RowChevron: View {
     var body: some View {
         Image(systemName: "chevron.forward")
             .font(.system(size: 13, weight: .semibold))
-            .foregroundStyle(LangLearn.inkQuaternary)
+            .foregroundStyle(LanguLearn.inkQuaternary)
             .accessibilityHidden(true)
     }
 }
@@ -299,7 +299,7 @@ struct FeedbackList: View {
                         .padding(.top, 7)
                     Text(item)
                         .font(.il(15))
-                        .foregroundStyle(LangLearn.inkSecondary)
+                        .foregroundStyle(LanguLearn.inkSecondary)
                 }
             }
         }
@@ -328,7 +328,7 @@ struct ProgressRing: View {
             Circle()
                 .trim(from: 0, to: shown)
                 .stroke(
-                    LinearGradient(colors: [LangLearn.magenta, LangLearn.cyan],
+                    LinearGradient(colors: [LanguLearn.magenta, LanguLearn.cyan],
                                    startPoint: .topTrailing, endPoint: .bottomLeading),
                     style: StrokeStyle(lineWidth: size * 0.105, lineCap: .round)
                 )
@@ -344,7 +344,7 @@ struct ProgressRing: View {
             }
         }
         .frame(width: size, height: size)
-        .motion(LangLearnMotion.fill, shown)
+        .motion(LanguLearnMotion.fill, shown)
         .onAppear { shown = fraction }
         .onChange(of: fraction) { shown = fraction }
         .accessibilityElement()
@@ -362,11 +362,11 @@ struct SegmentedProgress: View {
         HStack(spacing: 5) {
             ForEach(0..<max(total, 1), id: \.self) { index in
                 Capsule()
-                    .fill(index <= current && total > 0 ? LangLearn.purple : Color.black.opacity(0.12))
+                    .fill(index <= current && total > 0 ? LanguLearn.purple : Color.black.opacity(0.12))
                     .frame(height: 5)
             }
         }
-        .motion(LangLearnMotion.settle, current)
+        .motion(LanguLearnMotion.settle, current)
         .accessibilityElement()
         .accessibilityLabel("Framsteg")
         .accessibilityValue("\(min(current + 1, total)) av \(total)")
@@ -388,21 +388,21 @@ struct PracticeHeader: View {
                     .font(.system(size: 16, weight: .semibold))
                     .foregroundStyle(Color.black.opacity(0.7))
                     .frame(width: 38, height: 38)
-                    .background(LangLearn.card, in: .circle)
-                    .overlay { Circle().strokeBorder(LangLearn.cardBorder, lineWidth: 1) }
+                    .background(LanguLearn.card, in: .circle)
+                    .overlay { Circle().strokeBorder(LanguLearn.cardBorder, lineWidth: 1) }
                     .shadow(color: .black.opacity(0.06), radius: 4, y: 4)
             }
             .buttonStyle(.plain)
             .accessibilityLabel("Tillbaka")
 
             VStack(alignment: .leading, spacing: 2) {
-                Text(title).font(.il(22, .bold)).foregroundStyle(LangLearn.ink)
-                Text(subtitle).font(.il(12)).foregroundStyle(LangLearn.inkTertiary).lineLimit(1)
+                Text(title).font(.il(22, .bold)).foregroundStyle(LanguLearn.ink)
+                Text(subtitle).font(.il(12)).foregroundStyle(LanguLearn.inkTertiary).lineLimit(1)
             }
             .frame(maxWidth: .infinity, alignment: .leading)
 
             HStack(spacing: 0) {
-                Text("\(min(current + 1, max(total, 1)))").foregroundStyle(LangLearn.purple)
+                Text("\(min(current + 1, max(total, 1)))").foregroundStyle(LanguLearn.purple)
                 Text("/\(total)").foregroundStyle(Color.black.opacity(0.35))
             }
             .font(.ilMono(15))
@@ -415,7 +415,7 @@ struct PracticeHeader: View {
 
 /// The app's motion vocabulary. Every animation goes through here so Reduce Motion
 /// is honoured in one place rather than remembered at each call site.
-enum LangLearnMotion {
+enum LanguLearnMotion {
     /// Content settling into place — cards appearing, sections expanding.
     static let settle = Animation.spring(duration: 0.42, bounce: 0.18)
     /// Something the learner moved — a tile, a card, a tab.
@@ -465,7 +465,7 @@ private struct SequencedAppearance: ViewModifier {
                 if reduceMotion {
                     hasAppeared = true
                 } else {
-                    withAnimation(LangLearnMotion.settle.delay(delay)) { hasAppeared = true }
+                    withAnimation(LanguLearnMotion.settle.delay(delay)) { hasAppeared = true }
                 }
             }
     }

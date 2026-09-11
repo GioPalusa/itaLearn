@@ -34,7 +34,7 @@ struct ContentView: View {
         }
         .environment(store)
         .environment(access)
-        .tint(LangLearn.purple)
+        .tint(LanguLearn.purple)
         .task {
             loadStudies()
             await access.load()

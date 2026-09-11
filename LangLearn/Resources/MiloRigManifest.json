@@ -132,6 +132,18 @@
       "frames": 106,
       "fps": 30,
       "loops": false
+    },
+    {
+      "name": "Laugh",
+      "frames": 121,
+      "fps": 30,
+      "loops": false
+    },
+    {
+      "name": "Applaud",
+      "frames": 151,
+      "fps": 30,
+      "loops": false
     }
   ]
 }
