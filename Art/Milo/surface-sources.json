@@ -1,0 +1,72 @@
+{
+  "author": "Blender Studio",
+  "license": "CC-BY-4.0",
+  "pack": "snow_barscene_pack",
+  "modifications": "Resized to 1024 per tile; body UDIMs flattened to match existing UV atlas.",
+  "files": [
+    {
+      "source": "skin_roughness.1001.png",
+      "sha256": "f11c0f1b6aa15f820c026b4a484dcf662b6fbc148fe7283278a1df04524bfcf6"
+    },
+    {
+      "source": "skin_roughness.1002.png",
+      "sha256": "85f23ee7e68e6e9cd9f21304347198849e97b1cb719d426587317860f4399332"
+    },
+    {
+      "source": "skin_roughness.1003.png",
+      "sha256": "cd85a058e80385bacff31ea25358a97dad9a7d5e6dee6177f12ce2a814cb7744"
+    },
+    {
+      "source": "skin_sss_color.1001.png",
+      "sha256": "677ad2978226451e493e5de2610821a5eda9f72d0cdf9cead02344f45491186e"
+    },
+    {
+      "source": "skin_sss_color.1002.png",
+      "sha256": "33097f751f9cdf52a367d08b6c125bc2ba83c67ae5894fb45bd1995bcd0f6a51"
+    },
+    {
+      "source": "skin_sss_color.1003.png",
+      "sha256": "ec68a5e0bcde2dbb478bec15ff4d33583daaf0cc8b767f3ebcc17d6b9de42692"
+    },
+    {
+      "source": "skin_sss_value.1001.png",
+      "sha256": "fc1962f72975717e88082f66ea8c30e2f546b63d2a4dcb1503aba321b43f77d8"
+    },
+    {
+      "source": "skin_sss_value.1002.png",
+      "sha256": "4c3a702b13df13ff389b5f00211f3e366c54a1ef31b5abb8b27b703c598d951e"
+    },
+    {
+      "source": "skin_sss_value.1003.png",
+      "sha256": "e785cc6f4c58f0ea04f1b802b37f3646ea239ed4f023c3b9fb005e55d7529a31"
+    },
+    {
+      "source": "hair_roughness.png",
+      "sha256": "ef1e5883f0b44ca074da92e6b73e6c15b0b8b1a2bb82650fa3226d787cae50e2"
+    },
+    {
+      "source": "shirt_roughness.png",
+      "sha256": "42c603e1f10c0622ede37eebd387a637d4f1c054f5ac9deedda66250042ff5ba"
+    },
+    {
+      "source": "pants_roughness.png",
+      "sha256": "2bbe19d63ec1b50508ffed0fe7147c80ba22b433dfcae40c058b329eeeed52ae"
+    },
+    {
+      "source": "shoes_roughness.png",
+      "sha256": "6ea8699896b76bcb97f9051f945993ad1a91084d0507cd8e22bba5ebe740e018"
+    },
+    {
+      "source": "shirt_normal.png",
+      "sha256": "7a90766714b9a431b17b2e5f90a2c1d267a73e0433f1080a31526a3ee88e95e6"
+    },
+    {
+      "source": "pants_normal.png",
+      "sha256": "32a898effd3950a850496f82b707ae810b05cf8608b6c24e867ebfabe9e5d89e"
+    },
+    {
+      "source": "shoes_normal.png",
+      "sha256": "2ae017a1b444857625c0dcf28a887adb058536995f752a030800973c86fc7e99"
+    }
+  ]
+}

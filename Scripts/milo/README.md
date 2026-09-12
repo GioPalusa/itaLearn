@@ -116,3 +116,24 @@ Suggested future placements: curiosity before revealing a clue; leaning closer
 while inviting another attempt; joy after a successful correction; a brief dance
 at a course milestone; and the presenting gesture beside the next exercise.
 These are optional placements, not all automatically wired into lessons.
+
+## Runtime surface materials and studio light
+
+`prepare_surface_maps.py` prepares the original Blender Studio CC-BY maps from
+`snow_barscene_pack`. Run with Blender and pass the pack directory after `--`.
+Source hashes and modifications are recorded in `Art/Milo/surface-sources.json`.
+The pack retains Snow's existing attribution in Settings. No source files are
+modified. Head maps use UV tile 1001; body maps flatten tiles 1001–1003 to match
+the existing body atlas. Colour maps use sRGB; roughness and normal maps stay
+linear. Clothing receives the original normal maps. No invented skin normal map
+is derived from freckles or colour, which would incorrectly emboss pigmentation.
+
+`MiloAssets` applies these maps once to the cached USDZ template, keeping the
+rig, morphs, eye culling and base colour textures intact. iOS 27 adds low-weight
+subsurface scattering; older systems retain roughness/normal/specular changes.
+Skin, hair, cloth and eyes have distinct specular responses. An authored broad
+studio environment supplies soft light, with a stronger directional key, weaker
+fill and subtle rim. The environment is shared across character instances.
+
+These runtime overrides are intentional: Blender previews of the USDZ alone do
+not show the final app material/light setup. Validate using the app's avatar demo.

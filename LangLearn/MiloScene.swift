@@ -8,6 +8,18 @@ import SwiftUI
 enum MiloAssets {
     private static var model: Task<Entity, Error>?
     private static var clips: Task<MiloClipLibrary, Error>?
+    private static var environment: EnvironmentResource?
+
+    static func studioEnvironment() async throws -> EnvironmentResource {
+        if let environment { return environment }
+        guard let url = Bundle.main.url(forResource: "MiloSurface_studio", withExtension: "png"),
+              let image = UIImage(contentsOfFile: url.path)?.cgImage else {
+            throw CocoaError(.fileNoSuchFile)
+        }
+        let resource = try await EnvironmentResource(equirectangular: image)
+        environment = resource
+        return resource
+    }
     private static var modelIsLoaded = false
     private static var clipsAreLoaded = false
     /// True once both assets are cached, so later avatars can skip the launch delay.
@@ -20,7 +32,9 @@ enum MiloAssets {
             guard let url = Bundle.main.url(forResource: "Milo", withExtension: "usdz") else {
                 throw MiloAssetError.missingModel
             }
-            return try await Entity(contentsOf: url)
+            let entity = try await Entity(contentsOf: url)
+            try await MiloSurfaceMaterials.apply(to: entity)
+            return entity
         }
         model = task
         do {
@@ -114,6 +128,12 @@ final class MiloScene {
 
         let scene = Entity()
         scene.addChild(stage)
+        let studio = Entity()
+        studio.components.set(ImageBasedLightComponent(source: .single(try await MiloAssets.studioEnvironment()), intensityExponent: 6.3))
+        scene.addChild(studio)
+        for model in models {
+            model.entity.components.set(ImageBasedLightReceiverComponent(imageBasedLight: studio))
+        }
         let camera = Entity()
         var optics = OrthographicCameraComponent()
         optics.scale = 1.4
@@ -121,17 +141,17 @@ final class MiloScene {
         camera.look(at: .zero, from: [0.12, 0.06, 4], relativeTo: nil)
         scene.addChild(camera)
         let key = DirectionalLight()
-        key.light.intensity = 1800
+        key.light.intensity = 2400
         key.light.color = .init(red: 1, green: 0.95, blue: 0.89, alpha: 1)
         key.look(at: .zero, from: [-3, 4, 5], relativeTo: nil)
         scene.addChild(key)
         let fill = DirectionalLight()
-        fill.light.intensity = 1800
+        fill.light.intensity = 800
         fill.light.color = .init(red: 0.90, green: 0.94, blue: 1, alpha: 1)
         fill.look(at: .zero, from: [2, 2, 5], relativeTo: nil)
         scene.addChild(fill)
         let rim = DirectionalLight()
-        rim.light.intensity = 1000
+        rim.light.intensity = 450
         rim.look(at: .zero, from: [1, 3, -3], relativeTo: nil)
         scene.addChild(rim)
         return scene
@@ -277,5 +297,70 @@ struct MiloRealityView: View {
         }
         .onDisappear { scene.stop() }
         .allowsHitTesting(false)
+    }
+}
+
+
+/// Applied once to the cached template; cloned avatars share the GPU textures.
+/// Snow's original UVs remain unchanged. Scalar/normal maps must not use sRGB.
+@MainActor
+private enum MiloSurfaceMaterials {
+    static func apply(to entity: Entity) async throws {
+        var maps: [String: TextureResource] = [:]
+        let names = ["head_roughness", "body_roughness", "head_sss_color", "body_sss_color",
+                     "head_sss_value", "body_sss_value", "hair_roughness", "shirt_roughness",
+                     "pants_roughness", "shoes_roughness", "shirt_normal", "pants_normal", "shoes_normal"]
+        for name in names {
+            guard let url = Bundle.main.url(forResource: "MiloSurface_" + name, withExtension: "png") else {
+                throw CocoaError(.fileNoSuchFile)
+            }
+            let semantic: TextureResource.Semantic = name.hasSuffix("normal") ? .normal :
+                (name.hasSuffix("color") ? .color : .scalar)
+            maps[name] = try await TextureResource(contentsOf: url, options: .init(semantic: semantic))
+        }
+        func texture(_ name: String) -> MaterialParameters.Texture? {
+            maps[name].map { MaterialParameters.Texture($0) }
+        }
+        func visit(_ node: Entity) {
+            if var model = node.components[ModelComponent.self] {
+                model.materials = model.materials.map { material in
+                    guard var pbr = material as? PhysicallyBasedMaterial else { return material }
+                    let name = pbr.name ?? ""
+                    let part = ["head", "body", "shirt", "pants", "shoes", "eyes", "hair"].first {
+                        name.localizedCaseInsensitiveContains($0)
+                    }
+                    pbr.metallic = .init(floatLiteral: 0)
+                    pbr.clearcoat = .init(floatLiteral: 0)
+                    switch part {
+                    case "head", "body":
+                        let prefix = part!
+                        pbr.roughness = .init(scale: 1, texture: texture(prefix + "_roughness"))
+                        pbr.specular = 0.12
+                        // Small scattering radius in the rig's metre scale; avoid waxy skin.
+                        if #available(iOS 27.0, *) {
+                            pbr.subsurfaceWeight = .init(scale: 0.18, texture: texture(prefix + "_sss_value"))
+                            pbr.subsurfaceColor = .init(texture: texture(prefix + "_sss_color"))
+                            pbr.subsurfaceRadius = 0.0015
+                        }
+                    case "shirt", "pants", "shoes":
+                        let prefix = part!
+                        pbr.roughness = .init(texture: texture(prefix + "_roughness"))
+                        pbr.normal = .init(texture: texture(prefix + "_normal"))
+                        pbr.specular = 0.18
+                    case "hair":
+                        pbr.roughness = .init(texture: texture("hair_roughness"))
+                        pbr.specular = 0.10
+                    case "eyes":
+                        pbr.roughness = 0.25
+                        pbr.specular = 0.35
+                    default: break
+                    }
+                    return pbr
+                }
+                node.components.set(model)
+            }
+            for child in node.children { visit(child) }
+        }
+        visit(entity)
     }
 }

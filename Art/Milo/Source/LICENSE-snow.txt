@@ -8,3 +8,8 @@ controls, material conversion, retargeted motion clips, and the name Milo.
 
 Copyright and attribution for the original Snow character remain with
 Blender Studio: https://studio.blender.org/
+
+Additional roughness, normal and skin subsurface maps are derived from the
+Blender Studio snow_barscene_pack (CC BY 4.0). They have been resized and skin
+UDIM tiles have been combined for the runtime UV atlas. See surface-sources.json
+for exact source hashes. The studio lighting environment is authored for Milo.
