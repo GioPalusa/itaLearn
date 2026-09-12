@@ -1,0 +1,91 @@
+Device orientation: Unknown
+------------------------
+Application bundle identifier: com.apple.Preferences
+Application UI orientation: Portrait
+Application, pid: 20930, label: 'Inställningar'
+ Window, {{0.0, 0.0}, {390.0, 844.0}}, hitPoint: {195.0, 422.0}
+  Other, {{0.0, 0.0}, {390.0, 844.0}}, hitPoint: {195.0, 422.0}
+   Other, {{0.0, 0.0}, {390.0, 844.0}}, hitPoint: {195.0, 422.0}
+    Other, {{0.0, 0.0}, {390.0, 844.0}}, hitPoint: {195.0, 422.0}
+     Other, {{0.0, 0.0}, {390.0, 844.0}}, hitPoint: {195.0, 422.0}
+      Other, {{0.0, 0.0}, {390.0, 844.0}}, hitPoint: {195.0, 422.0}
+       Other, {{0.0, 0.0}, {390.0, 844.0}}, hitPoint: {195.0, 422.0}
+        Other, {{0.0, 0.0}, {390.0, 844.0}}, hitPoint: {195.0, 422.0}
+         Other, {{0.0, 0.0}, {390.0, 844.0}}, hitPoint: {195.0, 422.0}
+          Other, {{0.0, 0.0}, {390.0, 844.0}}, hitPoint: {195.0, 422.0}
+           NavigationBar, {{0.0, 47.0}, {390.0, 54.0}}, identifier: 'Rörelse', hitPoint: {195.0, 74.0}
+            Button, {{16.0, 47.0}, {44.0, 44.0}}, identifier: 'BackButton', label: 'Hjälpmedel', hitPoint: {38.0, 69.0}
+            StaticText, {{165.0, 58.7}, {59.7, 20.7}}, label: 'Rörelse', hitPoint: {194.8, 69.0}
+           Other, {{0.0, 0.0}, {390.0, 844.0}}, hitPoint: {195.0, 422.0}
+            Other, {{0.0, 0.0}, {390.0, 844.0}}, hitPoint: {195.0, 422.0}
+             Other, {{0.0, 0.0}, {390.0, 844.0}}, hitPoint: {195.0, 422.0}
+              Other, {{0.0, 0.0}, {390.0, 844.0}}, hitPoint: {195.0, 422.0}
+               Other, {{0.0, 101.0}, {390.0, 709.0}}, hitPoint: {195.0, 455.5}
+                Table, {{0.0, 0.0}, {390.0, 844.0}}, hitPoint: {195.0, 422.0}
+                 Other, {{0.0, 101.0}, {390.0, 17.7}}, hitPoint: {195.0, 109.8}
+                 Cell, {{16.0, 118.7}, {358.0, 53.0}}, identifier: 'REDUCE_MOTION', hitPoint: {195.0, 145.2}
+                  Other, {{16.0, 118.7}, {358.0, 53.0}}, hitPoint: {195.0, 145.2}
+                   Other, {{16.0, 118.7}, {358.0, 53.0}}, hitPoint: {195.0, 145.2}
+                    Switch, {{32.0, 131.3}, {326.0, 28.0}}, identifier: 'REDUCE_MOTION', label: 'Minska rörelse', value: 0, hitPoint: {195.0, 145.3}
+                     Button, {{32.0, 135.0}, {110.3, 20.3}}, identifier: 'REDUCE_MOTION', label: 'Minska rörelse', hitPoint: {87.2, 145.2}
+                     Switch, {{297.0, 131.3}, {63.0, 28.0}}, value: 0, hitPoint: {328.5, 145.3}
+                 Other, {{0.0, 171.7}, {390.0, 46.0}}, identifier: 'Minska användargränssnittets rörelse, inklusive parallaxeffekten för symboler.', hitPoint: {195.0, 194.7}
+                  Other, {{16.0, 171.7}, {358.0, 46.0}}, label: 'Minska användargränssnittets rörelse, inklusive parallaxeffekten för symboler.', hitPoint: {195.0, 194.7}
+                 Other, {{0.0, 217.7}, {390.0, 17.7}}, hitPoint: {195.0, 226.5}
+                 Cell, {{16.0, 235.3}, {358.0, 53.0}}, identifier: 'REDUCE_MOTION_REDUCE_SLIDE_ANIMATIONS', hitPoint: {195.0, 261.8}
+                  Other, {{16.0, 235.3}, {358.0, 53.0}}, hitPoint: {195.0, 261.8}
+                   Other, {{16.0, 235.3}, {358.0, 53.0}}, hitPoint: {195.0, 261.8}
+                    Switch, {{32.0, 248.0}, {326.0, 28.0}}, identifier: 'REDUCE_MOTION_REDUCE_SLIDE_ANIMATIONS', label: 'Föredra övertoning', value: 0, hitPoint: {195.0, 262.0}
+                     Button, {{32.0, 251.7}, {144.7, 20.3}}, identifier: 'REDUCE_MOTION_REDUCE_SLIDE_ANIMATIONS', label: 'Föredra övertoning', hitPoint: {104.3, 261.8}
+                     Switch, {{297.0, 248.0}, {63.0, 28.0}}, value: 0, hitPoint: {328.5, 262.0}
+                 Other, {{0.0, 288.3}, {390.0, 78.0}}, identifier: 'Minskar rörelsen för skärmelement och skärmåtgärder, till exempel att öppna eller flytta mellan appar, för att hjälpa personer med rörelsekänslighet.', hitPoint: {195.0, 327.3}
+                  Other, {{16.0, 288.3}, {358.0, 78.0}}, label: 'Minskar rörelsen för skärmelement och skärmåtgärder, till exempel att öppna eller flytta mellan appar, för att hjälpa personer med rörelsekänslighet.', hitPoint: {195.0, 327.3}
+                 Other, {{0.0, 366.3}, {390.0, 17.7}}, hitPoint: {195.0, 375.2}
+                 Cell, {{16.0, 384.0}, {358.0, 73.3}}, identifier: 'REDUCE_MOTION_AUTOPLAY_ANIMATED_IMAGES', hitPoint: {195.0, 420.7}
+                  Other, {{16.0, 384.0}, {358.0, 73.3}}, hitPoint: {195.0, 420.7}
+                   Other, {{16.0, 384.0}, {358.0, 73.3}}, hitPoint: {195.0, 420.7}
+                    Switch, {{32.0, 399.5}, {326.0, 42.3}}, identifier: 'REDUCE_MOTION_AUTOPLAY_ANIMATED_IMAGES', label: 'Spela upp animerade bilder automatiskt', value: 1, hitPoint: {195.0, 420.7}
+                     Button, {{32.0, 399.5}, {212.3, 42.3}}, identifier: 'REDUCE_MOTION_AUTOPLAY_ANIMATED_IMAGES', label: 'Spela upp animerade bilder automatiskt', hitPoint: {138.2, 420.7}
+                     Switch, {{297.0, 406.7}, {63.0, 28.0}}, value: 1, hitPoint: {328.5, 420.7}
+                 Cell, {{16.0, 457.3}, {358.0, 53.0}}, identifier: 'REDUCE_MOTION_AUTOPLAY_VIDEO_PREVIEWS', hitPoint: {195.0, 483.8}
+                  Other, {{16.0, 457.3}, {358.0, 53.0}}, hitPoint: {195.0, 483.8}
+                   Other, {{16.0, 457.3}, {358.0, 53.0}}, hitPoint: {195.0, 483.8}
+                    Switch, {{32.0, 470.0}, {326.0, 28.0}}, identifier: 'REDUCE_MOTION_AUTOPLAY_VIDEO_PREVIEWS', label: 'Förhandsvisa video automatiskt', value: 1, hitPoint: {195.0, 484.0}
+                     Button, {{32.0, 473.7}, {241.0, 20.3}}, identifier: 'REDUCE_MOTION_AUTOPLAY_VIDEO_PREVIEWS', label: 'Förhandsvisa video automatiskt', hitPoint: {152.5, 483.8}
+                     Switch, {{297.0, 470.0}, {63.0, 28.0}}, value: 1, hitPoint: {328.5, 484.0}
+                 Cell, {{16.0, 510.3}, {358.0, 53.0}}, identifier: 'ReduceMotionAutoplayMessagesEffects', hitPoint: {195.0, 536.8}
+                  Other, {{16.0, 510.3}, {358.0, 53.0}}, hitPoint: {195.0, 536.8}
+                   Other, {{16.0, 510.3}, {358.0, 53.0}}, hitPoint: {195.0, 536.8}
+                    Switch, {{32.0, 523.0}, {326.0, 28.0}}, identifier: 'ReduceMotionAutoplayMessagesEffects', label: 'Spela upp effekter', value: 1, hitPoint: {195.0, 537.0}
+                     Button, {{32.0, 526.7}, {140.0, 20.3}}, identifier: 'ReduceMotionAutoplayMessagesEffects', label: 'Spela upp effekter', hitPoint: {102.0, 536.8}
+                     Switch, {{297.0, 523.0}, {63.0, 28.0}}, value: 1, hitPoint: {328.5, 537.0}
+                 Other, {{0.0, 563.3}, {390.0, 62.0}}, identifier: 'Styr om videor, animerade bilder och helskärmseffekter i meddelanden ska spelas upp automatiskt.', hitPoint: {195.0, 594.3}
+                  Other, {{16.0, 563.3}, {358.0, 62.0}}, label: 'Styr om videor, animerade bilder och helskärmseffekter i meddelanden ska spelas upp automatiskt.', hitPoint: {195.0, 594.3}
+                 Other, {{0.0, 625.3}, {390.0, 17.7}}, hitPoint: {195.0, 634.2}
+                 Cell, {{16.0, 643.0}, {358.0, 53.0}}, identifier: 'PREFER_NONBLINKING_CURSOR', hitPoint: {195.0, 669.5}
+                  Other, {{16.0, 643.0}, {358.0, 53.0}}, hitPoint: {195.0, 669.5}
+                   Other, {{16.0, 643.0}, {358.0, 53.0}}, hitPoint: {195.0, 669.5}
+                    Switch, {{32.0, 655.7}, {326.0, 28.0}}, identifier: 'PREFER_NONBLINKING_CURSOR', label: 'Föredra pekare som inte blinkar', value: 0, hitPoint: {195.0, 669.7}
+                     Button, {{32.0, 659.3}, {239.7, 20.3}}, identifier: 'PREFER_NONBLINKING_CURSOR', label: 'Föredra pekare som inte blinkar', hitPoint: {151.8, 669.5}
+                     Switch, {{297.0, 655.7}, {63.0, 28.0}}, value: 0, hitPoint: {328.5, 669.7}
+                 Other, {{0.0, 696.0}, {390.0, 30.0}}, identifier: 'Föredra att pekarindikatorn inte blinkar i text.', hitPoint: {195.0, 711.0}
+                  Other, {{16.0, 696.0}, {358.0, 30.0}}, label: 'Föredra att pekarindikatorn inte blinkar i text.', hitPoint: {195.0, 711.0}
+                 Other, {{0.0, 726.0}, {390.0, 17.7}}, hitPoint: {195.0, 734.8}
+                 Cell, {{16.0, 743.7}, {358.0, 53.0}}, identifier: 'REFRESH_RATE', hitPoint: {195.0, 770.2}
+                  Other, {{16.0, 743.7}, {358.0, 53.0}}, hitPoint: {195.0, 770.2}
+                   Other, {{16.0, 743.7}, {358.0, 53.0}}, hitPoint: {195.0, 770.2}
+                    Switch, {{32.0, 756.3}, {326.0, 28.0}}, identifier: 'REFRESH_RATE', label: 'Begränsa bildfrekvens', value: 0, hitPoint: {195.0, 770.3}
+                     Button, {{32.0, 760.0}, {169.3, 20.3}}, identifier: 'REFRESH_RATE', label: 'Begränsa bildfrekvens', hitPoint: {116.7, 770.2}
+                     Switch, {{297.0, 756.3}, {63.0, 28.0}}, value: 0, hitPoint: {328.5, 770.3}
+                 Other, {{0.0, 764.0}, {390.0, 46.0}}, identifier: 'Ställer in skärmens högsta bildfrekvens till 60 bildrutor per sekund.', hitPoint: {195.0, 787.0}
+                  Other, {{16.0, 796.7}, {358.0, 46.0}}, label: 'Ställer in skärmens högsta bildfrekvens till 60 bildrutor per sekund.', hitPoint: {195.0, 819.7}
+                 Other, {{357.0, 101.0}, {30.0, 695.7}}, label: 'Vertikal rullningslist, 2 sidor', value: 0 %, hitPoint: {372.0, 448.8}
+                  Other, {{384.0, 104.0}, {3.0, 649.0}}, hitPoint: {385.5, 428.5}
+                 Other, {{47.3, 811.0}, {295.3, 30.0}}, label: 'Horisontell rullningslist, 1 sida', value: 0 %, hitPoint: {195.0, 826.0}
+                  Other, {{50.3, 838.0}, {289.3, 3.0}}, hitPoint: {195.0, 839.5}
+           Toolbar, {{0.0, 0.0}, {390.0, 844.0}}, identifier: 'Toolbar', label: 'Verktygsfält', hitPoint: {195.0, 422.0}
+            Other, {{0.0, 0.0}, {390.0, 844.0}}, hitPoint: {195.0, 422.0}
+         Toolbar, {{0.0, 0.0}, {390.0, 844.0}}, identifier: 'Toolbar', label: 'Verktygsfält', hitPoint: {195.0, 422.0}
+          Other, {{0.0, 0.0}, {390.0, 844.0}}, hitPoint: {195.0, 422.0}
+       Other, {{0.0, 0.0}, {390.0, 844.0}}, hitPoint: {195.0, 422.0}
+        Other, {{0.0, 0.0}, {390.0, 844.0}}, hitPoint: {195.0, 422.0}

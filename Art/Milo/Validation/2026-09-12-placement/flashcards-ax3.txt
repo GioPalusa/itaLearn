@@ -1,0 +1,77 @@
+Device orientation: Unknown
+------------------------
+Application bundle identifier: se.palusa.langulearn
+Application UI orientation: Portrait
+Application, pid: 20876, label: 'LanguLearn'
+ Window, {{0.0, 0.0}, {390.0, 844.0}}, hitPoint: {195.0, 422.0}
+  Other, {{0.0, 0.0}, {390.0, 844.0}}, hitPoint: {195.0, 422.0}
+  Other, {{0.0, 0.0}, {390.0, 844.0}}, hitPoint: {195.0, 422.0}
+   Other, {{0.0, 0.0}, {390.0, 844.0}}, hitPoint: {195.0, 422.0}
+    Other, {{0.0, 0.0}, {390.0, 844.0}}, hitPoint: {195.0, 422.0}
+     Other, {{0.0, 0.0}, {390.0, 844.0}}, hitPoint: {195.0, 422.0}
+      Other, {{0.0, 0.0}, {390.0, 844.0}}, hitPoint: {195.0, 422.0}
+       Other, {{0.0, 0.0}, {390.0, 844.0}}, hitPoint: {195.0, 422.0}
+        Other, {{0.0, 0.0}, {390.0, 844.0}}, hitPoint: {195.0, 422.0}
+         Other, {{0.0, 0.0}, {390.0, 844.0}}, hitPoint: {195.0, 422.0}
+          Other, {{0.0, 0.0}, {390.0, 844.0}}, hitPoint: {195.0, 422.0}
+           Other, {{0.0, 0.0}, {390.0, 844.0}}, hitPoint: {195.0, 422.0}
+            Other, {{0.0, 0.0}, {390.0, 844.0}}, hitPoint: {195.0, 422.0}
+             Other, {{0.0, 0.0}, {390.0, 844.0}}, hitPoint: {195.0, 422.0}
+              Other, {{0.0, 0.0}, {390.0, 844.0}}, hitPoint: {195.0, 422.0}
+               Other, {{0.0, 0.0}, {390.0, 844.0}}, hitPoint: {195.0, 422.0}
+                Other, {{0.0, 0.0}, {390.0, 844.0}}, hitPoint: {195.0, 422.0}
+                 Button, {{16.0, 55.3}, {38.0, 38.0}}, identifier: 'chevron.backward', label: 'Tillbaka', hitPoint: {35.0, 74.3}
+                 StaticText, {{66.0, 53.0}, {80.0, 26.3}}, label: 'Ordkort', hitPoint: {106.0, 66.2}
+                 StaticText, {{346.0, 65.3}, {9.3, 18.0}}, label: '1', hitPoint: {350.7, 74.3}
+                 StaticText, {{355.3, 65.3}, {18.7, 18.0}}, label: '/1', hitPoint: {364.7, 74.3}
+                 StaticText, {{66.0, 81.3}, {100.7, 14.3}}, label: 'En paus på kaféet', hitPoint: {116.3, 88.5}
+                 Other, {{16.0, 109.7}, {358.0, 5.0}}, label: 'Framsteg', value: 1 av 1, hitPoint: {195.0, 112.2}
+                 Other, {{123.0, 104.0}, {144.0, 144.0}}, hitPoint: {195.0, 176.0}
+                 Button, {{16.0, 230.7}, {358.0, 373.7}}, label: 'HUR SÄGER DU?, En kaffe, tack, Vänd kortet', hitPoint: {195.0, 417.5}
+                  StaticText, {{38.0, 256.7}, {102.0, 13.3}}, label: 'HUR SÄGER DU?', hitPoint: {89.0, 263.3}
+                  StaticText, {{90.0, 387.3}, {210.0, 40.7}}, label: 'En kaffe, tack', hitPoint: {195.0, 407.7}
+                  Image, {{141.7, 562.7}, {16.0, 13.3}}, identifier: 'arrow.trianglehead.2.clockwise.rotate.90', label: 'Två Triangelhövdade Runda Pilar Roterade Medsols 90 Grader', hitPoint: {149.7, 569.3}
+                  StaticText, {{165.2, 560.3}, {83.0, 18.0}}, label: 'Vänd kortet', hitPoint: {206.7, 569.3}
+                 StaticText, {{116.2, 628.3}, {45.0, 14.3}}, label: '0 kända', hitPoint: {138.7, 635.5}
+                 StaticText, {{176.2, 628.3}, {49.7, 14.3}}, label: '0 att öva', hitPoint: {201.0, 635.5}
+                 StaticText, {{240.8, 628.3}, {33.0, 14.3}}, label: '1 kvar', hitPoint: {257.3, 635.5}
+                 Button, {{16.0, 660.7}, {174.0, 52.0}}, label: 'Öva igen', hitPoint: {103.0, 686.7}
+                  Image, {{59.3, 679.0}, {14.3, 15.7}}, identifier: 'arrow.trianglehead.clockwise', label: 'Triangelhövdad Rund Pil Som Pekar Medsols', hitPoint: {66.5, 686.8}
+                  StaticText, {{82.0, 677.0}, {66.0, 19.3}}, label: 'Öva igen', hitPoint: {115.0, 686.7}
+                 Button, {{200.0, 660.7}, {174.0, 52.0}}, label: 'Det kunde jag', Selected, hitPoint: {287.0, 686.7}
+                  Image, {{224.7, 680.0}, {13.7, 13.3}}, identifier: 'checkmark', label: 'Markerat', Selected, hitPoint: {231.5, 686.7}
+                  StaticText, {{247.2, 677.0}, {104.3, 19.3}}, label: 'Det kunde jag', hitPoint: {299.3, 686.7}
+                 StaticText, {{69.0, 722.7}, {252.0, 14.3}}, label: 'Svep vänster för att öva igen, höger för känt.', hitPoint: {195.0, 729.8}
+             Toolbar, {{0.0, 0.0}, {390.0, 844.0}}, identifier: 'Toolbar', label: 'Verktygsfält', hitPoint: {195.0, 422.0}
+              Other, {{0.0, 0.0}, {390.0, 844.0}}, hitPoint: {195.0, 422.0}
+       Other, {{0.0, 0.0}, {390.0, 844.0}}, hitPoint: {195.0, 422.0}
+        Other, {{0.0, 761.0}, {390.0, 83.0}}, hitPoint: {195.0, 802.5}
+         Other, {{0.0, 0.0}, {390.0, 844.0}}, hitPoint: {195.0, 422.0}
+          TabBar, {{0.0, 761.0}, {390.0, 83.0}}, label: 'Flikfält', hitPoint: {195.0, 802.5}
+           Other, {{30.7, 761.0}, {329.0, 62.0}}, hitPoint: {195.2, 792.0}
+            Other, {{30.7, 761.0}, {112.3, 54.0}}, hitPoint: {86.8, 788.0}
+            Other, {{30.7, 761.0}, {329.0, 62.0}}, hitPoint: {195.2, 792.0}
+             Button, {{34.7, 765.0}, {112.3, 54.0}}, label: 'Min studieplan', hitPoint: {90.8, 792.0}
+              Image, {{77.7, 770.3}, {26.3, 29.0}}, identifier: 'point.topleft.down.to.point.bottomright.curvepath.fill', label: 'Nedåtpekande punkt i det övre vänstra hörnet som pekar på det nedre högra hörnet av en kurvlinje, fylld', hitPoint: {90.8, 784.8}
+             Button, {{139.0, 765.0}, {112.3, 54.0}}, label: 'Öva', Selected, hitPoint: {195.2, 792.0}
+              Image, {{175.7, 772.7}, {39.0, 24.7}}, identifier: 'gamecontroller.fill', label: 'Spelkontroll', hitPoint: {195.2, 785.0}
+             Button, {{243.3, 765.0}, {112.3, 54.0}}, label: 'Mitt lärande', hitPoint: {299.5, 792.0}
+              Image, {{283.0, 770.0}, {33.3, 29.3}}, identifier: 'books.vertical.fill', label: 'Bokhylla', hitPoint: {299.7, 784.7}
+            Other, {{30.7, 761.0}, {329.0, 62.0}}, hitPoint: {195.2, 792.0}
+            Other, {{139.0, 765.0}, {112.3, 54.0}}, hitPoint: {195.2, 792.0}
+             Other, {{139.0, 765.0}, {112.3, 54.0}}, hitPoint: {195.2, 792.0}
+              Other, {{139.0, 765.0}, {112.3, 54.0}}, hitPoint: {195.2, 792.0}
+              Other, {{139.0, 765.0}, {112.3, 54.0}}, hitPoint: {195.2, 792.0}
+               Other, {{139.0, 765.0}, {112.3, 54.0}}, hitPoint: {195.2, 792.0}
+                Other, {{139.0, 765.0}, {112.3, 54.0}}, hitPoint: {195.2, 792.0}
+                 Other, {{139.0, 765.0}, {112.3, 54.0}}, hitPoint: {195.2, 792.0}
+                Other, {{139.0, 765.0}, {112.3, 54.0}}, hitPoint: {195.2, 792.0}
+               Other, {{139.0, 765.0}, {112.3, 54.0}}, hitPoint: {195.2, 792.0}
+         Other, {{0.0, 761.0}, {390.0, 83.0}}, hitPoint: {195.0, 802.5}
+          Other, {{0.0, 761.0}, {390.0, 83.0}}, hitPoint: {195.0, 802.5}
+           Other, {{0.0, 761.0}, {390.0, 83.0}}, hitPoint: {195.0, 802.5}
+            Other, {{0.0, 761.0}, {390.0, 83.0}}, hitPoint: {195.0, 802.5}
+             Other, {{0.0, 761.0}, {390.0, 83.0}}, hitPoint: {195.0, 802.5}
+              Other, {{0.0, 761.0}, {390.0, 83.0}}, hitPoint: {195.0, 802.5}
+            Other, {{0.0, 761.0}, {390.0, 83.0}}, hitPoint: {195.0, 802.5}
+             Other, {{0.0, 761.0}, {390.0, 83.0}}, hitPoint: {195.0, 802.5}

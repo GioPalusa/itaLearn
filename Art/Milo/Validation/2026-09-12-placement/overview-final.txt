@@ -1,0 +1,87 @@
+Device orientation: Unknown
+------------------------
+Application bundle identifier: se.palusa.langulearn
+Application UI orientation: Portrait
+Application, pid: 22118, label: 'LanguLearn'
+ Window, {{0.0, 0.0}, {390.0, 844.0}}, hitPoint: {195.0, 422.0}
+  Other, {{0.0, 0.0}, {390.0, 844.0}}, hitPoint: {195.0, 422.0}
+  Other, {{0.0, 0.0}, {390.0, 844.0}}, hitPoint: {195.0, 422.0}
+   Other, {{0.0, 0.0}, {390.0, 844.0}}, hitPoint: {195.0, 422.0}
+    Other, {{0.0, 0.0}, {390.0, 844.0}}, hitPoint: {195.0, 422.0}
+     Other, {{0.0, 0.0}, {390.0, 844.0}}, hitPoint: {195.0, 422.0}
+      Other, {{0.0, 0.0}, {390.0, 844.0}}, hitPoint: {195.0, 422.0}
+       Other, {{0.0, 0.0}, {390.0, 844.0}}, hitPoint: {195.0, 422.0}
+        Other, {{0.0, 0.0}, {390.0, 844.0}}, hitPoint: {195.0, 422.0}
+         Other, {{0.0, 0.0}, {390.0, 844.0}}, hitPoint: {195.0, 422.0}
+          Other, {{0.0, 0.0}, {390.0, 844.0}}, hitPoint: {195.0, 422.0}
+           Other, {{0.0, 0.0}, {390.0, 844.0}}, hitPoint: {195.0, 422.0}
+            Other, {{0.0, 0.0}, {390.0, 844.0}}, hitPoint: {195.0, 422.0}
+             NavigationBar, {{0.0, 47.0}, {390.0, 54.0}}, identifier: 'En paus på kaféet', hitPoint: {195.0, 74.0}
+              Button, {{16.0, 47.0}, {44.0, 44.0}}, identifier: 'BackButton', label: 'Tillbaka', hitPoint: {38.0, 69.0}
+              StaticText, {{124.7, 58.7}, {140.7, 20.7}}, label: 'En paus på kaféet', hitPoint: {195.0, 69.0}
+             Other, {{0.0, 0.0}, {390.0, 844.0}}, hitPoint: {195.0, 422.0}
+              Other, {{0.0, 0.0}, {390.0, 844.0}}, hitPoint: {195.0, 422.0}
+               Other, {{0.0, 0.0}, {390.0, 844.0}}, hitPoint: {195.0, 422.0}
+                Other, {{0.0, 0.0}, {390.0, 844.0}}, hitPoint: {195.0, 422.0}
+                 ScrollView, {{0.0, 0.0}, {390.0, 844.0}}, hitPoint: {195.0, 422.0}
+                  Other, {{0.0, 0.0}, {390.0, 844.0}}, hitPoint: {195.0, 422.0}
+                   Other, {{0.0, 0.0}, {390.0, 141.0}}, hitPoint: {195.0, 70.5}
+                   Other, {{0.0, 711.0}, {390.0, 133.0}}, hitPoint: {195.0, 777.5}
+                  Other, {{0.0, 0.0}, {390.0, 844.0}}, hitPoint: {195.0, 422.0}
+                   Other, {{0.0, 711.0}, {390.0, 133.0}}, hitPoint: {195.0, 777.5}
+                  Other, {{0.0, 101.0}, {390.0, 878.7}}, hitPoint: {195.0, 472.5}
+                   StaticText, {{38.0, 332.6}, {93.3, 13.3}}, label: 'Öva med Milo', hitPoint: {84.7, 339.3}
+                   StaticText, {{38.0, 356.0}, {283.3, 49.0}}, label: 'Beställ något gott och fråga vad det kostar.', hitPoint: {179.7, 380.5}
+                   Button, {{20.0, 443.0}, {350.0, 38.0}}, label: 'Ordkort och bygg meningar', hitPoint: {195.0, 462.0}
+                    StaticText, {{89.7, 453.9}, {212.5, 17.0}}, label: 'Ordkort och bygg meningar', hitPoint: {195.9, 462.4}
+                    Image, {{89.7, 454.3}, {18.3, 15.3}}, identifier: 'rectangle.on.rectangle.angled', label: 'Studiekort', hitPoint: {98.8, 462.0}
+                   StaticText, {{36.0, 517.0}, {121.3, 20.3}}, label: 'Det här övar du', hitPoint: {96.7, 527.1}
+                   Image, {{36.3, 555.7}, {5.0, 5.0}}, identifier: 'circle.fill', label: 'Cirkel', hitPoint: {38.8, 558.2}
+                   StaticText, {{49.7, 547.3}, {104.7, 20.3}}, label: 'Beställa artigt', hitPoint: {102.0, 557.5}
+                   Image, {{36.3, 586.0}, {5.0, 5.0}}, identifier: 'circle.fill', label: 'Cirkel', hitPoint: {38.8, 588.5}
+                   StaticText, {{49.7, 577.6}, {174.3, 20.3}}, label: 'Fråga vad kaffet kostar', hitPoint: {136.8, 587.8}
+                   StaticText, {{36.0, 650.0}, {163.3, 20.3}}, label: 'Du är klar när du kan', hitPoint: {117.7, 660.1}
+                   Image, {{36.3, 688.7}, {5.0, 5.0}}, identifier: 'circle.fill', label: 'Cirkel', hitPoint: {38.8, 691.2}
+                   StaticText, {{49.7, 680.3}, {138.3, 20.3}}, label: 'Gör en beställning', hitPoint: {118.8, 690.5}
+                   StaticText, {{36.0, 752.6}, {127.0, 20.3}}, label: 'Ord att använda', hitPoint: {99.5, 762.8}
+                   Image, {{36.3, 791.3}, {5.0, 5.0}}, identifier: 'circle.fill', label: 'Cirkel', hitPoint: {38.8, 793.8}
+                   StaticText, {{49.7, 783.0}, {43.3, 20.3}}, label: 'vorrei', hitPoint: {71.3, 793.1}
+                   Image, {{36.3, 821.7}, {5.0, 5.0}}, identifier: 'circle.fill', label: 'Cirkel', hitPoint: {38.8, 824.2}
+                   StaticText, {{49.7, 813.3}, {62.0, 20.3}}, label: 'un caffè', hitPoint: {80.7, 823.5}
+                  Other, {{357.0, 101.0}, {30.0, 660.0}}, label: 'Vertikal rullningslist, 2 sidor', value: 0 %, hitPoint: {372.0, 431.0}
+                   Other, {{384.0, 104.0}, {3.0, 519.3}}, hitPoint: {385.5, 363.7}
+                  Other, {{357.0, 101.0}, {30.0, 660.0}}, label: 'Vertikal rullningslist, 2 sidor', value: 0 %, hitPoint: {372.0, 431.0}
+                   Other, {{384.0, 104.0}, {3.0, 519.3}}, hitPoint: {385.5, 363.7}
+             Toolbar, {{0.0, 0.0}, {390.0, 844.0}}, identifier: 'Toolbar', label: 'Verktygsfält', hitPoint: {195.0, 422.0}
+              Other, {{0.0, 0.0}, {390.0, 844.0}}, hitPoint: {195.0, 422.0}
+       Other, {{0.0, 0.0}, {390.0, 844.0}}, hitPoint: {195.0, 422.0}
+        Other, {{0.0, 761.0}, {390.0, 83.0}}, hitPoint: {195.0, 802.5}
+         Other, {{0.0, 0.0}, {390.0, 844.0}}, hitPoint: {195.0, 422.0}
+          TabBar, {{0.0, 761.0}, {390.0, 83.0}}, label: 'Flikfält', hitPoint: {195.0, 802.5}
+           Other, {{30.7, 761.0}, {329.0, 62.0}}, hitPoint: {195.2, 792.0}
+            Other, {{30.7, 761.0}, {112.3, 54.0}}, hitPoint: {86.8, 788.0}
+            Other, {{30.7, 761.0}, {329.0, 62.0}}, hitPoint: {195.2, 792.0}
+             Button, {{34.7, 765.0}, {112.3, 54.0}}, label: 'Min studieplan', Selected, hitPoint: {90.8, 792.0}
+              Image, {{77.7, 770.3}, {26.3, 29.0}}, identifier: 'point.topleft.down.to.point.bottomright.curvepath.fill', label: 'Nedåtpekande punkt i det övre vänstra hörnet som pekar på det nedre högra hörnet av en kurvlinje, fylld', hitPoint: {90.8, 784.8}
+             Button, {{139.0, 765.0}, {112.3, 54.0}}, label: 'Öva', hitPoint: {195.2, 792.0}
+              Image, {{175.7, 772.7}, {39.0, 24.7}}, identifier: 'gamecontroller.fill', label: 'Spelkontroll', hitPoint: {195.2, 785.0}
+             Button, {{243.3, 765.0}, {112.3, 54.0}}, label: 'Mitt lärande', hitPoint: {299.5, 792.0}
+              Image, {{283.0, 770.0}, {33.3, 29.3}}, identifier: 'books.vertical.fill', label: 'Bokhylla', hitPoint: {299.7, 784.7}
+            Other, {{30.7, 761.0}, {329.0, 62.0}}, hitPoint: {195.2, 792.0}
+            Other, {{34.7, 765.0}, {112.3, 54.0}}, hitPoint: {90.8, 792.0}
+             Other, {{34.7, 765.0}, {112.3, 54.0}}, hitPoint: {90.8, 792.0}
+              Other, {{34.7, 765.0}, {112.3, 54.0}}, hitPoint: {90.8, 792.0}
+              Other, {{34.7, 765.0}, {112.3, 54.0}}, hitPoint: {90.8, 792.0}
+               Other, {{34.7, 765.0}, {112.3, 54.0}}, hitPoint: {90.8, 792.0}
+                Other, {{34.7, 765.0}, {112.3, 54.0}}, hitPoint: {90.8, 792.0}
+                 Other, {{34.7, 765.0}, {112.3, 54.0}}, hitPoint: {90.8, 792.0}
+                Other, {{34.7, 765.0}, {112.3, 54.0}}, hitPoint: {90.8, 792.0}
+               Other, {{34.7, 765.0}, {112.3, 54.0}}, hitPoint: {90.8, 792.0}
+         Other, {{0.0, 761.0}, {390.0, 83.0}}, hitPoint: {195.0, 802.5}
+          Other, {{0.0, 761.0}, {390.0, 83.0}}, hitPoint: {195.0, 802.5}
+           Other, {{0.0, 761.0}, {390.0, 83.0}}, hitPoint: {195.0, 802.5}
+            Other, {{0.0, 761.0}, {390.0, 83.0}}, hitPoint: {195.0, 802.5}
+             Other, {{0.0, 761.0}, {390.0, 83.0}}, hitPoint: {195.0, 802.5}
+              Other, {{0.0, 761.0}, {390.0, 83.0}}, hitPoint: {195.0, 802.5}
+            Other, {{0.0, 761.0}, {390.0, 83.0}}, hitPoint: {195.0, 802.5}
+             Other, {{0.0, 761.0}, {390.0, 83.0}}, hitPoint: {195.0, 802.5}

@@ -592,30 +592,11 @@ def build_clips(runtime_rig):
               all(abs(q.w) > .9999 for q in frames[0]) else frames)
              for name, loops, frames in clips]
 
-    # The source is a very slow performance with long holds. Preserve its
-    # natural body motion, but turn the clean open/contact poses into seven
-    # readable claps. A fourth-power sine gives each impact a brief contact and
-    # plenty of separation between beats.
-    applause = clips[9][2]
-    open_pose = applause[len(applause) * 2 // 10]
-    contact_pose = applause[len(applause) * 3 // 10]
-    arm_indices = [index for index, name in enumerate(JOINT_NAMES)
-                   if any(token in name for token in ("clavicle", "upper_arm", "forearm", "hand"))]
-    clap_frames = round(FPS * 0.52 * 7) + 1
-    natural_applause = []
-    for index in range(clap_frames):
-        source_index = round(index * (len(applause) - 1) / (clap_frames - 1))
-        frame = [rotation.copy() for rotation in applause[source_index]]
-        phase = (index / FPS / 0.52) % 1
-        contact = math.sin(math.pi * phase) ** 4
-        for joint in arm_indices:
-            # Hold Milo's left palm in front of his chest and bring the right
-            # hand to it. A stable target reads much more clearly in the small
-            # circular avatar than moving both hands across the whole torso.
-            frame[joint] = (contact_pose[joint].copy() if JOINT_NAMES[joint].endswith("_L")
-                            else open_pose[joint].slerp(contact_pose[joint], contact))
-        natural_applause.append(frame)
-    clips[9] = (clips[9][0], clips[9][1], natural_applause)
+    # Retargeting rotation alone does not preserve contact on Snow's arm lengths.
+    from applause import build_applause
+    applause, contacts = build_applause(runtime_rig, JOINT_NAMES, clips[9][2], FPS)
+    clips[9] = ("Applaud", False, applause)
+    (EXPORT / "applause-contact.json").write_text(json.dumps(contacts, indent=2) + "\n")
     # Watching contains a held, bent wrist. Transfer the relaxed arm chains
     # from LookAround across the entire loop, preserving its torso and head.
     relaxed = clips[1][2]
@@ -665,7 +646,7 @@ def rebuild_clips_only():
     shutil.copy2(manifest_path, RESOURCES / "MiloRigManifest.json")
     (EXPORT / "clips.json").write_text(json.dumps({"debugOnly": True, "clips": manifest["clips"]}, indent=2) + "\n")
     for name, _, frames in (clips[3], clips[7], clips[8], clips[9], clips[10], clips[11]):
-        render_portrait(rig, objects, EXPORT / "preview" / f"{name}.png", frames[len(frames) // 2], False)
+        render_portrait(rig, objects, EXPORT / "preview" / f"{name}.png", frames[round(.72 * FPS) if name == "Applaud" else len(frames) // 2], False)
 
 
 def main() -> None:
@@ -767,7 +748,7 @@ def main() -> None:
     render_portrait(runtime_rig, runtime_objects, EXPORT / "preview/Rest_Pose.png", identity_pose, False)
     render_portrait(runtime_rig, runtime_objects, EXPORT / "preview/Face_CloseUp.png", identity_pose, False, True)
     for name, _, frames in clips:
-        render_portrait(runtime_rig, runtime_objects, EXPORT / "preview" / f"{name}.png", frames[len(frames) // 2], False)
+        render_portrait(runtime_rig, runtime_objects, EXPORT / "preview" / f"{name}.png", frames[round(.72 * FPS) if name == "Applaud" else len(frames) // 2], False)
     for name, values in [("Open", {"mouthOpen": 1}), ("Blink", {"blinkL": 1, "blinkR": 1}), ("Smile", {"smileL": 1, "smileR": 1})]:
         for key in runtime_head.data.shape_keys.key_blocks:
             key.value = values.get(key.name, 0)

@@ -52,6 +52,18 @@ controls after launch. The face sequence covers neutral, open mouth, closed
 lids, both gaze directions on each axis, and reset. It labels the active pose.
 These support repeatable simulator captures without modifying learner data.
 
+Natural facial motion keeps the lids partly lowered between full blinks. Eyes
+follow the source neck/head turns and make short, unevenly spaced glances;
+upward gaze lifts the brows, while downward gaze lowers the lids. Small,
+asymmetric smile and brow gestures ease in and out without opening the jaw.
+Idle has a lifted mouth-corner baseline so the pauses retain a soft smile.
+Eyes move first and the lids/brows settle behind them. The studio preserves
+this behavior until manual face control is enabled; explicit shape overrides
+and the closed-eye toggle still win. `--milo-demo --milo-idle-face-check` zooms
+in and pauses only the body for a repeatable inspection of the natural face.
+The 2026-09-12 face pass has 19 passing Milo tests and simulator captures in
+`Art/Milo/Validation/2026-09-12-face`; physical-device appearance is unverified.
+
 Validated on 2026-09-10: the iOS Simulator Debug build succeeded, all ten
 `MiloTests` and five Blender rig tests passed, and exported assets matched the
 copies in the built app. iPhone 18 Pro simulator captures verified face zoom,
@@ -112,9 +124,60 @@ applaud a completed lesson. Settings → Milos studio → Prova den runda avatar
 opens the interactive demo. Debug launches can use `--milo-avatar-demo` and
 `--milo-avatar-check` for a repeatable sequence through the same controller API.
 
+## Where Milo appears
+
+`MiloMoments.swift` provides the placements. Milo normally appears directly in the
+layout without a circular surround. The compact conversation identity and the
+explicit round-avatar studio are the exceptions.
+
+- `MiloPeek` trims space above the crown and lets the card cross his shoulders.
+  Lesson overview uses a 220-point bust; flashcards use 144 points and progress
+  uses a still 132-point portrait. The artwork takes no hits from the card.
+- `MiloPracticeCanvas` measures exercise content independently of the mascot and
+  uses only the remaining viewport, above the tab bar. It chooses a 260-point
+  standing figure, a 152-point bust cropped to 121.6 points tall, or no figure.
+  The figure follows the exercise's controller and never changes control positions.
+  Accessibility text gets the whole viewport; Reduce Motion uses the smaller bust.
+  Sentence building additionally opts into an extended body below the bottom safe
+  area: a larger render viewport and inverse zoom preserve the head's size and
+  position while revealing the torso behind the tab bar. This drawing is outside
+  the scroll clip and cannot receive touches; the exercise still respects safe areas.
+- `MiloGreetingCard` keeps a larger 188-point rig inside the greeting card, cropped
+  to 140 by 156 points. There is no padding around the figure; the words have a
+  small separate inset. Tapping the card cycles the study tip and plays a reaction.
+- `MiloNarrationBar` supplies speech controls where the screen already has Milo.
+  `MiloSpeechView` is the compact persistent chat row with a 44-point still mark,
+  progress context, stop and retry controls. It remains visible while typing.
+- `MiloLoadingView` uses a still portrait, so loading cannot create a second rig.
+  Tiny repeated signatures were enlarged or removed where the name suffices.
+
+Onboarding still greets in the chosen language and offers local speech when a
+voice is available. Walking is restricted to full-body stages at least 230 points
+wide. The game teacher reacts by the question card rather than from a tiny badge
+in the scoreboard. Flashcards have a scroll fallback when the content is too tall.
+
+Narration lifetime belongs to the screen: attach `.miloLifetime(controller)` to
+its owner. `MiloAvatarView` and `MiloPeek` never call `controller.stop()` when their
+layout disappears. This allows speech to continue when the keyboard opens or
+when an optional visual no longer fits. The owner stops speech on navigation and
+backgrounding. Rig size and zoom remain constant between layout choices.
+
+See [the recovered design review](Milo-placement-review.md) for all twelve Claude
+agents' results, the three unanimous votes, corrected technical assumptions and
+implementation decisions. Latest device evidence is in
+`Art/Milo/Validation/2026-09-12-placement/README.md`.
+
 Validated on 2026-09-11: simulator Debug build and thirteen `MiloTests` passed.
 Simulator captures verify circular framing, reactions returning to idle, and
 local speech entering playback with a nonzero mouth meter before returning to
 idle. Captures are under `Art/Milo/Validation/2026-09-11`. The eight existing
 clips remain byte-for-byte unchanged. Physical-device rendering, acoustic audio
 quality and touch interaction were not verified in this pass.
+
+Validated on 2026-09-12: the iOS Simulator Debug build succeeded and all eighty
+package tests passed. iPhone 18 Pro captures cover the three onboarding steps and
+the peek crop over a lesson card, a flashcard stack and a sentence cue; the peek
+captures came from a temporary host that is not in the tree. Touch interaction was
+not exercised in this pass: the tap-to-hear greeting, the in-lesson reactions, the
+practice ratings and the read-aloud controls were read from code, not driven. No
+screen was checked on a physical device.

@@ -26,9 +26,9 @@ struct PracticeHubView: View {
         ScrollView {
             VStack(alignment: .leading, spacing: 12) {
                 if let lesson {
-                    Text("Välj hur du vill öva")
-                        .font(.il(15)).foregroundStyle(LanguLearn.inkSecondary)
-                        .padding(.horizontal, 2)
+                    // The tab opens with its host rather than a grey instruction.
+                    MiloWhisper(text: "Välj hur du vill öva. Jag är med hela vägen.")
+                        .padding(.horizontal, 2).padding(.bottom, 2)
 
                     NavigationLink { LessonOverviewView(lesson: lesson) } label: {
                         row("Fortsätt lektionen", lesson.title,
@@ -49,9 +49,8 @@ struct PracticeHubView: View {
                     freeChatLink
                     writingLink
                 } else {
-                    Text("Du har gått igenom planen. Välj hur du vill fortsätta, eller öva vidare under tiden.")
-                        .font(.il(15)).foregroundStyle(LanguLearn.inkSecondary)
-                        .padding(.horizontal, 2)
+                    MiloWhisper(text: "Du har gått igenom planen. Välj hur du vill fortsätta, eller öva vidare under tiden.")
+                        .padding(.horizontal, 2).padding(.bottom, 2)
                     pronounLink
                     freeChatLink
                     writingLink
@@ -75,8 +74,10 @@ struct PracticeHubView: View {
 
     private var freeChatLink: some View {
         NavigationLink { AdaptiveChatView(mode: .freeChat) } label: {
+            // The one row that leads to Milo himself wears his face instead of a
+            // symbol, so it reads as a person to talk to rather than a feature.
             row("Chatta fritt med Milo", freeChatCaption,
-                icon: "bubble.left.and.text.bubble.right", tint: LanguLearn.purple)
+                icon: "bubble.left.and.text.bubble.right", tint: LanguLearn.purple, showsMilo: true)
         }.buttonStyle(.plain)
     }
 
@@ -144,13 +145,19 @@ struct PracticeHubView: View {
     }
 
     private func row(_ title: LocalizedStringKey, _ caption: String,
-                     icon: String, tint: Color) -> some View {
+                     icon: String, tint: Color, showsMilo: Bool = false) -> some View {
         HStack(spacing: 14) {
-            Image(systemName: icon)
-                .font(.system(size: 19, weight: .medium))
-                .foregroundStyle(tint)
-                .frame(width: 44, height: 44)
-                .background(tint.opacity(0.12), in: .rect(cornerRadius: 13))
+            Group {
+                if showsMilo {
+                    MiloAvatarView(mood: .still, size: 44)
+                } else {
+                    Image(systemName: icon)
+                        .font(.system(size: 19, weight: .medium))
+                        .foregroundStyle(tint)
+                        .frame(width: 44, height: 44)
+                        .background(tint.opacity(0.12), in: .rect(cornerRadius: 13))
+                }
+            }
             VStack(alignment: .leading, spacing: 2) {
                 Text(title).font(.il(17, .semibold)).foregroundStyle(LanguLearn.ink)
                 Text(caption).font(.il(14)).foregroundStyle(LanguLearn.inkSecondary)

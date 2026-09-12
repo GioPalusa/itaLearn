@@ -28,7 +28,7 @@ struct MiloDemoView: View {
     private var debug: MiloDebugControls {
         MiloDebugControls(
             clipName: clipName,
-            gaze: SIMD2(gazeX, gazeY),
+            gaze: manualFace ? SIMD2(gazeX, gazeY) : nil,
             forcesBlink: blink,
             face: manualFace ? face : [:], mouthOpening: narrator.isSpeaking || !manualFace ? nil : mouth,
             pausesBody: pausesBody, walksAcrossStage: walksAcrossStage && clipName == "Walk"
@@ -97,8 +97,8 @@ struct MiloDemoView: View {
 
                 GroupBox("Blick och tal") {
                     VStack(spacing: 12) {
-                        valueSlider("Blick åt sidan", value: $gazeX, range: -0.32...0.32)
-                        valueSlider("Blick upp och ner", value: $gazeY, range: -0.22...0.22)
+                        valueSlider("Blick åt sidan", value: Binding(get: { gazeX }, set: { gazeX = $0; manualFace = true }), range: -0.32...0.32)
+                        valueSlider("Blick upp och ner", value: Binding(get: { gazeY }, set: { gazeY = $0; manualFace = true }), range: -0.22...0.22)
                         Toggle("Blunda", isOn: $blink)
                         valueSlider("Munöppning", value: Binding(get: { mouth }, set: { mouth = $0; manualFace = true }), range: 0...1)
                         Button(narrator.isSpeaking ? "Stoppa Milo" : "Låt Milo tala") {
@@ -143,6 +143,12 @@ struct MiloDemoView: View {
         .onChange(of: scenePhase) { if scenePhase != .active { narrator.stop() } }
 #if DEBUG
         .task {
+            guard ProcessInfo.processInfo.arguments.contains("--milo-idle-face-check") else { return }
+            zoom = 3.8
+            pausesBody = true
+            renderCheck = "Naturligt viloläge"
+        }
+        .task {
             // Reproducible render checks use the same @State bindings as the
             // sliders, after the live view has loaded; no learner data changes.
             guard ProcessInfo.processInfo.arguments.contains("--milo-face-check") else { return }
@@ -158,6 +164,20 @@ struct MiloDemoView: View {
                 gazeX = step == 3 ? -0.3 : step == 4 ? 0.3 : 0
                 gazeY = step == 5 ? -0.2 : step == 6 ? 0.2 : 0
             }
+        }
+        .task {
+            guard ProcessInfo.processInfo.arguments.contains("--milo-applause-check") else { return }
+            guard await waitForLiveRig() else { return }
+            clipName = "Applaud"
+            mood = .applauding
+            do {
+                for _ in 0..<5 {
+                    trigger += 1
+                    try await Task.sleep(for: .seconds(4.5))
+                }
+                clipName = "Idle_Watching"
+                mood = .idle
+            } catch { return }
         }
         .task {
             guard ProcessInfo.processInfo.arguments.contains("--milo-motion-check") else { return }

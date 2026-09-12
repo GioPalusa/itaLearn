@@ -7,7 +7,8 @@ nonisolated enum MiloMood: String, CaseIterable, Sendable {
 
 nonisolated struct MiloDebugControls: Equatable, Sendable {
     var clipName: String?
-    var gaze = SIMD2<Float>.zero
+    /// Nil keeps the natural gaze, including when previewing a body clip.
+    var gaze: SIMD2<Float>?
     var forcesBlink = false
     var face: [String: Float] = [:]
     var mouthOpening: Float?
@@ -23,6 +24,7 @@ nonisolated struct MiloPose: Sendable {
     let stageOffset: SIMD3<Float>
     let stageYaw: Float
     var stageScale: Float = 1
+    var preservesBodyContacts = false
 
     static let neutral = Self(joints: [:], face: [:], hipsOffset: .zero, stageOffset: .zero, stageYaw: 0)
 
@@ -44,6 +46,7 @@ nonisolated struct MiloAnimator: Sendable {
     private var clock: Double = 0
     private var reactionTime: Double = 0
     private var gazePosition = SIMD2<Float>.zero
+    private var facialGazePosition = SIMD2<Float>.zero
     private var activeClip = "Idle_Watching"
     private var configuredClip = "Idle_Watching"
     private var transitionElapsed: Double = 1
@@ -109,10 +112,11 @@ nonisolated struct MiloAnimator: Sendable {
         let t = Float(clock)
         let laughing = mood == .laughing && !completedReaction
         let applauding = mood == .applauding && !completedReaction
-        let gazeTargets: [SIMD2<Float>] = [.zero, [0.09, 0.02], .zero, [-0.07, -0.03], .zero]
-        let target = debug?.gaze ?? gazeTargets[Int(clock / 2.3) % gazeTargets.count]
-        if debug != nil { gazePosition = target } else { gazePosition += (target - gazePosition) * Float(1 - exp(-dt * 16)) }
+        let target = Self.boundedGaze(debug?.gaze ?? Self.naturalGaze(at: clock, joints: joints))
+        if debug?.gaze != nil { gazePosition = target } else { gazePosition += (target - gazePosition) * Float(1 - exp(-dt * 16)) }
         let gaze = gazePosition
+        // Eyes lead a glance; the lids and brows settle a little more slowly.
+        if debug?.gaze != nil { facialGazePosition = gaze } else { facialGazePosition += (gaze - facialGazePosition) * Float(1 - exp(-dt * 6)) }
         // Both eyes share head-space yaw/pitch; their bind rolls differ.
         joints["eye_L"] = simd_quatf(angle: gaze.x, axis: [0, 1, 0]) * simd_quatf(angle: -gaze.y, axis: [1, 0, 0])
         joints["eye_R"] = joints["eye_L"]
@@ -130,17 +134,21 @@ nonisolated struct MiloAnimator: Sendable {
         let opening = debug?.mouthOpening ?? (laughing ? 0.18 + 0.28 * laughPulse : speechFace["mouthOpen", default: 0])
 
         let blink = Self.idleBlink(at: t)
+        let restingFace = Self.restingFace(at: t, gaze: facialGazePosition)
+        // Keep a soft, welcoming smile even between idle microexpressions.
+        let idleSmileLift: Float = mood == .idle ? 0.18 : 0
         var face: [String: Float] = [
             "mouthOpen": opening.isFinite ? min(1, max(0, opening)) : 0,
-            "blinkL": blink, "blinkR": blink,
-            "browRaiseL": mood == .listening ? 0.15 : 0.02,
-            "browRaiseR": mood == .listening ? 0.12 : 0.02,
+            "blinkL": restingFace.lid + (1 - restingFace.lid) * blink,
+            "blinkR": restingFace.lid + (1 - restingFace.lid) * blink,
+            "browRaiseL": restingFace.browL + (mood == .listening ? 0.10 : 0),
+            "browRaiseR": restingFace.browR + (mood == .listening ? 0.08 : 0),
             "browDownL": mood == .thinking ? 0.18 : 0,
             "browDownR": mood == .thinking ? 0.08 : 0,
-            "smileL": mood == .celebrating || mood == .encouraging ? 0.45 : 0.10,
-            "smileR": mood == .celebrating || mood == .encouraging ? 0.40 : 0.10,
-            "cheekRaiseL": mood == .celebrating ? 0.45 : 0.08,
-            "cheekRaiseR": mood == .celebrating ? 0.38 : 0.08,
+            "smileL": mood == .celebrating || mood == .encouraging ? 0.45 : restingFace.smileL + idleSmileLift,
+            "smileR": mood == .celebrating || mood == .encouraging ? 0.40 : restingFace.smileR + idleSmileLift,
+            "cheekRaiseL": mood == .celebrating ? 0.45 : restingFace.smileL * 0.4,
+            "cheekRaiseR": mood == .celebrating ? 0.38 : restingFace.smileR * 0.4,
             "mouthWide": speechFace["mouthWide", default: 0],
             "mouthNarrow": speechFace["mouthNarrow", default: 0],
             "mouthPucker": speechFace["mouthPucker", default: 0],
@@ -153,7 +161,7 @@ nonisolated struct MiloAnimator: Sendable {
             face["cheekRaiseR"] = 0.12
         }
         if laughing {
-            face["blinkL"] = max(blink, 0.20 + 0.16 * laughPulse)
+            face["blinkL"] = max(face["blinkL", default: blink], 0.20 + 0.16 * laughPulse)
             face["blinkR"] = face["blinkL"]
         }
         // Ease into and out of authored expressions; blink remains independent.
@@ -201,7 +209,52 @@ nonisolated struct MiloAnimator: Sendable {
             stageOffset.x = 0.42 * sin(cycle * .pi / 4)
             stageYaw = .pi / 2 * tanh(5 * cos(cycle * .pi / 4))
         }
-        return MiloPose(joints: joints, face: face, hipsOffset: body.hipsOffset, stageOffset: stageOffset, stageYaw: stageYaw, stageScale: 1 + 0.08 * lean)
+        return MiloPose(joints: joints, face: face, hipsOffset: body.hipsOffset, stageOffset: stageOffset, stageYaw: stageYaw, stageScale: 1 + 0.08 * lean, preservesBodyContacts: activeClip == "Applaud")
+    }
+
+    private static func boundedGaze(_ gaze: SIMD2<Float>) -> SIMD2<Float> {
+        [gaze.x.isFinite ? min(0.32, max(-0.32, gaze.x)) : 0,
+         gaze.y.isFinite ? min(0.22, max(-0.22, gaze.y)) : 0]
+    }
+
+    private static func naturalGaze(at time: Double, joints: [String: simd_quatf]) -> SIMD2<Float> {
+        // Uneven holds give him time to meet the learner's eyes between glances.
+        let glances: [(end: Double, direction: SIMD2<Float>)] = [
+            (1.7, .zero), (3.1, [-0.20, 0.03]), (5.8, .zero),
+            (7.2, [0.18, 0.16]), (8.5, [0.05, -0.10]), (11.4, .zero),
+            (12.8, [-0.16, -0.04]), (15.1, .zero), (16.3, [0.17, 0.04]), (18.7, .zero),
+        ]
+        let phase = time.truncatingRemainder(dividingBy: 18.7)
+        let glance = glances.first { phase < $0.end }?.direction ?? .zero
+        // The source clips turn the neck/head but contain neutral eye tracks.
+        // Add a restrained gaze in the same direction instead of leaving the
+        // pupils fixed while he looks around. Snow's head-local forward is +Z.
+        let direction = ((joints["neck"] ?? simd_quatf()) * (joints["head"] ?? simd_quatf())).act([0, 0, 1])
+        let headGaze = SIMD2<Float>(atan2(direction.x, direction.z), asin(min(1, max(-1, direction.y))))
+        return glance + headGaze * SIMD2<Float>(0.45, 0.35)
+    }
+
+    private static func restingFace(at time: Float, gaze: SIMD2<Float>) -> (lid: Float, browL: Float, browR: Float, smileL: Float, smileR: Float) {
+        // Small, separated gestures, with a little asymmetry and quiet holds.
+        // Closed-mouth smiles never touch the speech/jaw channels.
+        func gesture(center: Float, halfWidth: Float, period: Float, delay: Float = 0) -> Float {
+            let phase = max(0, time - delay).truncatingRemainder(dividingBy: period)
+            let amount = max(0, 1 - abs(phase - center) / halfWidth)
+            return amount * amount * (3 - 2 * amount)
+        }
+        let smile = gesture(center: 4.2, halfWidth: 1.7, period: 17.3)
+        let secondSmile = gesture(center: 12.1, halfWidth: 2.1, period: 17.3)
+        let brow = gesture(center: 6.7, halfWidth: 1.2, period: 19.1)
+        let otherBrow = gesture(center: 14.4, halfWidth: 1.5, period: 19.1)
+        let up = min(1, max(0, gaze.y / 0.20))
+        let down = min(1, max(0, -gaze.y / 0.20))
+        return (
+            lid: 0.20 + 0.015 * sin(time * 0.73) + 0.09 * down - 0.035 * up,
+            browL: 0.025 + 0.24 * up + 0.10 * brow + 0.035 * otherBrow,
+            browR: 0.025 + 0.22 * up + 0.065 * brow + 0.09 * otherBrow,
+            smileL: 0.075 + 0.10 * smile + 0.045 * secondSmile,
+            smileR: 0.075 + 0.075 * gesture(center: 4.2, halfWidth: 1.7, period: 17.3, delay: 0.18) + 0.065 * secondSmile
+        )
     }
 
     /// Turns the speech meter into a smooth sequence of distinct lip shapes.

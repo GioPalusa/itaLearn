@@ -76,6 +76,38 @@ struct OpenAIClientTests {
         #expect(try JSONDecoder().decode(AssessmentQuestion.self, from: result.json).skill == "greetings")
     }
 
+    @Test(arguments: [LearningLanguage.swedish, .english])
+    func helpUsesLunaWithNativeLanguageAndCurrentExercise(native: LearningLanguage) async throws {
+        StubURLProtocol.install { request in
+            let body = try #require(JSONSerialization.jsonObject(with: Self.body(request)) as? [String: Any])
+            #expect(body["model"] as? String == OpenAIClient.teacherModel)
+            #expect(body["store"] as? Bool == false)
+            let instructions = try #require(body["instructions"] as? String)
+            #expect(instructions.contains("Write explanations in \(native.englishName)"))
+            let input = try #require(body["input"] as? [[String: Any]])
+            let content = try #require(input.first?["content"] as? String)
+            let payload = try #require(JSONSerialization.jsonObject(with: Data(content.utf8)) as? [String: Any])
+            let exercise = try #require(payload["exercise"] as? [String: Any])
+            #expect(exercise["task"] as? String == "Beställ en kaffe")
+            #expect(exercise["draft"] as? String == "Jag vill säga tack")
+            #expect(payload["question"] as? String == "Vad betyder vorrei?")
+            let format = try #require((body["text"] as? [String: Any])?["format"] as? [String: Any])
+            #expect(format["name"] as? String == "exercise_help_v1")
+            #expect(format["strict"] as? Bool == true)
+            let response = "{\"explanation\":\"Vorrei betyder jag skulle vilja ha.\"}"
+            return (200, try JSONSerialization.data(withJSONObject: ["status": "completed", "output": [
+                ["content": [["type": "output_text", "text": response]]]
+            ]]))
+        }
+        let context = ExerciseHelpContext(course: LanguageCourse(target: .italian, native: native),
+                                          activity: .lesson, task: "Beställ en kaffe",
+                                          draft: "Jag vill säga tack", tone: "Patient")
+        let service = OpenAILearningService(client: client())
+        let reply = try await service.help(ExerciseHelpRequest(exercise: context, kind: .meaning,
+                                                             question: "Vad betyder vorrei?", previousHelp: []))
+        #expect(reply.explanation == "Vorrei betyder jag skulle vilja ha.")
+    }
+
     @Test(arguments: [401, 403, 404, 429, 500])
     func handlesAPIErrorsWithoutEchoingProviderBody(status: Int) async {
         StubURLProtocol.install { _ in (status, Data("private provider content".utf8)) }

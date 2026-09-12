@@ -1,0 +1,59 @@
+Device orientation: Unknown
+------------------------
+Application bundle identifier: se.palusa.langulearn
+Application UI orientation: Portrait
+Application, pid: 22203, label: 'LanguLearn'
+ Window, {{0.0, 0.0}, {390.0, 844.0}}, hitPoint: {195.0, 422.0}
+  Other, {{0.0, 0.0}, {390.0, 844.0}}, hitPoint: {195.0, 422.0}
+   Other, {{0.0, 0.0}, {390.0, 844.0}}, hitPoint: {195.0, 422.0}
+    Other, {{0.0, 0.0}, {390.0, 844.0}}, hitPoint: {195.0, 422.0}
+     Other, {{0.0, 0.0}, {390.0, 844.0}}, hitPoint: {195.0, 422.0}
+      Other, {{0.0, 0.0}, {390.0, 844.0}}, hitPoint: {195.0, 422.0}
+       Other, {{0.0, 0.0}, {390.0, 844.0}}, hitPoint: {195.0, 422.0}
+        Other, {{0.0, 0.0}, {390.0, 844.0}}, hitPoint: {195.0, 422.0}
+         Other, {{0.0, 0.0}, {390.0, 844.0}}, hitPoint: {195.0, 422.0}
+          Other, {{0.0, 0.0}, {390.0, 844.0}}, hitPoint: {195.0, 422.0}
+           Button, {{20.0, 55.0}, {44.0, 44.0}}, identifier: 'arrow.left', label: 'Föregående steg', hitPoint: {42.0, 77.0}
+           StaticText, {{76.0, 66.8}, {94.0, 20.3}}, label: 'LanguLearn', hitPoint: {123.0, 77.0}
+           Other, {{322.0, 74.0}, {48.0, 6.0}}, label: 'Steg 2 av 3', hitPoint: {346.0, 77.0}
+           ScrollView, {{0.0, 107.0}, {390.0, 737.0}}, hitPoint: {195.0, 475.5}
+            Other, {{0.0, 107.0}, {390.0, 773.3}}, hitPoint: {195.0, 475.5}
+             StaticText, {{158.0, 147.8}, {139.7, 42.3}}, label: 'Vilket språk är du nyfiken på?', hitPoint: {227.8, 169.0}
+             StaticText, {{24.0, 243.0}, {248.7, 40.7}}, label: 'Ditt nästa språk', hitPoint: {148.3, 263.3}
+             Other, {{24.0, 307.7}, {342.0, 216.0}}, hitPoint: {195.0, 415.7}
+              Button, {{24.0, 307.7}, {165.0, 102.0}}, label: 'Italienska', hitPoint: {106.5, 358.7}
+               StaticText, {{42.0, 325.7}, {32.0, 33.7}}, label: '🇮🇹', hitPoint: {58.0, 342.5}
+               Image, {{152.7, 334.0}, {17.0, 17.0}}, identifier: 'circle', label: 'Cirkel', hitPoint: {161.2, 342.5}
+               StaticText, {{42.0, 371.3}, {76.0, 20.3}}, label: 'Italienska', hitPoint: {80.0, 381.5}
+              Button, {{201.0, 307.7}, {165.0, 102.0}}, label: 'Spanska', hitPoint: {283.5, 358.7}
+               StaticText, {{219.0, 325.7}, {32.0, 33.7}}, label: '🇪🇸', hitPoint: {235.0, 342.5}
+               Image, {{329.7, 334.0}, {17.0, 17.0}}, identifier: 'circle', label: 'Cirkel', hitPoint: {338.2, 342.5}
+               StaticText, {{219.0, 371.3}, {68.0, 20.3}}, label: 'Spanska', hitPoint: {253.0, 381.5}
+              Button, {{24.0, 421.7}, {165.0, 102.0}}, label: 'Franska', hitPoint: {106.5, 472.7}
+               StaticText, {{42.0, 439.7}, {32.0, 33.7}}, label: '🇫🇷', hitPoint: {58.0, 456.5}
+               Image, {{152.7, 448.0}, {17.0, 17.0}}, identifier: 'circle', label: 'Cirkel', hitPoint: {161.2, 456.5}
+               StaticText, {{42.0, 485.3}, {63.0, 20.3}}, label: 'Franska', hitPoint: {73.5, 495.5}
+              Button, {{201.0, 421.7}, {165.0, 102.0}}, label: 'Engelska', hitPoint: {283.5, 472.7}
+               StaticText, {{219.0, 439.7}, {32.0, 33.7}}, label: '🇬🇧', hitPoint: {235.0, 456.5}
+               Image, {{329.7, 448.0}, {17.0, 17.0}}, identifier: 'circle', label: 'Cirkel', hitPoint: {338.2, 456.5}
+               StaticText, {{219.0, 485.3}, {71.7, 20.3}}, label: 'Engelska', hitPoint: {254.8, 495.5}
+             Button, {{24.0, 535.7}, {342.0, 52.3}}, label: 'Visa alla språk', hitPoint: {195.0, 561.8}
+              StaticText, {{40.0, 551.7}, {112.0, 20.3}}, label: 'Visa alla språk', hitPoint: {96.0, 561.8}
+              Image, {{331.3, 553.3}, {17.3, 17.3}}, identifier: 'globe', label: 'Jordglob', hitPoint: {340.0, 562.0}
+             Button, {{42.0, 630.0}, {304.0, 46.3}}, label: 'Jag förklarar för dig på, 🇸🇪 Svenska', hitPoint: {194.0, 653.2}
+              StaticText, {{42.0, 630.0}, {155.7, 18.0}}, label: 'Jag förklarar för dig på', hitPoint: {119.8, 639.0}
+              StaticText, {{42.0, 656.0}, {94.0, 20.3}}, label: '🇸🇪 Svenska', hitPoint: {89.0, 666.2}
+              Image, {{331.3, 662.0}, {14.7, 8.3}}, identifier: 'chevron.down', label: 'Gå Nedåt', hitPoint: {338.7, 666.2}
+             StaticText, {{42.0, 708.7}, {95.0, 18.0}}, label: 'Vad heter du?', hitPoint: {89.5, 717.7}
+             TextField, {{54.0, 746.7}, {282.0, 22.0}}, placeholderValue: 'Ditt namn (valfritt)', hitPoint: {195.0, 757.7}
+             StaticText, {{24.0, 822.7}, {337.7, 33.7}}, label: 'Börja med ett språk. Du kan lägga till fler senare – varje språk får en egen studieplan.', hitPoint: {192.8, 833.3}
+            Other, {{357.0, 107.0}, {30.0, 593.0}}, label: 'Vertikal rullningslist, 2 sidor', value: 0 %, hitPoint: {372.0, 403.5}
+             Other, {{384.0, 110.0}, {3.0, 331.0}}, hitPoint: {385.5, 275.5}
+            Other, {{357.0, 107.0}, {30.0, 593.0}}, label: 'Vertikal rullningslist, 2 sidor', value: 0 %, hitPoint: {372.0, 403.5}
+             Other, {{384.0, 110.0}, {3.0, 331.0}}, hitPoint: {385.5, 275.5}
+           Button, {{24.0, 716.0}, {342.0, 56.3}}, label: 'Fortsätt', Disabled, hitPoint: {195.0, 744.2}
+            StaticText, {{149.2, 734.0}, {63.7, 20.3}}, label: 'Fortsätt', Disabled, hitPoint: {181.0, 744.2}
+            Image, {{223.0, 737.7}, {16.0, 13.3}}, identifier: 'arrow.right', label: 'Höger', Disabled, hitPoint: {231.0, 744.3}
+           StaticText, {{88.0, 782.3}, {214.0, 15.7}}, label: 'Du kan ändra dina val i Inställningar', hitPoint: {195.0, 790.2}
+       Toolbar, {{0.0, 0.0}, {390.0, 844.0}}, identifier: 'Toolbar', label: 'Verktygsfält', hitPoint: {195.0, 422.0}
+        Other, {{0.0, 0.0}, {390.0, 844.0}}, hitPoint: {195.0, 422.0}

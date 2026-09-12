@@ -8,28 +8,37 @@ struct MiloView: View {
     var wanders = false
     var mouthOpening: Float = 0
     var trigger = 0
-    var zoom: Float = 1
+    /// Explicit framings are stable constants; never animate the rig's render size or zoom.
+    var zoom: Float? = nil
+    var pinsFaceFocus = false
+    var placeholderSize: CGFloat? = nil
     var debug: MiloDebugControls? = nil
     var onRigStatus: ((String) -> Void)? = nil
-    var animatesWhenSmall = false
     var onAnimationCompleted: ((Int) -> Void)? = nil
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
     @Environment(\.scenePhase) private var scenePhase
     @State private var isVisible = false
 
+    private var framing: Float { zoom ?? (size < 80 ? 3.3 : size < 180 ? 2.6 : 1) }
+
     var body: some View {
         Group {
-            if !reduceMotion && isVisible && scenePhase == .active && mood != .still && (size > 48 || animatesWhenSmall) {
+            if !reduceMotion && isVisible && scenePhase == .active && mood != .still && size >= 64 {
                 MiloRealityView(
-                    mood: mood, mouth: mouthOpening, wanders: wanders,
-                    trigger: trigger, zoom: zoom, debug: debug, onRigStatus: onRigStatus,
+                    mood: mood, mouth: mouthOpening, wanders: wanders && size >= 230 && framing <= 1.2,
+                    trigger: trigger, zoom: framing, pinsFaceFocus: pinsFaceFocus,
+                    placeholderSize: placeholderSize, debug: debug, onRigStatus: onRigStatus,
                     onAnimationCompleted: onAnimationCompleted
                 )
             } else {
                 Image(mood == .thinking ? "MiloThinking" : "Milo").resizable().scaledToFit()
+                    // The supplied still is a bust, so never stretch it to a full-body stage.
+                    .frame(width: placeholderSize ?? (framing < 2 ? min(size, 120) : size))
+                    .scaleEffect(framing >= 3 ? CGFloat(framing / 3) : 1)
             }
         }
         .frame(width: size, height: size)
+        .clipped()
         .accessibilityHidden(true)
         .task { await waitForCalmMainThread() }
         .onDisappear { isVisible = false }
@@ -52,7 +61,8 @@ struct MiloLoadingView: View {
     var showsMascot = true
     var body: some View {
         HStack(spacing: 14) {
-            if showsMascot { MiloView(mood: .thinking, size: 64) }
+            // A loading row must never silently introduce a second live rig.
+            if showsMascot { MiloAvatarView(mood: .still, size: 56) }
             VStack(alignment: .leading, spacing: 8) {
                 Text(message).font(.subheadline.weight(.medium))
                 ProgressView().accessibilityLabel(Text(message))
@@ -83,49 +93,51 @@ struct MiloGreetingCard: View {
     }
 
     var body: some View {
-        Group {
-            if dynamicTypeSize.isAccessibilitySize {
-                VStack(alignment: .leading, spacing: 12) {
-                    mascot.frame(maxWidth: .infinity)
-                    words
-                }
-            } else {
-                HStack(spacing: 12) {
-                    mascot
-                    words.frame(maxWidth: .infinity, alignment: .leading)
-                }
-            }
-        }
-        .padding(20)
-        .frame(maxWidth: .infinity, alignment: .leading)
-        .background(LanguLearn.purple.opacity(0.07), in: .rect(cornerRadius: 28))
-    }
-
-    private var mascot: some View {
         Button {
             greetingIndex = (greetingIndex + 1) % tips.count
             if greetingIndex == 1 { companion.curious() }
             else if greetingIndex == 2 { companion.present() }
             else { companion.joyful() }
         } label: {
-            MiloView(mood: companion.mood, size: 104, wanders: true, trigger: companion.trigger,
-                     onAnimationCompleted: { companion.animationCompleted(trigger: $0) })
-                .padding(.horizontal, 14).padding(.vertical, 10)
-                .contentShape(Rectangle())
+            Group {
+                if dynamicTypeSize.isAccessibilitySize {
+                    VStack(alignment: .leading, spacing: 8) {
+                        mascot.frame(maxWidth: .infinity)
+                        words.padding(.horizontal, 16).padding(.bottom, 16)
+                    }
+                } else {
+                    HStack(spacing: 4) {
+                        mascot
+                        words
+                            .padding(.trailing, 14).padding(.vertical, 14)
+                            .frame(maxWidth: .infinity, alignment: .leading)
+                    }
+                }
+            }
+            .frame(maxWidth: .infinity, alignment: .leading)
+            .background(LanguLearn.purple.opacity(0.09), in: .rect(cornerRadius: 28))
+            .contentShape(.rect)
         }
         .buttonStyle(.plain)
-        .accessibilityLabel("Hälsa på Milo")
         .accessibilityHint("Visar ett nytt studietips")
-        .onDisappear { companion.stop() }
+        .miloLifetime(companion)
+    }
+
+    private var mascot: some View {
+        MiloView(mood: companion.mood, size: 188, trigger: companion.trigger, zoom: 2.6,
+                 onAnimationCompleted: { companion.animationCompleted(trigger: $0) })
+            .frame(width: 140, height: 156, alignment: .bottom)
+            .clipped()
+            .allowsHitTesting(false)
     }
 
     private var words: some View {
         VStack(alignment: .leading, spacing: 8) {
-            Text("MILO · DIN LÄRARE I \(settings.targetLanguage.displayName.uppercased())")
+            Text("MILO · DIN SPRÅKLÄRARE")
                 .font(.caption2.bold()).foregroundStyle(LanguLearn.purple)
             Text(greeting).font(.title2.bold())
             Text(tips[greetingIndex]).font(.callout).fixedSize(horizontal: false, vertical: true)
-            Text("Tryck på Milo för ett tips")
+            Text("Tryck för ett nytt studietips")
                 .font(.caption).foregroundStyle(.secondary)
         }
     }

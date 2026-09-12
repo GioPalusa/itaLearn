@@ -1,0 +1,6 @@
+Final Debug iOS Simulator build, Xcode beta
+Scheme: LangLearn
+DerivedData: /tmp/milo-placement-build
+
+2026-09-12 18:46:06.914 appintentsmetadataprocessor[22259:9930716] warning: Metadata extraction skipped, no AppIntents.framework dependency found
+** BUILD SUCCEEDED **

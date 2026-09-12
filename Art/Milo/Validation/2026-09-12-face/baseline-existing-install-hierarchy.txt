@@ -1,0 +1,42 @@
+Device orientation: Unknown
+------------------------
+Application bundle identifier: se.palusa.langulearn
+Application UI orientation: Portrait
+Application, pid: 17849, label: 'LanguLearn'
+ Window, {{0.0, 0.0}, {402.0, 874.0}}, hitPoint: {201.0, 437.0}
+  Other, {{0.0, 0.0}, {402.0, 874.0}}, hitPoint: {201.0, 437.0}
+   Other, {{0.0, 0.0}, {402.0, 874.0}}, hitPoint: {201.0, 437.0}
+    Other, {{0.0, 0.0}, {402.0, 874.0}}, hitPoint: {201.0, 437.0}
+     Other, {{0.0, 0.0}, {402.0, 874.0}}, hitPoint: {201.0, 437.0}
+      Other, {{61.0, 62.0}, {280.0, 280.0}}, hitPoint: {201.0, 202.0}
+      StaticText, {{48.0, 348.0}, {306.0, 13.3}}, label: 'Snow · 33 leder · 15 ansiktsformer · 12 klipp', hitPoint: {201.0, 354.7}
+      ScrollView, {{0.0, 369.3}, {402.0, 504.7}}, hitPoint: {201.0, 621.7}
+       Other, {{0.0, 369.3}, {402.0, 1834.0}}, hitPoint: {201.0, 621.7}
+        Button, {{106.7, 389.3}, {188.7, 31.0}}, label: 'Prova den runda avataren', Disabled, hitPoint: {201.0, 404.8}
+        Switch, {{20.0, 438.3}, {362.0, 28.0}}, label: 'Styr ansiktet manuellt', value: 0, hitPoint: {201.0, 452.3}
+         StaticText, {{20.0, 443.8}, {140.3, 17.0}}, label: 'Styr ansiktet manuellt', hitPoint: {90.2, 452.3}
+         Switch, {{321.0, 438.3}, {63.0, 28.0}}, value: 0, hitPoint: {352.5, 452.3}
+        Other, {{20.0, 484.3}, {362.0, 122.3}}, hitPoint: {201.0, 545.5}
+         StaticText, {{36.0, 500.3}, {89.0, 17.0}}, label: 'Kamerafokus', hitPoint: {80.5, 508.8}
+         StaticText, {{36.0, 519.7}, {121.0, 17.0}}, label: 'Zoom mot ansiktet', hitPoint: {96.5, 528.2}
+         StaticText, {{341.7, 521.5}, {24.3, 13.3}}, label: '3,80', hitPoint: {353.8, 528.2}
+         Slider, {{36.0, 540.7}, {330.0, 31.0}}, label: 'Zoom mot ansiktet', value: 3,8, hitPoint: {201.0, 556.2}
+         Button, {{36.0, 576.3}, {52.7, 14.3}}, label: 'Hela Milo', hitPoint: {62.3, 583.5}
+         Button, {{319.3, 576.3}, {46.7, 14.3}}, label: 'Ansiktet', hitPoint: {342.7, 583.5}
+        Other, {{20.0, 624.7}, {362.0, 254.7}}, hitPoint: {201.0, 749.3}
+         StaticText, {{36.0, 640.6}, {68.3, 17.0}}, label: 'Animation', hitPoint: {70.2, 649.1}
+         Button, {{142.7, 666.3}, {116.7, 31.0}}, label: 'Klipp, Väntar lugnt', hitPoint: {201.0, 681.8}
+          StaticText, {{154.3, 673.3}, {78.7, 17.0}}, label: 'Väntar lugnt', hitPoint: {193.7, 681.8}
+         Button, {{170.7, 709.3}, {61.0, 31.0}}, label: 'Humör, idle', hitPoint: {201.2, 724.8}
+          StaticText, {{182.7, 716.3}, {23.0, 17.0}}, label: 'idle', hitPoint: {194.2, 724.8}
+         Button, {{110.3, 752.3}, {181.7, 31.0}}, label: 'Spela klippet från början', hitPoint: {201.2, 767.8}
+         Switch, {{36.0, 795.3}, {330.0, 28.0}}, label: 'Visa fallback-bilden', value: 0, hitPoint: {201.0, 809.3}
+          StaticText, {{36.0, 800.9}, {126.7, 17.0}}, label: 'Visa fallback-bilden', hitPoint: {99.3, 809.4}
+          Switch, {{305.0, 795.3}, {63.0, 28.0}}, value: 0, hitPoint: {336.5, 809.3}
+         Switch, {{36.0, 835.3}, {330.0, 28.0}}, label: 'Pausa kroppen', value: 1, hitPoint: {201.0, 849.3}
+          StaticText, {{36.0, 840.9}, {96.0, 17.0}}, label: 'Pausa kroppen', hitPoint: {84.0, 849.4}
+          Switch, {{305.0, 835.3}, {63.0, 28.0}}, value: 1, hitPoint: {336.5, 849.3}
+       Other, {{369.0, 369.3}, {30.0, 442.7}}, label: 'Vertikal rullningslist, 4 sidor', value: 0 %, hitPoint: {384.0, 590.7}
+        Other, {{396.0, 372.3}, {3.0, 118.0}}, hitPoint: {397.5, 431.3}
+       Other, {{369.0, 369.3}, {30.0, 442.7}}, label: 'Vertikal rullningslist, 4 sidor', value: 0 %, hitPoint: {384.0, 590.7}
+        Other, {{396.0, 372.3}, {3.0, 118.0}}, hitPoint: {397.5, 431.3}

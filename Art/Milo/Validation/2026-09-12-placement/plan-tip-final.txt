@@ -1,0 +1,103 @@
+Device orientation: Unknown
+------------------------
+Application bundle identifier: se.palusa.langulearn
+Application UI orientation: Portrait
+Application, pid: 21520, label: 'LanguLearn'
+ Window, {{0.0, 0.0}, {390.0, 844.0}}, hitPoint: {195.0, 422.0}
+  Other, {{0.0, 0.0}, {390.0, 844.0}}, hitPoint: {195.0, 422.0}
+  Other, {{0.0, 0.0}, {390.0, 844.0}}, hitPoint: {195.0, 422.0}
+   Other, {{0.0, 0.0}, {390.0, 844.0}}, hitPoint: {195.0, 422.0}
+    Other, {{0.0, 0.0}, {390.0, 844.0}}, hitPoint: {195.0, 422.0}
+     Other, {{0.0, 0.0}, {390.0, 844.0}}, hitPoint: {195.0, 422.0}
+      Other, {{0.0, 0.0}, {390.0, 844.0}}, hitPoint: {195.0, 422.0}
+       Other, {{0.0, 0.0}, {390.0, 844.0}}, hitPoint: {195.0, 422.0}
+        Other, {{0.0, 0.0}, {390.0, 844.0}}, hitPoint: {195.0, 422.0}
+         Other, {{0.0, 0.0}, {390.0, 844.0}}, hitPoint: {195.0, 422.0}
+          Other, {{0.0, 0.0}, {390.0, 844.0}}, hitPoint: {195.0, 422.0}
+           Other, {{0.0, 0.0}, {390.0, 844.0}}, hitPoint: {195.0, 422.0}
+            Other, {{0.0, 0.0}, {390.0, 844.0}}, hitPoint: {195.0, 422.0}
+             Other, {{0.0, 0.0}, {390.0, 844.0}}, hitPoint: {195.0, 422.0}
+              Other, {{0.0, 0.0}, {390.0, 844.0}}, hitPoint: {195.0, 422.0}
+               Other, {{0.0, 0.0}, {390.0, 844.0}}, hitPoint: {195.0, 422.0}
+                Other, {{0.0, 0.0}, {390.0, 844.0}}, hitPoint: {195.0, 422.0}
+                 ScrollView, {{0.0, 0.0}, {390.0, 844.0}}, hitPoint: {195.0, 422.0}
+                  Other, {{0.0, 0.0}, {390.0, 844.0}}, hitPoint: {195.0, 422.0}
+                   Other, {{0.0, 0.0}, {390.0, 87.0}}, hitPoint: {195.0, 43.5}
+                   Other, {{0.0, 711.0}, {390.0, 133.0}}, hitPoint: {195.0, 777.5}
+                  Other, {{0.0, 0.0}, {390.0, 844.0}}, hitPoint: {195.0, 422.0}
+                   Other, {{0.0, 711.0}, {390.0, 133.0}}, hitPoint: {195.0, 777.5}
+                  Other, {{0.0, 47.0}, {390.0, 817.0}}, hitPoint: {195.0, 445.5}
+                   Button, {{18.0, 59.0}, {160.3, 27.0}}, label: 'Språk: Italienska', hitPoint: {98.2, 72.5}
+                    StaticText, {{28.0, 64.0}, {20.0, 17.0}}, label: '🇮🇹', hitPoint: {38.0, 72.5}
+                    StaticText, {{54.0, 65.8}, {72.3, 13.3}}, label: 'ITALIENSKA', hitPoint: {90.2, 72.5}
+                    StaticText, {{132.3, 65.8}, {22.3, 13.3}}, label: '· A1', hitPoint: {143.5, 72.5}
+                    Image, {{161.7, 68.3}, {5.7, 8.3}}, identifier: 'chevron.up.chevron.down', label: 'Chevron-Symboler Uppåt Och Nedåt', hitPoint: {164.5, 72.5}
+                   StaticText, {{18.0, 92.0}, {219.3, 38.3}}, label: 'Min studieplan', hitPoint: {127.7, 111.2}
+                   Button, {{332.0, 74.7}, {40.0, 40.0}}, identifier: 'gearshape', label: 'Inställningar', hitPoint: {352.0, 94.7}
+                   Other, {{30.0, 158.3}, {84.0, 84.0}}, label: 'Framsteg', value: 0 av 2, hitPoint: {72.0, 200.3}
+                    StaticText, {{65.2, 181.2}, {13.7, 26.3}}, label: '0', hitPoint: {72.0, 194.3}
+                    StaticText, {{61.7, 207.5}, {20.7, 12.0}}, label: 'av 2', hitPoint: {72.0, 213.5}
+                   StaticText, {{126.0, 164.2}, {185.7, 50.3}}, label: 'Känn dig hemma i vardagsitalienskan', hitPoint: {218.8, 189.3}
+                   StaticText, {{126.0, 219.5}, {101.0, 17.0}}, label: 'Verb i vardagen', hitPoint: {176.5, 228.0}
+                   Button, {{34.0, 254.3}, {322.0, 48.0}}, label: 'Börja lektion 1, · 10 min', hitPoint: {195.0, 278.3}
+                    StaticText, {{109.0, 268.2}, {111.0, 20.3}}, label: 'Börja lektion 1', hitPoint: {164.5, 278.3}
+                    StaticText, {{228.0, 269.3}, {53.0, 18.0}}, label: '· 10 min', hitPoint: {254.5, 278.3}
+                   Button, {{16.0, 334.3}, {358.0, 156.0}}, label: 'MILO · DIN SPRÅKLÄRARE, Ciao, Alex!, Fastnar du? Be mig om en ledtråd, så provar vi igen., Tryck för ett nytt studietips', hitPoint: {195.0, 412.3}
+                    Other, {{-8.0, 302.3}, {188.0, 188.0}}, hitPoint: {90.0, 396.3}
+                    StaticText, {{160.0, 353.2}, {143.0, 13.3}}, label: 'MILO · DIN SPRÅKLÄRARE', hitPoint: {231.5, 359.8}
+                    StaticText, {{160.0, 374.5}, {108.3, 26.3}}, label: 'Ciao, Alex!', hitPoint: {214.2, 387.7}
+                    StaticText, {{160.0, 408.8}, {191.7, 40.3}}, label: 'Fastnar du? Be mig om en ledtråd, så provar vi igen.', hitPoint: {255.8, 429.0}
+                    StaticText, {{160.0, 457.2}, {153.7, 14.3}}, label: 'Tryck för ett nytt studietips', hitPoint: {236.8, 464.3}
+                   StaticText, {{18.0, 510.3}, {169.0, 15.7}}, label: '2 LEKTIONER TILL MÅLET', hitPoint: {102.5, 518.2}
+                   Button, {{56.0, 540.0}, {318.0, 100.0}}, label: 'NU, 10 min · skriva, En paus på kaféet, Beställ något gott och fråga vad det kostar.', hitPoint: {215.0, 590.0}
+                    StaticText, {{84.0, 558.0}, {16.7, 12.0}}, label: 'NU', hitPoint: {92.3, 564.0}
+                    StaticText, {{116.7, 556.8}, {80.7, 14.3}}, label: '10 min · skriva', hitPoint: {157.0, 564.0}
+                    Image, {{353.0, 558.7}, {6.3, 10.7}}, identifier: 'chevron.forward', label: 'Framåt', hitPoint: {356.2, 564.0}
+                    StaticText, {{76.0, 582.0}, {140.7, 20.3}}, label: 'En paus på kaféet', hitPoint: {146.3, 592.2}
+                    StaticText, {{76.0, 610.3}, {261.3, 15.7}}, label: 'Beställ något gott och fråga vad det kostar.', hitPoint: {206.7, 618.2}
+                   StaticText, {{67.5, 666.3}, {7.0, 13.3}}, label: '2', hitPoint: {71.0, 673.0}
+                   StaticText, {{92.0, 664.0}, {130.3, 18.0}}, label: 'Berätta om din dag', hitPoint: {157.2, 673.0}
+                   StaticText, {{333.3, 665.8}, {36.7, 14.3}}, label: '12 min', hitPoint: {351.7, 673.0}
+                   Image, {{61.7, 709.0}, {7.3, 10.7}}, identifier: 'lock', label: 'Lås', hitPoint: {65.3, 714.3}
+                   StaticText, {{77.7, 707.0}, {250.7, 14.3}}, label: 'Lektion 2 låses upp när lektionen före är klar', hitPoint: {203.0, 714.2}
+                   Button, {{16.0, 741.3}, {358.0, 46.0}}, label: 'Testa mina kunskaper igen', hitPoint: {195.0, 764.3}
+                    Image, {{83.0, 756.7}, {14.3, 15.7}}, identifier: 'arrow.trianglehead.clockwise', label: 'Triangelhövdad Rund Pil Som Pekar Medsols', hitPoint: {90.2, 764.5}
+                    StaticText, {{106.8, 754.7}, {201.3, 19.3}}, label: 'Testa mina kunskaper igen', hitPoint: {207.5, 764.3}
+                   StaticText, {{22.0, 795.3}, {343.0, 28.7}}, label: 'En ny kunskapskoll kan ge en uppdaterad plan. Dina tidigare studier sparas.', hitPoint: {193.5, 809.7}
+                  Other, {{357.0, 47.3}, {30.0, 713.7}}, label: 'Vertikal rullningslist, 2 sidor', value: 0 %, hitPoint: {372.0, 404.2}
+                   Other, {{384.0, 50.3}, {3.0, 630.7}}, hitPoint: {385.5, 365.7}
+                  Other, {{357.0, 47.3}, {30.0, 713.7}}, label: 'Vertikal rullningslist, 2 sidor', value: 0 %, hitPoint: {372.0, 404.2}
+                   Other, {{384.0, 50.3}, {3.0, 630.7}}, hitPoint: {385.5, 365.7}
+             Toolbar, {{0.0, 0.0}, {390.0, 844.0}}, identifier: 'Toolbar', label: 'Verktygsfält', hitPoint: {195.0, 422.0}
+              Other, {{0.0, 0.0}, {390.0, 844.0}}, hitPoint: {195.0, 422.0}
+       Other, {{0.0, 0.0}, {390.0, 844.0}}, hitPoint: {195.0, 422.0}
+        Other, {{0.0, 761.0}, {390.0, 83.0}}, hitPoint: {195.0, 802.5}
+         Other, {{0.0, 0.0}, {390.0, 844.0}}, hitPoint: {195.0, 422.0}
+          TabBar, {{0.0, 761.0}, {390.0, 83.0}}, label: 'Flikfält', hitPoint: {195.0, 802.5}
+           Other, {{30.7, 761.0}, {329.0, 62.0}}, hitPoint: {195.2, 792.0}
+            Other, {{30.7, 761.0}, {112.3, 54.0}}, hitPoint: {86.8, 788.0}
+            Other, {{30.7, 761.0}, {329.0, 62.0}}, hitPoint: {195.2, 792.0}
+             Button, {{34.7, 765.0}, {112.3, 54.0}}, label: 'Min studieplan', Selected, hitPoint: {90.8, 792.0}
+              Image, {{77.7, 770.3}, {26.3, 29.0}}, identifier: 'point.topleft.down.to.point.bottomright.curvepath.fill', label: 'Nedåtpekande punkt i det övre vänstra hörnet som pekar på det nedre högra hörnet av en kurvlinje, fylld', hitPoint: {90.8, 784.8}
+             Button, {{139.0, 765.0}, {112.3, 54.0}}, label: 'Öva', hitPoint: {195.2, 792.0}
+              Image, {{175.7, 772.7}, {39.0, 24.7}}, identifier: 'gamecontroller.fill', label: 'Spelkontroll', hitPoint: {195.2, 785.0}
+             Button, {{243.3, 765.0}, {112.3, 54.0}}, label: 'Mitt lärande', hitPoint: {299.5, 792.0}
+              Image, {{283.0, 770.0}, {33.3, 29.3}}, identifier: 'books.vertical.fill', label: 'Bokhylla', hitPoint: {299.7, 784.7}
+            Other, {{30.7, 761.0}, {329.0, 62.0}}, hitPoint: {195.2, 792.0}
+            Other, {{34.7, 765.0}, {112.3, 54.0}}, hitPoint: {90.8, 792.0}
+             Other, {{34.7, 765.0}, {112.3, 54.0}}, hitPoint: {90.8, 792.0}
+              Other, {{34.7, 765.0}, {112.3, 54.0}}, hitPoint: {90.8, 792.0}
+              Other, {{34.7, 765.0}, {112.3, 54.0}}, hitPoint: {90.8, 792.0}
+               Other, {{34.7, 765.0}, {112.3, 54.0}}, hitPoint: {90.8, 792.0}
+                Other, {{34.7, 765.0}, {112.3, 54.0}}, hitPoint: {90.8, 792.0}
+                 Other, {{34.7, 765.0}, {112.3, 54.0}}, hitPoint: {90.8, 792.0}
+                Other, {{34.7, 765.0}, {112.3, 54.0}}, hitPoint: {90.8, 792.0}
+               Other, {{34.7, 765.0}, {112.3, 54.0}}, hitPoint: {90.8, 792.0}
+         Other, {{0.0, 761.0}, {390.0, 83.0}}, hitPoint: {195.0, 802.5}
+          Other, {{0.0, 761.0}, {390.0, 83.0}}, hitPoint: {195.0, 802.5}
+           Other, {{0.0, 761.0}, {390.0, 83.0}}, hitPoint: {195.0, 802.5}
+            Other, {{0.0, 761.0}, {390.0, 83.0}}, hitPoint: {195.0, 802.5}
+             Other, {{0.0, 761.0}, {390.0, 83.0}}, hitPoint: {195.0, 802.5}
+              Other, {{0.0, 761.0}, {390.0, 83.0}}, hitPoint: {195.0, 802.5}
+            Other, {{0.0, 761.0}, {390.0, 83.0}}, hitPoint: {195.0, 802.5}
+             Other, {{0.0, 761.0}, {390.0, 83.0}}, hitPoint: {195.0, 802.5}

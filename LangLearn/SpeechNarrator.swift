@@ -11,6 +11,9 @@ final class SpeechNarrator: NSObject, AVAudioPlayerDelegate {
     var isPreparing: Bool { playback.phase == .preparing }
     var isSpeaking: Bool { playback.phase == .playing }
     var mouthOpening: Float { playback.mouth }
+    /// True while the speaker needs a place on screen: getting ready, playing, or
+    /// holding a failure the learner can retry.
+    var needsStage: Bool { isPreparing || isSpeaking || errorMessage != nil }
     @ObservationIgnored private var synthesizer: AVSpeechSynthesizer?
     @ObservationIgnored private var player: AVAudioPlayer?
     @ObservationIgnored private var writer: SpeechAudioWriter?
@@ -92,10 +95,20 @@ final class SpeechNarrator: NSObject, AVAudioPlayerDelegate {
         timeoutTask?.cancel(); timeoutTask = nil
         do {
             let url = try result.get()
+            Task { @MainActor [weak self] in
+                await self?.startPlaybackIfPossible(url: url, token: token)
+            }
+        } catch { fail(token) }
+    }
+
+    @MainActor private func startPlaybackIfPossible(url: URL, token: UUID) async {
+        guard token == playback.generation, playback.phase == .preparing else { return }
+        do {
 #if os(iOS) || os(visionOS)
             let session = AVAudioSession.sharedInstance()
             try session.setCategory(.playback, mode: .spokenAudio, options: [.duckOthers])
-            try session.setActive(true)
+            try await Self.setAudioSession(active: true, options: [])
+            guard token == playback.generation, playback.phase == .preparing else { return }
             ownsAudioSession = true
 #endif
             let player = try AVAudioPlayer(contentsOf: url)
@@ -115,6 +128,18 @@ final class SpeechNarrator: NSObject, AVAudioPlayerDelegate {
         } catch { fail(token) }
     }
 
+    #if os(iOS) || os(visionOS)
+    /// `setActive` blocks while the route is reconfigured, so it is moved off the
+    /// main thread rather than off the call. AVAudioSession has no completion
+    /// handler form of it: the async APIs are `activate`/`deactivate`, which are
+    /// iOS 27 only and take different option types.
+    nonisolated private static func setAudioSession(active: Bool, options: AVAudioSession.SetActiveOptions = []) async throws {
+        try await Task.detached(priority: .userInitiated) {
+            try AVAudioSession.sharedInstance().setActive(active, options: options)
+        }.value
+    }
+    #endif
+
     private func fail(_ token: UUID) {
         guard playback.finish(token) else { return }
         completion = nil
@@ -132,7 +157,9 @@ final class SpeechNarrator: NSObject, AVAudioPlayerDelegate {
 #if os(iOS) || os(visionOS)
         if ownsAudioSession {
             ownsAudioSession = false
-            try? AVAudioSession.sharedInstance().setActive(false, options: .notifyOthersOnDeactivation)
+            Task {
+                try? await Self.setAudioSession(active: false, options: .notifyOthersOnDeactivation)
+            }
         }
 #endif
     }

@@ -8,10 +8,11 @@ struct LessonPracticeView: View {
     @State private var sessionID: UUID?
     @State private var generator = LearningChat()
     @State private var errorMessage: String?
+    @State private var milo = MiloController()
 
     private var progress: PracticeProgress? { store.state.sessions.first { $0.id == sessionID }?.practice }
     var body: some View {
-        ScrollView {
+        MiloPracticeCanvas(controller: milo, thinking: generator.isWorking) {
             VStack(alignment: .leading, spacing: 20) {
                 Text(lesson.title).font(.title2.bold())
                 Text("Öva ord och bygg meningar från din lektion. När övningarna är skapade kan du spela utan internet.").foregroundStyle(.secondary)
@@ -27,7 +28,7 @@ struct LessonPracticeView: View {
                         activityCard("Bygg meningen", subtitle: sentenceSubtitle(progress), icon: "square.grid.3x1.below.line.grid.1x2", count: "\(progress.solvedPuzzleIDs.count) av \(progress.pack.puzzles.count) lösta")
                     }.buttonStyle(.plain)
                     if generator.isWorking {
-                        MiloLoadingView(message: "Milo skapar fler övningar…")
+                        MiloLoadingView(message: "Milo skapar fler övningar…", showsMascot: false)
                     } else {
                         Button("Skapa fler övningar", systemImage: "sparkles") {
                             generator.extendPractice(store: store, sessionID: sessionID, settings: settings)
@@ -47,7 +48,14 @@ struct LessonPracticeView: View {
                     .buttonStyle(LanguLearnPrimaryButtonStyle())
                     .disabled(generator.isWorking || sessionID == nil)
                     Text("Milo skapar ordkort och meningar utifrån lektionen och dina senaste svar. Detta använder ditt OpenAI API-konto.").font(.footnote).foregroundStyle(.secondary)
-                    if generator.isWorking { MiloLoadingView(message: "Milo skapar ordkort och meningar…") }
+                    if generator.isWorking { MiloLoadingView(message: "Milo skapar ordkort och meningar…", showsMascot: false) }
+                    // Only in this state. Every line here is written in Milo's
+                    // voice with no Milo present, and the empty half-screen under
+                    // it is the one pocket on this screen tall enough to hold a
+                    // legible figure — once the two activity cards arrive it is
+                    // not, and the tab bar would crop him at the thigh.
+                    MiloStage(mood: generator.isWorking ? .thinking : .presenting, size: 240)
+                        .padding(.top, 8)
                 }
                 if let error = errorMessage ?? generator.errorMessage {
                     Text(error).foregroundStyle(LanguLearn.red)
@@ -59,7 +67,9 @@ struct LessonPracticeView: View {
             }.padding(20).frame(maxWidth: 760).frame(maxWidth: .infinity)
         }
         .langulearnCanvas().navigationTitle("Lek och repetera")
-        .task { prepare() }
+        .inlineNavigationTitle()
+        .miloLifetime(milo)
+        .task { prepare(); milo.present() }
         .onDisappear { generator.cancel() }
         .onChange(of: access.revision) { generator.cancel() }
     }
@@ -101,9 +111,12 @@ struct FlashcardPracticeView: View {
     @State private var index = 0
     @State private var revealed = false
     @State private var errorMessage: String?
-    @State private var narrator = SpeechNarrator()
+    @State private var milo = MiloController()
     @State private var dragOffset: CGSize = .zero
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
+
+    /// Milo speaks the words on this screen, so his controller owns the narrator.
+    private var narrator: SpeechNarrator { milo.narrator }
 
     private var progress: PracticeProgress? { store.state.sessions.first { $0.id == sessionID }?.practice }
     private var liveCards: [Flashcard] { progress?.pack.flashcards ?? cards }
@@ -114,6 +127,19 @@ struct FlashcardPracticeView: View {
     private var remainingUnseen: Int { max(liveCards.count - index, 0) }
 
     var body: some View {
+        ViewThatFits(in: .vertical) {
+            practiceContent
+            ScrollView { practiceContent }
+        }
+        .frame(maxWidth: 760).frame(maxWidth: .infinity)
+        .langulearnCanvas()
+        .hideNavigationBar()
+        .onAppear(perform: restoreIfNeeded)
+        .onDisappear { persist() }
+        .miloLifetime(milo)
+    }
+
+    private var practiceContent: some View {
         VStack(spacing: 0) {
             PracticeHeader(title: "Ordkort", subtitle: lessonTitle,
                            current: index, total: queue.count) { dismiss() }
@@ -122,12 +148,19 @@ struct FlashcardPracticeView: View {
             SegmentedProgress(current: index, total: queue.count)
                 .padding(.horizontal, 16).padding(.top, 14)
 
-            if narrator.isPreparing || narrator.isSpeaking || narrator.errorMessage != nil {
-                MiloSpeechView(narrator: narrator).padding(.horizontal, 16)
+            if narrator.needsStage {
+                MiloNarrationBar(narrator: narrator).padding(.horizontal, 16).padding(.top, 12)
             }
             if queue.indices.contains(index) {
                 cardArea(queue[index])
                 actions(queue[index])
+                ExerciseHelpButton(onOpen: { milo.stop() }) {
+                    let card = queue[index]
+                    return store.helpContext(settings: settings, activity: .flashcard,
+                                             task: card.cue, material: [card.answer, card.example],
+                                             sessionID: sessionID)
+                }
+                .padding(.horizontal, 16).padding(.top, 12)
             } else if !queue.isEmpty {
                 finished
             }
@@ -136,44 +169,44 @@ struct FlashcardPracticeView: View {
                 Text(errorMessage).font(.il(13)).foregroundStyle(LanguLearn.red).padding(.horizontal, 16)
             }
         }
-        .frame(maxWidth: 760).frame(maxWidth: .infinity)
-        .langulearnCanvas()
-        .hideNavigationBar()
-        .onAppear(perform: restoreIfNeeded)
-        .onDisappear { narrator.stop(); persist() }
     }
 
     // MARK: - The stack
 
     private func cardArea(_ card: Flashcard) -> some View {
         VStack(spacing: 6) {
-            ZStack {
-                // Two shoulders behind the top card hint at how many are left.
-                ForEach(1...2, id: \.self) { depth in
-                    if queue.count > index + depth {
-                        RoundedRectangle(cornerRadius: 22)
-                            .fill(.white.opacity(depth == 1 ? 0.66 : 0.4))
-                            .overlay { RoundedRectangle(cornerRadius: 22).strokeBorder(Color.black.opacity(0.05), lineWidth: 1) }
-                            .padding(.horizontal, CGFloat(depth) * 8)
-                            .offset(y: CGFloat(depth) * 8)
+            // He stands behind the stack, answers every card the learner rates, and
+            // is also the one reading the word aloud — the screen never needs a
+            // second portrait, or a second rig.
+            MiloPeek(controller: milo, size: 144, edge: .center) {
+                ZStack {
+                    // Two shoulders behind the top card hint at how many are left.
+                    ForEach(1...2, id: \.self) { depth in
+                        if queue.count > index + depth {
+                            RoundedRectangle(cornerRadius: 22)
+                                .fill(.white.opacity(depth == 1 ? 0.66 : 0.4))
+                                .overlay { RoundedRectangle(cornerRadius: 22).strokeBorder(Color.black.opacity(0.05), lineWidth: 1) }
+                                .padding(.horizontal, CGFloat(depth) * 8)
+                                .offset(y: CGFloat(depth) * 8)
+                        }
                     }
+                    faceCard(card)
+                        .id(card.id)
+                        .transition(.asymmetric(
+                            insertion: .opacity.combined(with: .scale(scale: 0.94)),
+                            removal: .opacity
+                        ))
+                        .offset(x: dragOffset.width, y: 0)
+                        .rotationEffect(.degrees(dragOffset.width / 26))
+                        .overlay(alignment: dragOffset.width < 0 ? .topLeading : .topTrailing) { swipeBadge }
+                        .gesture(swipe(card))
+                        .animation(.spring(duration: 0.25), value: dragOffset)
                 }
-                faceCard(card)
-                    .id(card.id)
-                    .transition(.asymmetric(
-                        insertion: .opacity.combined(with: .scale(scale: 0.94)),
-                        removal: .opacity
-                    ))
-                    .offset(x: dragOffset.width, y: 0)
-                    .rotationEffect(.degrees(dragOffset.width / 26))
-                    .overlay(alignment: dragOffset.width < 0 ? .topLeading : .topTrailing) { swipeBadge }
-                    .gesture(swipe(card))
-                    .animation(.spring(duration: 0.25), value: dragOffset)
+                // Room for the two shoulders peeking below the top card.
+                .padding(.bottom, 18)
+                .frame(maxHeight: 460)
+                .frame(maxHeight: .infinity)
             }
-            // Room for the two shoulders peeking below the top card.
-            .padding(.bottom, 18)
-            .frame(maxHeight: 460)
-            .frame(maxHeight: .infinity)
 
             HStack(spacing: 6) {
                 countLabel("\(knownCount) kända")
@@ -221,7 +254,7 @@ struct FlashcardPracticeView: View {
                     .foregroundStyle(LanguLearn.magenta)
                     Spacer(minLength: 0)
                     if revealed {
-                        Button { narrator.stop(); narrator.speak(card.answer, in: settings.targetLanguage) } label: {
+                        Button { milo.speak(card.answer, in: settings.targetLanguage) } label: {
                             HStack(spacing: 6) {
                                 Image(systemName: "speaker.wave.2").font(.system(size: 12, weight: .semibold))
                                 Text("Lyssna").font(.il(13, .semibold))
@@ -320,6 +353,8 @@ struct FlashcardPracticeView: View {
 
     @ViewBuilder private var finished: some View {
         VStack(spacing: 16) {
+            MiloView(mood: milo.mood, size: 240, trigger: milo.trigger, zoom: 1.15,
+                     onAnimationCompleted: { milo.animationCompleted(trigger: $0) })
             Label("Rundan är klar!", systemImage: "checkmark.circle.fill")
                 .font(.il(28, .bold)).foregroundStyle(LanguLearn.deepGreen)
             Text("Dina markeringar är sparade. Repetera gärna de ord du vill befästa.")
@@ -339,11 +374,14 @@ struct FlashcardPracticeView: View {
                 if known { state.sessions[position].practice?.knownCardIDs.insert(card.id) }
                 else { state.sessions[position].practice?.knownCardIDs.remove(card.id) }
             }
-            narrator.stop()
+            // The rating is the moment worth answering: a word kept, or a word
+            // the learner is coming back to. Either way he replies in place.
+            if known { milo.joyful() } else { milo.encourage() }
             if !known { queue.append(card) }
             withAnimation(reduceMotion ? nil : LanguLearnMotion.move) {
                 index += 1; revealed = false
             }
+            if index >= queue.count { milo.applaud() }
             errorMessage = nil
             persist()
         } catch { errorMessage = "Kunde inte spara kortet. Försök igen." }
@@ -392,7 +430,7 @@ struct SentencePracticeView: View {
     @State private var correct = false
     @State private var showAnswer = false
     @State private var errorMessage: String?
-    @State private var narrator = SpeechNarrator()
+    @State private var milo = MiloController()
     @State private var chat = LearningChat()
     @State private var targetedSlot: Int?
     @State private var restored = false
@@ -400,6 +438,8 @@ struct SentencePracticeView: View {
     /// Lets a word fly between the bank and its place instead of blinking across.
     @Namespace private var tileMotion
 
+    /// Milo reads the finished sentence aloud, so his controller owns the narrator.
+    private var narrator: SpeechNarrator { milo.narrator }
     private var progress: PracticeProgress? { store.state.sessions.first { $0.id == sessionID }?.practice }
     private var livePuzzles: [SentencePuzzle] { progress?.pack.puzzles ?? puzzles }
     private var currentPuzzle: SentencePuzzle? {
@@ -408,7 +448,7 @@ struct SentencePracticeView: View {
     private var currentPuzzleID: String { currentPuzzle?.id ?? "" }
 
     var body: some View {
-        ScrollView {
+        MiloPracticeCanvas(controller: milo, thinking: chat.isWorking, extendsBodyBelowSafeArea: true) {
             VStack(alignment: .leading, spacing: 0) {
                 PracticeHeader(title: "Bygg meningen", subtitle: lessonTitle,
                                current: index, total: livePuzzles.count) { dismiss() }
@@ -416,8 +456,8 @@ struct SentencePracticeView: View {
                 SegmentedProgress(current: index, total: livePuzzles.count)
                     .padding(.top, 14)
 
-                if narrator.isPreparing || narrator.isSpeaking || narrator.errorMessage != nil {
-                    MiloSpeechView(narrator: narrator).padding(.top, 12)
+                if narrator.needsStage {
+                    MiloNarrationBar(narrator: narrator).padding(.top, 12)
                 }
                 if livePuzzles.indices.contains(index) {
                     round(livePuzzles[index])
@@ -440,24 +480,37 @@ struct SentencePracticeView: View {
             // A new pack arrived while the round was finished: carry straight on.
             if bankOrder.isEmpty, livePuzzles.indices.contains(index) { reset() }
         }
-        .onDisappear { narrator.stop(); chat.cancel(); persistPosition() }
+        .onDisappear { chat.cancel(); persistPosition() }
+        .miloLifetime(milo)
         .onChange(of: access.revision) { chat.cancel() }
     }
 
     @ViewBuilder private func round(_ puzzle: SentencePuzzle) -> some View {
-        VStack(alignment: .leading, spacing: 0) {
-            Text("SÄG DET PÅ \(settings.targetLanguage.displayName.uppercased())")
-                .font(.il(11, .semibold)).tracking(0.88).foregroundStyle(LanguLearn.magenta)
-            Text(puzzle.cue)
-                .font(.il(24, .bold)).foregroundStyle(LanguLearn.ink)
-                .padding(.top, 8)
-                .fixedSize(horizontal: false, vertical: true)
+        Group {
+            VStack(alignment: .leading, spacing: 0) {
+                Text("SÄG DET PÅ \(settings.targetLanguage.displayName.uppercased())")
+                    .font(.il(11, .semibold)).tracking(0.88).foregroundStyle(LanguLearn.magenta)
+                Text(puzzle.cue)
+                    .font(.il(24, .bold)).foregroundStyle(LanguLearn.ink)
+                    .padding(.top, 8)
+                    .fixedSize(horizontal: false, vertical: true)
+            }
+            .langulearnCard()
         }
-        .langulearnCard()
         .padding(.top, 16)
 
         slotArea(puzzle).padding(.top, 18)
         bankArea(puzzle).padding(.top, 20)
+
+        ExerciseHelpButton(onOpen: { milo.stop() }) {
+            store.helpContext(settings: settings, activity: .sentencePuzzle,
+                              task: "Build the translation using the word bank: " + puzzle.cue,
+                              material: puzzle.words,
+                              draft: assembly.selected.compactMap { puzzle.words.indices.contains($0) ? puzzle.words[$0] : nil }.joined(separator: " "),
+                              sessionID: sessionID)
+        }
+        .disabled(chat.isWorking)
+        .padding(.top, 16)
 
         if checked {
             verdict(puzzle).padding(.top, 16)
@@ -467,7 +520,7 @@ struct SentencePracticeView: View {
             hintCard(hint).padding(.top, 12)
                 .transition(.move(edge: .bottom).combined(with: .opacity))
         }
-        if chat.isWorking { MiloLoadingView(message: "Milo tittar på din mening…").padding(.top, 12) }
+        if chat.isWorking { MiloLoadingView(message: "Milo tittar på din mening…", showsMascot: false).padding(.top, 12) }
         if let error = errorMessage ?? chat.errorMessage {
             Text(error).font(.il(13)).foregroundStyle(LanguLearn.red).padding(.top, 12)
         }
@@ -480,17 +533,16 @@ struct SentencePracticeView: View {
                 Button("Kontrollera") { check(puzzle) }
                     .buttonStyle(LanguLearnPrimaryButtonStyle())
                     .disabled(assembly.selected.isEmpty || chat.isWorking)
-                if checked, access.hasKey, progress?.hint(for: puzzle.id) == nil {
-                    Button("Be Milo om en ledtråd", systemImage: "lightbulb") { askForHint(puzzle) }
-                        .buttonStyle(LanguLearnSecondaryButtonStyle())
-                        .disabled(chat.isWorking)
-                }
                 Button("Börja om meningen") { move { assembly.reset() } }
                     .font(.il(16, .semibold)).foregroundStyle(LanguLearn.purple)
                     .frame(maxWidth: .infinity)
             }
         }
         .padding(.top, 18)
+        // No standing Milo mid-round: measured, this screen leaves about 150pt
+        // under "Börja om meningen", and a figure legible at this framing needs
+        // 220. Anything that fits here is a figurine, so he waits for the
+        // finished state, which has the room.
     }
 
     // MARK: - Slots
@@ -678,8 +730,7 @@ struct SentencePracticeView: View {
             Text(puzzle.explanation)
             if correct {
                 Button("Lyssna", systemImage: "speaker.wave.2") {
-                    narrator.stop()
-                    narrator.speak(assembly.words(in: puzzle).joined(separator: " "), in: settings.targetLanguage)
+                    milo.speak(assembly.words(in: puzzle).joined(separator: " "), in: settings.targetLanguage)
                 }
             } else {
                 Button(showAnswer ? "Dölj exempel" : "Visa ett möjligt svar") { showAnswer.toggle() }
@@ -692,8 +743,6 @@ struct SentencePracticeView: View {
     private func hintCard(_ hint: PuzzleHint) -> some View {
         VStack(alignment: .leading, spacing: 8) {
             HStack(alignment: .top, spacing: 10) {
-                Image(systemName: "sparkles")
-                    .font(.system(size: 13)).foregroundStyle(LanguLearn.purple).padding(.top, 2)
                 VStack(alignment: .leading, spacing: 6) {
                     Text("\(TeacherIdentity.name) tipsar: \(hint.hint)")
                         .font(.il(13)).foregroundStyle(Color.black.opacity(0.66))
@@ -719,7 +768,7 @@ struct SentencePracticeView: View {
             Label("Alla meningar är klara!", systemImage: "checkmark.seal.fill").font(.title.bold())
             Text("Dina framsteg är sparade. Vill du ha nya meningar på samma lektion kan \(TeacherIdentity.name) skapa fler.")
             if chat.isWorking {
-                MiloLoadingView(message: "Milo skriver nya meningar…")
+                MiloLoadingView(message: "Milo skriver nya meningar…", showsMascot: false)
             } else {
                 Button("Skapa fler meningar", systemImage: "sparkles") {
                     chat.extendPractice(store: store, sessionID: sessionID, settings: settings)
@@ -733,7 +782,9 @@ struct SentencePracticeView: View {
             }
             Button("Spela igen från början") { index = 0; reset() }.buttonStyle(LanguLearnSecondaryButtonStyle())
             if let error = chat.errorMessage { Text(error).foregroundStyle(LanguLearn.red) }
+            MiloStage(controller: milo, size: 240).padding(.top, 4)
         }
+        .task { milo.applaud() }
     }
 
     // MARK: - Actions
@@ -762,6 +813,7 @@ struct SentencePracticeView: View {
         checked = true; showAnswer = false
         guard puzzle.matches(assembly.words(in: puzzle)) else {
             correct = false
+            milo.encourage()
             recordFailedAttempt(puzzle)
             return
         }
@@ -772,6 +824,7 @@ struct SentencePracticeView: View {
                 state.sessions[position].practice?.puzzleDraft = assembly.selected
             }
             correct = true; errorMessage = nil
+            milo.applaud()
         } catch { correct = false; errorMessage = "Kunde inte spara svaret. Tryck på Kontrollera igen." }
     }
 
@@ -790,6 +843,7 @@ struct SentencePracticeView: View {
     }
 
     private func askForHint(_ puzzle: SentencePuzzle) {
+        milo.leanIn()
         chat.requestHint(store: store, sessionID: sessionID, settings: settings,
                          puzzle: puzzle, attempt: assembly.words(in: puzzle))
     }
@@ -797,7 +851,7 @@ struct SentencePracticeView: View {
     /// Clears the sentence before moving on: incrementing `index` first would
     /// re-render the next puzzle while the old puzzle's tiles were still placed.
     private func advance() {
-        narrator.stop()
+        milo.stop()
         assembly.reset()
         checked = false; correct = false; showAnswer = false
         errorMessage = nil; targetedSlot = nil
@@ -810,7 +864,7 @@ struct SentencePracticeView: View {
 
     private func reset() {
         assembly.reset(); checked = false; correct = false; showAnswer = false
-        errorMessage = nil; targetedSlot = nil; narrator.stop()
+        errorMessage = nil; targetedSlot = nil; milo.stop()
         bankOrder = livePuzzles.indices.contains(index) ? Array(livePuzzles[index].words.indices).shuffled() : []
         persistPosition()
     }
@@ -889,6 +943,7 @@ struct LessonSummaryCard: View {
                 .font(.footnote).foregroundStyle(.secondary)
         }.langulearnCard()
         .task { if mastered { milo.applaud() } else { milo.encourage() } }
+        .miloLifetime(milo)
     }
 }
 

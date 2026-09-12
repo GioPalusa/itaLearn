@@ -159,14 +159,14 @@ final class MiloScene {
 
     func configure(
         mood: MiloMood, mouth: Float, wanders: Bool,
-        debug: MiloDebugControls? = nil, restart: Bool = false, zoom: Float = 1
+        debug: MiloDebugControls? = nil, restart: Bool = false, zoom: Float = 1, pinsFaceFocus: Bool = false
     ) {
         animator?.configure(mood: mood, mouth: mouth, wanders: wanders, debug: debug, restart: restart)
         let clampedZoom = min(4.5, max(1, zoom.isFinite ? zoom : 1))
         self.zoom = clampedZoom
         characterPivot?.scale = SIMD3(repeating: baseScale * clampedZoom)
         // Keep the face near the camera's optical center while the body grows.
-        let focusAmount = min(1, (clampedZoom - 1) / 1.5)
+        let focusAmount: Float = pinsFaceFocus ? 1 : min(1, (clampedZoom - 1) / 1.5)
         characterPivot?.position = -faceFocus * clampedZoom * focusAmount
         // Apply slider-driven face/gaze changes immediately instead of waiting
         // for the next SceneEvents.Update callback.
@@ -198,8 +198,14 @@ final class MiloScene {
                 joints[index].rotation = pose.jointRotation(for: name, resting: model.rest[index].rotation)
                 if name == "hips" { joints[index].translation += pose.hipsOffset }
             }
+            // Clip sampling and the animator already blend poses. A second low-pass
+            // filter shortens fast hand travel and destroys authored palm contacts.
+            let bodySmoothing: Float = pose.preservesBodyContacts ? 1 : smoothing
             for index in joints.indices where index < current.count {
-                joints[index].rotation = simd_slerp(current[index].rotation, joints[index].rotation, smoothing)
+                // Gaze is already eased with the eyelids/brows in the animator.
+                // Filtering the eyes again makes them lag behind the expression.
+                let isEye = index == model.jointIndices["eye_L"] || index == model.jointIndices["eye_R"]
+                joints[index].rotation = simd_slerp(current[index].rotation, joints[index].rotation, isEye ? 1 : bodySmoothing)
                 joints[index].translation += (current[index].translation - joints[index].translation) * (1 - smoothing)
             }
             model.entity.jointTransforms = joints
@@ -255,6 +261,8 @@ struct MiloRealityView: View {
     let wanders: Bool
     let trigger: Int
     let zoom: Float
+    var pinsFaceFocus = false
+    var placeholderSize: CGFloat? = nil
     var debug: MiloDebugControls? = nil
     var onRigStatus: ((String) -> Void)? = nil
     var onAnimationCompleted: ((Int) -> Void)? = nil
@@ -264,7 +272,7 @@ struct MiloRealityView: View {
     var body: some View {
         Group {
             if failed {
-                Image("Milo").resizable().scaledToFit()
+                Image("Milo").resizable().scaledToFit().frame(width: placeholderSize)
             } else {
                 RealityView { content in
                     content.camera = .virtual
@@ -272,7 +280,7 @@ struct MiloRealityView: View {
                         let entity = try await scene.load()
                         try Task.checkCancellation()
                         content.add(entity)
-                        scene.configure(mood: mood, mouth: mouth, wanders: wanders, debug: debug, zoom: zoom)
+                        scene.configure(mood: mood, mouth: mouth, wanders: wanders, debug: debug, zoom: zoom, pinsFaceFocus: pinsFaceFocus)
                         scene.onAnimationCompleted = { [onAnimationCompleted, trigger] in onAnimationCompleted?(trigger) }
                         onRigStatus?(scene.rigSummary)
                         scene.subscription = content.subscribe(to: SceneEvents.Update.self) { event in
@@ -286,14 +294,14 @@ struct MiloRealityView: View {
                     }
                 } update: { _ in
                     scene.onAnimationCompleted = { [onAnimationCompleted, trigger] in onAnimationCompleted?(trigger) }
-                    scene.configure(mood: mood, mouth: mouth, wanders: wanders, debug: debug, zoom: zoom)
+                    scene.configure(mood: mood, mouth: mouth, wanders: wanders, debug: debug, zoom: zoom, pinsFaceFocus: pinsFaceFocus)
                 } placeholder: {
-                    Image("Milo").resizable().scaledToFit()
+                    Image("Milo").resizable().scaledToFit().frame(width: placeholderSize)
                 }
             }
         }
         .onChange(of: trigger) {
-            scene.configure(mood: mood, mouth: mouth, wanders: wanders, debug: debug, restart: true, zoom: zoom)
+            scene.configure(mood: mood, mouth: mouth, wanders: wanders, debug: debug, restart: true, zoom: zoom, pinsFaceFocus: pinsFaceFocus)
         }
         .onDisappear { scene.stop() }
         .allowsHitTesting(false)

@@ -4,11 +4,16 @@ struct OnboardingLanguageStep: View {
     @Environment(TutorSettings.self) private var settings
     @Environment(\.dynamicTypeSize) private var typeSize
     @State private var picker: LanguagePickerPurpose?
+    @State private var milo = MiloController()
 
     var body: some View {
         @Bindable var settings = settings
         VStack(alignment: .leading, spacing: 24) {
-            OnboardingMiloGuide(message: "Vilket språk är du nyfiken på?")
+            // Picking a language is the first thing the learner will hear, so Milo
+            // answers the choice himself: a greeting in the bubble, and his own
+            // voice in that language if they tap him for it.
+            OnboardingMiloGuide(message: guideMessage, controller: milo,
+                                caption: guideCaption, listen: listenAction)
             Text("Ditt nästa språk")
                 .font(.largeTitle.bold()).accessibilityAddTraits(.isHeader)
             VStack(spacing: 12) {
@@ -60,6 +65,8 @@ struct OnboardingLanguageStep: View {
             Text("Börja med ett språk. Du kan lägga till fler senare – varje språk får en egen studieplan.")
                 .font(.footnote).foregroundStyle(.secondary)
         }
+        .onChange(of: settings.chosenTarget) { milo.enthusiastic() }
+        .miloLifetime(milo)
         .sheet(item: $picker) { purpose in
             OnboardingLanguageSheet(
                 title: purpose == .target ? "Välj ditt språk" : "Förklaringar på",
@@ -69,6 +76,32 @@ struct OnboardingLanguageStep: View {
                 else { settings.nativeLanguage = language }
             }
         }
+    }
+
+    /// The bubble says hello in the language itself the moment one is chosen.
+    private var guideMessage: LocalizedStringResource {
+        guard let target = settings.chosenTarget, target != settings.nativeLanguage else {
+            return "Vilket språk är du nyfiken på?"
+        }
+        return "\(target.greeting)! Så säger man hej på \(target.displayName.lowercased())."
+    }
+
+    /// Only offered when the device can actually speak the language.
+    private var guideCaption: LocalizedStringResource? {
+        guard let target = settings.chosenTarget, target != settings.nativeLanguage,
+              target.hasVoice else { return nil }
+        return "Tryck på mig så säger jag en mening."
+    }
+
+    /// Nothing to tap until there is a language with a voice behind it.
+    private var listenAction: (() -> Void)? {
+        guard guideCaption != nil else { return nil }
+        return speakSample
+    }
+
+    private func speakSample() {
+        guard let target = settings.chosenTarget, target.hasVoice else { return }
+        milo.speak(target.sampleLine, in: target)
     }
 
     private var otherLanguageLabel: LocalizedStringResource {

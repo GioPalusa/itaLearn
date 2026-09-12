@@ -78,9 +78,10 @@ Key/fill/rim lighting reveals both facial sides. Hand skin uses a three-tile
 atlas instead of incorrectly sampling only the body texture tile.
 
 `Laugh` and `Applaud` use the supplied ClassicTV Mixamo recordings, cropped to
-seconds 3–7 and 3–8 respectively. Applause rebuilds the recording's clean open
-and palm-contact poses as seven separated beats, while preserving its natural
-body movement. The runtime layers a smile and rhythmic mouth/eyelid movement
+seconds 3–7 and 3–8 respectively. Applause retains the recording's torso motion but solves both arm chains for
+shared palm targets on Snow's proportions, producing six separated beats.
+Palm contact lasts several frames. Runtime secondary smoothing is bypassed
+for this clip so it cannot shorten the hand travel; transition blending remains. The runtime layers a smile and rhythmic mouth/eyelid movement
 over laughter. Both clips play once; source hashes are pinned with the other recordings.
 
 To rebuild clips and manifests using the existing generated rig, without

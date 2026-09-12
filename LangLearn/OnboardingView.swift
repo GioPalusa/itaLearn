@@ -136,7 +136,7 @@ private struct OnboardingMiloStage: View {
                         .fill(.linearGradient(colors: [.white.opacity(0.95), LanguLearn.purple.opacity(0.12)], startPoint: .topLeading, endPoint: .bottomTrailing))
                         .frame(width: size * 0.90, height: size * 0.90)
                         .padding(.bottom, 8)
-                    MiloView(mood: milo.mood, size: size, trigger: milo.trigger,
+                    MiloView(mood: milo.mood, size: size, wanders: true, trigger: milo.trigger,
                              onAnimationCompleted: { milo.animationCompleted(trigger: $0) })
                     Text("Hej! Jag är Milo.")
                         .font(.callout.weight(.semibold)).foregroundStyle(LanguLearn.purple)
@@ -162,18 +162,23 @@ private struct OnboardingMiloStage: View {
 struct OnboardingMiloGuide: View {
     let message: LocalizedStringResource
     var mood: MiloMood = .idle
+    /// Supply one and Milo is live here: he can answer the choice being made, and
+    /// say a line in the language the learner just pointed at.
+    var controller: MiloController? = nil
+    var caption: LocalizedStringResource? = nil
+    var listen: (() -> Void)? = nil
     @Environment(\.dynamicTypeSize) private var typeSize
 
     var body: some View {
         Group {
             if typeSize.isAccessibilitySize {
                 VStack(alignment: .leading, spacing: 12) {
-                MiloAvatarView(mood: mood, size: 88)
-                words
+                    portrait(88)
+                    words
                 }
             } else {
                 HStack(spacing: 16) {
-                    MiloAvatarView(mood: mood, size: 100)
+                    portrait(100)
                     words
                 }
             }
@@ -181,11 +186,31 @@ struct OnboardingMiloGuide: View {
         .frame(maxWidth: .infinity, alignment: .leading)
     }
 
+    @ViewBuilder private func portrait(_ size: CGFloat) -> some View {
+        // A controller carries its own mood, so the fixed one is only for the
+        // guides that never react.
+        let avatar = MiloAvatarView(controller: controller, mood: controller == nil ? mood : nil, size: size)
+        if let listen {
+            Button(action: listen) { avatar }
+                .buttonStyle(.plain)
+                .accessibilityLabel("Lyssna på Milo")
+                .accessibilityHint("Milo säger en mening på språket du har valt")
+        } else {
+            avatar
+        }
+    }
+
     private var words: some View {
-        Text(message).font(.body.weight(.medium))
-            .fixedSize(horizontal: false, vertical: true)
-            .padding(18)
-            .background(.white.opacity(0.75), in: .rect(cornerRadius: 24))
+        VStack(alignment: .leading, spacing: 6) {
+            Text(message).font(.body.weight(.medium))
+                .fixedSize(horizontal: false, vertical: true)
+            if let caption {
+                Text(caption).font(.footnote).foregroundStyle(LanguLearn.purple)
+            }
+        }
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .padding(18)
+        .background(.white.opacity(0.75), in: .rect(cornerRadius: 24))
     }
 }
 
@@ -222,10 +247,13 @@ private struct OnboardingFooter: View {
 
 private struct OnboardingConnectionStep: View {
     @Binding var isSaving: Bool
+    @State private var milo = MiloController()
 
     var body: some View {
         VStack(alignment: .leading, spacing: 24) {
-            OnboardingMiloGuide(message: "Du behöver inte kunna något i förväg.", mood: .encouraging)
+            OnboardingMiloGuide(message: "Du behöver inte kunna något i förväg.", controller: milo)
+                .task { milo.present() }
+                .miloLifetime(milo)
             VStack(alignment: .leading, spacing: 10) {
                 Text("Vi börjar där du är.").font(.largeTitle.bold()).accessibilityAddTraits(.isHeader)
                 Text("Efter sex korta frågor får du en studieplan att börja med. Svara gärna att du inte vet – det hjälper mig också.")

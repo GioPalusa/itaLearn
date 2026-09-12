@@ -1,0 +1,261 @@
+Building for debugging...
+[Planning deferred tasks]
+[2 / 17]
+[3 / 18] LangLearnCore
+[13 / 107]
+[16 / 107]
+[24 / 107]
+[26 / 107]
+[27 / 107]
+[32 / 107]
+[33 / 107]
+[34 / 107]
+[36 / 107]
+[38 / 107]
+[44 / 107]
+[47 / 107]
+[49 / 107]
+[50 / 107]
+[61 / 107]
+[63 / 107]
+[65 / 107]
+[69 / 107]
+[74 / 107]
+[75 / 107]
+[76 / 107]
+[77 / 107]
+[92 / 107] LangLearnCore
+/Users/palusa/Developer/ItaLearn/LangLearn/OpenAIClient.swift:33:76: warning: converting non-Sendable function value to '@Sendable () async throws -> String?' may introduce data races
+ 31 |     init(
+ 32 |         session: URLSession? = nil,
+ 33 |         keyProvider: @escaping @Sendable () async throws -> String? = Self.storedKey
+    |                                                                            `- warning: converting non-Sendable function value to '@Sendable () async throws -> String?' may introduce data races
+ 34 |     ) {
+ 35 |         let configuration = URLSessionConfiguration.ephemeral
+[93 / 107] LangLearnCore
+[98 / 108] LangLearnCore
+/Users/palusa/Developer/ItaLearn/LangLearn/OpenAIClient.swift:33:76: warning: converting non-Sendable function value to '@Sendable () async throws -> String?' may introduce data races
+ 31 |     init(
+ 32 |         session: URLSession? = nil,
+ 33 |         keyProvider: @escaping @Sendable () async throws -> String? = Self.storedKey
+    |                                                                            `- warning: converting non-Sendable function value to '@Sendable () async throws -> String?' may introduce data races
+ 34 |     ) {
+ 35 |         let configuration = URLSessionConfiguration.ephemeral
+/Users/palusa/Developer/ItaLearn/LangLearn/OpenAIClient.swift:33:76: warning: converting non-Sendable function value to '@Sendable () async throws -> String?' may introduce data races
+ 31 |     init(
+ 32 |         session: URLSession? = nil,
+ 33 |         keyProvider: @escaping @Sendable () async throws -> String? = Self.storedKey
+    |                                                                            `- warning: converting non-Sendable function value to '@Sendable () async throws -> String?' may introduce data races
+ 34 |     ) {
+ 35 |         let configuration = URLSessionConfiguration.ephemeral
+[103 / 114] LangLearnCoreTests-product
+[114 / 141]
+[116 / 141]
+[118 / 141]
+[123 / 141]
+[130 / 141] LangLearnCoreTests-product
+[135 / 141] LangLearnCoreTests-product
+[137 / 141] LangLearnCoreTests-product
+Build complete! (21,97 sec)
+Test Suite 'All tests' started at 2026-09-12 18:35:15.358.
+Test Suite 'All tests' passed at 2026-09-12 18:35:15.365.
+	 Executed 0 tests, with 0 failures (0 unexpected) in 0.000 (0.007) seconds
+􀟈  Test run started.
+􀄵  Testing Library Version: 2078
+􀄵  Target Platform: arm64e-apple-macos14.0
+􀟈  Suite "Free conversation and written feedback" started.
+􀟈  Suite "Subject pronoun game" started.
+􀟈  Suite "Milo animation and speech lifecycle" started.
+􀟈  Test acceptingATurnMovesThePendingAnswerIntoTheTranscript() started.
+􀟈  Test theScoreStaysOnItsScale() started.
+􀟈  Suite "Neutral start and several languages at once" started.
+􀟈  Test anOpeningTurnCarriesNoCorrection() started.
+􀟈  Test writingsAndChatAreKeptPerLanguage() started.
+􀟈  Test feedbackAlwaysSaysWhatToDoNext() started.
+􀟈  Suite "Language selection" started.
+􀟈  Test aHalfEmptyCorrectionIsRejected() started.
+􀟈  Suite "Learning contract and progression" started.
+􀟈  Test aWellFormedGameValidates() started.
+􀟈  Test progressCountsOnlyWhatWasSolvedFirstTry() started.
+􀟈  Test theAnswerMustBeOneOfThePronounsOnScreen() started.
+􀟈  Suite "Local persistence and resumable chats" started.
+􀟈  Test aGameNeedsEnoughRoundsToBeWorthPlaying() started.
+􀟈  Test aChatTurnNeedsSomethingToSay() started.
+􀟈  Test clipHeaderSamplingAndRootOwnershipAreValid() started.
+􀟈  Test malformedCommandsDoNotInterruptTheAvatar() started.
+􀟈  Test speakingUsesDistinctMouthShapesAndIdleBlinksFully() started.
+􀟈  Test bundledModelContainsTheManifestRigAndFace() started.
+􀟈  Test walkingMovesBothLegsAndStaysOnStage() started.
+􀟈  Test animatorKeepsFaceIndependentFromBodyAndBoundsHomeMovement() started.
+􀟈  Test applausePalmsMeetOnTheExportedSkeleton() started.
+􀟈  Test manifestMatchesSnowRuntimeContract() started.
+􀟈  Suite "Saved wrap-up and practice" started.
+􀟈  Test reactionsAnimateThenReleaseTheirFacesAndCanReplay() started.
+􀟈  Test audioWriterFlushesAndCancellationRemovesTemporarySpeech() started.
+􀟈  Test avatarCommandsReplaceReplayAndIgnoreStaleCompletions() started.
+􀟈  Test cancelledAndReplacedSpeechCannotRestart() started.
+􀟈  Test studioFaceControlsWorkWithPausedIdleAndResetToNeutral() started.
+􀟈  Test invalidClipMagicIsRejected() started.
+􀟈  Suite "OpenAI transport" started.
+􀟈  Test theGameIsSavedPerLanguageLikeEverythingElse() started.
+􀟈  Test switchingClipsStartsFromLastBodyPoseAndGreetingDoesNotRestartOnRefresh() started.
+􀟈  Test expressionsRiseAndReleaseAndIdleUsesRelaxedArms() started.
+􀟈  Test eachLanguageKeepsItsOwnPlanAndIsListedSeparately() started.
+􀟈  Test icelandicIsOfferedEvenWithoutSpeechSupport() started.
+􀟈  Test wellFormedFeedbackValidates() started.
+􀟈  Test everyNordicLanguageIsOffered() started.
+􀟈  Test theCatalogIsUsableAsAList() started.
+􀟈  Suite "Cancellation and answer recovery" started.
+􀟈  Test firstRunPresumesNoLanguageToLearn() started.
+􀟈  Test theChoiceSurvivesRelaunch() started.
+􀟈  Test choosingALanguageIsWhatUnlocksTheApp() started.
+􀟈  Test progressCountsOnlyLessonsThePlanStillHas() started.
+􀟈  Suite "Practice contracts and Markdown" started.
+􀟈  Test everyLanguageCarriesItsOwnFixedPhrases() started.
+􀟈  Test practicePacksSavedBeforeMultilingualSupportStillDecode() started.
+􀟈  Test everyRoundNeedsABlankToFill() started.
+􀟈  Test instructionsNameTheChosenPairAndNothingElse() started.
+􀟈  Test assessmentSchemaPinsTheProfileToTheChosenCourse() started.
+􀟈  Test personMustBeFirstSecondOrThird() started.
+􀟈  Test snapshotsWrittenBeforeTheGameExistedStillDecode() started.
+􀟈  Test courseReachesTheModelAsDataToo() started.
+􀟈  Test theOpeningQuestionNamesTheLanguageBeingLearned() started.
+􀟈  Suite "Studies are kept per language" started.
+􀟈  Test rejectsDuplicateIDsForwardPrerequisitesAndEmptyObjectives() started.
+􀟈  Test assessmentJSONRoundTripsAndRejectsIncompatibleVersions() started.
+􀟈  Test replacementArchivesOldPlanAndCarriesReusedLessonProgress() started.
+􀟈  Test cannotContinueWithoutAnExistingPlanOrFinishEarly() started.
+􀟈  Test continueCurrentPreservesPlanIdentityProgressAndConversations() started.
+􀟈  Test retryCannotAwardObjectivesOrCompleteLesson() started.
+􀟈  Test learnerMustDemonstrateEveryObjectiveAcrossMultipleAnswers() started.
+􀟈  Test assessmentResultMustMatchTheChosenCourse() started.
+􁁛  Test anOpeningTurnCarriesNoCorrection() passed after 0.001 seconds.
+􁁛  Test feedbackAlwaysSaysWhatToDoNext() passed after 0.001 seconds.
+􀟈  Test lessonUsesBoundedContextAndKeepsRetryStateAcrossReload() started.
+􀟈  Test corruptSnapshotIsNotOverwritten() started.
+􀟈  Test failedAnswerSurvivesReloadAndRetryDoesNotDuplicateIt() started.
+􀟈  Test existingWritingHistoryMigratesIntoExpandedDiskStore() started.
+􁁛  Test aHalfEmptyCorrectionIsRejected() passed after 0.002 seconds.
+􁁛  Test aGameNeedsEnoughRoundsToBeWorthPlaying() passed after 0.001 seconds.
+􁁛  Test aChatTurnNeedsSomethingToSay() passed after 0.002 seconds.
+􁁛  Test aWellFormedGameValidates() passed after 0.002 seconds.
+􀟈  Test sixAnswersGenerateExactlyFiveFollowupsAndOnePlan() started.
+􀟈  Test redoingOnboardingKeepsTheLanguageButAsksAgain() started.
+􁁛  Test theScoreStaysOnItsScale() passed after 0.005 seconds.
+􁁛  Test theAnswerMustBeOneOfThePronounsOnScreen() passed after 0.004 seconds.
+􁁛  Test progressCountsOnlyWhatWasSolvedFirstTry() passed after 0.005 seconds.
+􀟈  Test failedSummaryResumesAfterReloadWithoutDuplicateAnswers() started.
+􀟈  Test eighthAnswerAutomaticallySummarizes() started.
+􀟈  Test generatedPackAndPracticeProgressSurviveReopenWithoutRegeneration() started.
+􀟈  Test restoredLongChatWrapsUpWithoutRequestingAnotherTeachingTurn() started.
+􀟈  Test continueCreatesFreshRoundAndPreservesOldSummary() started.
+􁁛  Test acceptingATurnMovesThePendingAnswerIntoTheTranscript() passed after 0.005 seconds.
+􁁛  Test manifestMatchesSnowRuntimeContract() passed after 0.006 seconds.
+􀟈  Test sendsStrictSchemaToRequestedModelWithoutRemoteConversationStorage() started.
+􁁛  Test invalidClipMagicIsRejected() passed after 0.017 seconds.
+􁁛  Test wellFormedFeedbackValidates() passed after 0.017 seconds.
+􁁛  Test icelandicIsOfferedEvenWithoutSpeechSupport() passed after 0.017 seconds.
+􁁛  Test everyNordicLanguageIsOffered() passed after 0.017 seconds.
+􀟈  Test cancelledRequestCannotSaveALateModelReply() started.
+􀟈  Test learnerCanEditAFailedAnswerWithoutDuplicatingIt() started.
+􁁛  Test cancelledAndReplacedSpeechCannotRestart() passed after 0.017 seconds.
+􀟈  Test wrapUpHasAnAnswerBudgetAndDoesNotImplyMastery() started.
+􀟈  Test unresolvedRetryAndMissingEvidenceCannotUnlockNextLesson() started.
+􀟈  Test oldSessionJSONDecodesWithoutNewFields() started.
+􀟈  Test validatesAllAnswersAgainstAvailableTileMultiplicity() started.
+􀟈  Test markdownRendersEmphasisAndCorrectionsPreserveUnchangedWords() started.
+􀟈  Test duplicateTilesCanMoveWithoutDuplicationOrLoss() started.
+􀟈  Test sentenceCheckingHandlesAlternativesAndItalianAccents() started.
+􁁛  Test everyLanguageCarriesItsOwnFixedPhrases() passed after 0.017 seconds.
+􁁛  Test practicePacksSavedBeforeMultilingualSupportStillDecode() passed after 0.017 seconds.
+􁁛  Test everyRoundNeedsABlankToFill() passed after 0.017 seconds.
+􁁛  Test instructionsNameTheChosenPairAndNothingElse() passed after 0.017 seconds.
+􁁛  Test assessmentSchemaPinsTheProfileToTheChosenCourse() passed after 0.017 seconds.
+􁁛  Test personMustBeFirstSecondOrThird() passed after 0.017 seconds.
+􁁛  Test courseReachesTheModelAsDataToo() passed after 0.017 seconds.
+􁁛  Test firstRunPresumesNoLanguageToLearn() passed after 0.017 seconds.
+􀟈  Test switchingLanguageSwapsPlansWithoutLosingEither() started.
+􀟈  Test studiesSavedBeforeLanguageSelectionLoadAsItalian() started.
+􀟈  Test wipingStudiesClearsEveryLanguage() started.
+􁁛  Test rejectsDuplicateIDsForwardPrerequisitesAndEmptyObjectives() passed after 0.017 seconds.
+􁁛  Test assessmentJSONRoundTripsAndRejectsIncompatibleVersions() passed after 0.017 seconds.
+􁁛  Test theOpeningQuestionNamesTheLanguageBeingLearned() passed after 0.017 seconds.
+􁁛  Test replacementArchivesOldPlanAndCarriesReusedLessonProgress() passed after 0.017 seconds.
+􁁛  Test cannotContinueWithoutAnExistingPlanOrFinishEarly() passed after 0.017 seconds.
+􁁛  Test retryCannotAwardObjectivesOrCompleteLesson() passed after 0.017 seconds.
+􁁛  Test continueCurrentPreservesPlanIdentityProgressAndConversations() passed after 0.017 seconds.
+􁁛  Test learnerMustDemonstrateEveryObjectiveAcrossMultipleAnswers() passed after 0.017 seconds.
+􁁛  Test assessmentResultMustMatchTheChosenCourse() passed after 0.018 seconds.
+􁁛  Test theCatalogIsUsableAsAList() passed after 0.020 seconds.
+􁁛  Test wrapUpHasAnAnswerBudgetAndDoesNotImplyMastery() passed after 0.003 seconds.
+􁁛  Test unresolvedRetryAndMissingEvidenceCannotUnlockNextLesson() passed after 0.003 seconds.
+􁁛  Test oldSessionJSONDecodesWithoutNewFields() passed after 0.003 seconds.
+􁁛  Test validatesAllAnswersAgainstAvailableTileMultiplicity() passed after 0.003 seconds.
+􁁛  Test theChoiceSurvivesRelaunch() passed after 0.020 seconds.
+􁁛  Test duplicateTilesCanMoveWithoutDuplicationOrLoss() passed after 0.002 seconds.
+􁁛  Test sentenceCheckingHandlesAlternativesAndItalianAccents() passed after 0.002 seconds.
+􁁛  Suite "Language selection" passed after 0.020 seconds.
+􁁛  Suite "Learning contract and progression" passed after 0.021 seconds.
+􁁛  Test markdownRendersEmphasisAndCorrectionsPreserveUnchangedWords() passed after 0.013 seconds.
+􁁛  Suite "Practice contracts and Markdown" passed after 0.030 seconds.
+􁁛  Test choosingALanguageIsWhatUnlocksTheApp() passed after 0.032 seconds.
+􁁛  Test redoingOnboardingKeepsTheLanguageButAsksAgain() passed after 0.036 seconds.
+􁁛  Test writingsAndChatAreKeptPerLanguage() passed after 0.036 seconds.
+􁁛  Suite "Free conversation and written feedback" passed after 0.037 seconds.
+􁁛  Test audioWriterFlushesAndCancellationRemovesTemporarySpeech() passed after 0.042 seconds.
+􁁛  Test sendsStrictSchemaToRequestedModelWithoutRemoteConversationStorage() passed after 0.046 seconds.
+􀟈  Test handlesAPIErrorsWithoutEchoingProviderBody(status:) started.
+􀟈  Test case passing 1 argument status → 401 to handlesAPIErrorsWithoutEchoingProviderBody(status:) started.
+􀟈  Test case passing 1 argument status → 403 to handlesAPIErrorsWithoutEchoingProviderBody(status:) started.
+􀟈  Test case passing 1 argument status → 404 to handlesAPIErrorsWithoutEchoingProviderBody(status:) started.
+􁁛  Test switchingClipsStartsFromLastBodyPoseAndGreetingDoesNotRestartOnRefresh() passed after 0.081 seconds.
+􀟈  Test case passing 1 argument status → 429 to handlesAPIErrorsWithoutEchoingProviderBody(status:) started.
+􀟈  Test case passing 1 argument status → 500 to handlesAPIErrorsWithoutEchoingProviderBody(status:) started.
+􁁛  Test walkingMovesBothLegsAndStaysOnStage() passed after 0.091 seconds.
+􁁛  Test handlesAPIErrorsWithoutEchoingProviderBody(status:) with 5 test cases passed after 0.031 seconds.
+􀟈  Test rejectsUnusableResponses(kind:) started.
+􀟈  Test case passing 1 argument kind → "refusal" to rejectsUnusableResponses(kind:) started.
+􁁛  Test studioFaceControlsWorkWithPausedIdleAndResetToNeutral() passed after 0.095 seconds.
+􀟈  Test case passing 1 argument kind → "incomplete" to rejectsUnusableResponses(kind:) started.
+􁁛  Test reactionsAnimateThenReleaseTheirFacesAndCanReplay() passed after 0.099 seconds.
+􀟈  Test case passing 1 argument kind → "invalidJSON" to rejectsUnusableResponses(kind:) started.
+􀟈  Test case passing 1 argument kind → "missingOutput" to rejectsUnusableResponses(kind:) started.
+􁁛  Test rejectsUnusableResponses(kind:) with 4 test cases passed after 0.009 seconds.
+􀟈  Test missingKeyAndCancellationNeverReachTransport() started.
+􁁛  Test missingKeyAndCancellationNeverReachTransport() passed after 0.001 seconds.
+􁁛  Suite "OpenAI transport" passed after 0.102 seconds.
+􁁛  Test speakingUsesDistinctMouthShapesAndIdleBlinksFully() passed after 0.104 seconds.
+􁁛  Test clipHeaderSamplingAndRootOwnershipAreValid() passed after 0.118 seconds.
+􁁛  Test expressionsRiseAndReleaseAndIdleUsesRelaxedArms() passed after 0.119 seconds.
+􁁛  Test animatorKeepsFaceIndependentFromBodyAndBoundsHomeMovement() passed after 0.140 seconds.
+􁁛  Test avatarCommandsReplaceReplayAndIgnoreStaleCompletions() passed after 0.232 seconds.
+􁁛  Test theGameIsSavedPerLanguageLikeEverythingElse() passed after 0.236 seconds.
+􁁛  Test malformedCommandsDoNotInterruptTheAvatar() passed after 0.237 seconds.
+􁁛  Test eachLanguageKeepsItsOwnPlanAndIsListedSeparately() passed after 0.242 seconds.
+􁁛  Test progressCountsOnlyLessonsThePlanStillHas() passed after 0.247 seconds.
+􁁛  Suite "Neutral start and several languages at once" passed after 0.248 seconds.
+􁁛  Test snapshotsWrittenBeforeTheGameExistedStillDecode() passed after 0.250 seconds.
+􁁛  Suite "Subject pronoun game" passed after 0.251 seconds.
+􁁛  Test corruptSnapshotIsNotOverwritten() passed after 0.582 seconds.
+􁁛  Test existingWritingHistoryMigratesIntoExpandedDiskStore() passed after 0.582 seconds.
+􁁛  Test studiesSavedBeforeLanguageSelectionLoadAsItalian() passed after 0.568 seconds.
+􁁛  Test wipingStudiesClearsEveryLanguage() passed after 0.568 seconds.
+􁁛  Test continueCreatesFreshRoundAndPreservesOldSummary() passed after 0.581 seconds.
+􁁛  Test switchingLanguageSwapsPlansWithoutLosingEither() passed after 0.568 seconds.
+􁁛  Suite "Studies are kept per language" passed after 0.585 seconds.
+􁁛  Test generatedPackAndPracticeProgressSurviveReopenWithoutRegeneration() passed after 0.582 seconds.
+􁁛  Test lessonUsesBoundedContextAndKeepsRetryStateAcrossReload() passed after 0.588 seconds.
+􁁛  Test restoredLongChatWrapsUpWithoutRequestingAnotherTeachingTurn() passed after 0.588 seconds.
+􁁛  Test cancelledRequestCannotSaveALateModelReply() passed after 0.578 seconds.
+􁁛  Test eighthAnswerAutomaticallySummarizes() passed after 0.592 seconds.
+􁁛  Test learnerCanEditAFailedAnswerWithoutDuplicatingIt() passed after 0.581 seconds.
+􁁛  Test failedAnswerSurvivesReloadAndRetryDoesNotDuplicateIt() passed after 0.596 seconds.
+􁁛  Suite "Cancellation and answer recovery" passed after 0.598 seconds.
+􁁛  Test failedSummaryResumesAfterReloadWithoutDuplicateAnswers() passed after 0.593 seconds.
+􁁛  Suite "Saved wrap-up and practice" passed after 0.598 seconds.
+􁁛  Test sixAnswersGenerateExactlyFiveFollowupsAndOnePlan() passed after 0.601 seconds.
+􁁛  Suite "Local persistence and resumable chats" passed after 0.602 seconds.
+􁁛  Test bundledModelContainsTheManifestRigAndFace() passed after 0.784 seconds.
+􁁛  Test applausePalmsMeetOnTheExportedSkeleton() passed after 0.848 seconds.
+􁁛  Suite "Milo animation and speech lifecycle" passed after 0.848 seconds.
+􁁛  Test run with 81 tests in 12 suites passed after 0.849 seconds.

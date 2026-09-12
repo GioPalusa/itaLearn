@@ -367,14 +367,23 @@ private struct RouteRail: View {
 
 struct LessonOverviewView: View {
     let lesson: PlannedLesson
+    @State private var milo = MiloController()
     var body: some View {
         ScrollView {
             VStack(alignment: .leading, spacing: 20) {
-                HStack(spacing: 16) {
-                    MiloView(size: 76)
-                    Text("Öva med Milo").font(.title2.bold())
+                // He introduces the lesson from behind the card rather than from a
+                // row above it, so the summary keeps the top of the screen.
+                MiloPeek(controller: milo, size: 220, zoom: 2, edge: .center) {
+                    VStack(alignment: .leading, spacing: 10) {
+                        Text("ÖVA MED MILO")
+                            .font(.il(11, .semibold)).tracking(0.88)
+                            .foregroundStyle(LanguLearn.magenta)
+                            .accessibilityLabel("Öva med Milo")
+                        LearningMarkdownText(lesson.summary).font(.title3)
+                    }
+                    .langulearnCard(padding: 18)
                 }
-                LearningMarkdownText(lesson.summary).font(.title3)
+                .task { milo.present() }
                 NavigationLink { LessonPracticeView(lesson: lesson) } label: {
                     Label("Ordkort och bygg meningar", systemImage: "rectangle.on.rectangle.angled")
                 }.buttonStyle(LanguLearnSecondaryButtonStyle())
@@ -393,6 +402,7 @@ struct LessonOverviewView: View {
         .langulearnCanvas()
         .navigationTitle(lesson.title)
         .inlineNavigationTitle()
+        .miloLifetime(milo)
     }
 }
 
@@ -416,7 +426,12 @@ struct LearningProgressView: View {
                 header.appearsInSequence(0)
                 if let profile = plan?.profile {
                     if let skills = profile.skills { skillCard(skills).appearsInSequence(1) }
-                    if !profile.strengths.isEmpty { canDoCard(profile.strengths).appearsInSequence(2) }
+                    if !profile.strengths.isEmpty {
+                        // Still, not live: this screen is a long read, and he is here
+                        // to stand beside the list, not to perform over it.
+                        MiloPeek(size: 132, edge: .leading) { canDoCard(profile.strengths) }
+                            .appearsInSequence(2)
+                    }
                     if !profile.focusAreas.isEmpty { nextStepsCard(profile.focusAreas).appearsInSequence(3) }
                 }
                 Text("HISTORIK")
@@ -660,7 +675,7 @@ struct PlanDirectionPicker: View {
     var body: some View {
         VStack(alignment: .leading, spacing: 12) {
             HStack(spacing: 12) {
-                MiloView(mood: .celebrating, size: 48)
+                MiloAvatarView(mood: .still, size: 48)
                 VStack(alignment: .leading, spacing: 2) {
                     Text("Du har klarat hela planen")
                         .font(.il(17, .semibold)).foregroundStyle(LanguLearn.ink)
@@ -930,10 +945,23 @@ struct AdaptiveChatView: View {
     @State private var showingSettings = false
     @State private var setupError: String?
     @State private var hasStartedAssessment = false
-    @State private var narrator = SpeechNarrator()
+    @State private var latestHelp: ExerciseHelpTranscript?
+    /// The conversation owns narration, including while the keyboard is open.
+    @State private var milo = MiloController()
     @State private var speech = LessonSpeechInput()
     @State private var speechTask: Task<Void, Never>?
     @FocusState private var composerFocused: Bool
+
+    init(mode: Mode) {
+        self.mode = mode
+    }
+
+#if DEBUG
+    init(mode: Mode, previewHelp: ExerciseHelpTranscript?) {
+        self.mode = mode
+        _latestHelp = State(initialValue: previewHelp)
+    }
+#endif
 
     private var isAssessment: Bool { if case .assessment = mode { true } else { false } }
     private var isFreeChat: Bool { if case .freeChat = mode { true } else { false } }
@@ -963,18 +991,18 @@ struct AdaptiveChatView: View {
 
     var body: some View {
         VStack(spacing: 0) {
-            if !assessmentFinished && session?.wrapUp == nil && !composerFocused {
-                MiloSpeechView(narrator: narrator, listening: speech.isListening, thinking: chat.isWorking,
-                               encouraging: session?.requiresRetry == true)
-                    .padding(.horizontal, 20)
-                    .transition(.opacity.combined(with: .move(edge: .top)))
+            if !assessmentFinished && session?.wrapUp == nil {
+                MiloSpeechView(controller: milo, listening: speech.isListening,
+                               thinking: chat.isWorking,
+                               context: conversationContext)
+                    .padding(.horizontal, 20).padding(.vertical, 6)
             }
             statusHeader
             ScrollViewReader { proxy in
                 ScrollView {
                     LazyVStack(alignment: .leading, spacing: 14) {
                         if assessmentFinished, let result = store.state.assessments.last {
-                            MiloView(mood: .celebrating, size: 110).frame(maxWidth: .infinity)
+                            MiloView(mood: .celebrating, size: 220, zoom: 1.15).frame(maxWidth: .infinity)
                             Text(result.result.recommendation == .newPlan ? "Din nya studieplan är klar" : "Fortsätt på din väg")
                                 .font(.title2.bold())
                             LearningMarkdownText(result.result.rationale).langulearnCard()
@@ -985,18 +1013,27 @@ struct AdaptiveChatView: View {
                             LearningMessageBubble(message: message)
                             if !isAssessment && message.role == .assistant && !message.translation.isEmpty {
                                 Button("Lyssna", systemImage: "speaker.wave.2") {
-                                    narrator.stop()
-                                    narrator.speak(LearningMarkdown.spoken(message.text), in: settings.targetLanguage)
+                                    milo.speak(LearningMarkdown.spoken(message.text), in: settings.targetLanguage)
                                 }
                                 .font(.caption)
                                 .accessibilityLabel("Lyssna på Milos \(settings.targetLanguage.displayName.lowercased())")
                             }
                         }
+                        if let latestHelp, !isAssessment {
+                            ExerciseHelpButton(
+                                title: "Milo gav ett tips",
+                                systemImage: "lightbulb.fill",
+                                transcript: latestHelp,
+                                onOpen: { composerFocused = false; milo.stop() },
+                                onTranscriptChange: { self.latestHelp = $0 }
+                            ) {
+                                latestHelp.exercise
+                            }
+                            .accessibilityHint("Visar Milos tips igen")
+                        }
                         if let pendingAnswer {
                             LearningMessageBubble(message: ChatMessage(role: .user, text: pendingAnswer))
-                            Text("Väntar på Milos svar").font(.caption).foregroundStyle(.secondary)
                         }
-                        if chat.isWorking { MiloLoadingView(message: isAssessment ? "Milo funderar på din kunskapskoll…" : "Milo förbereder ditt nästa steg…", showsMascot: false) }
                         if let error = setupError ?? chat.errorMessage ?? store.errorMessage {
                             VStack(alignment: .leading, spacing: 12) {
                                 Text(error).foregroundStyle(LanguLearn.red)
@@ -1039,67 +1076,59 @@ struct AdaptiveChatView: View {
                 }
                 .onChange(of: pendingAnswer) { if pendingAnswer != nil { draft = "" } }
                 .onChange(of: chat.isWorking) { proxy.scrollTo("latest", anchor: .bottom) }
+                .onChange(of: latestHelp?.exchanges.count) {
+                    withAnimation { proxy.scrollTo("latest", anchor: .bottom) }
+                }
             }
             if !assessmentFinished && session?.wrapUp == nil && session?.wrapUpRequested != true { composer }
         }
         .langulearnCanvas()
         .navigationTitle(title)
-        .compactNavigationTitle(composerFocused)
-        .animation(.easeInOut(duration: 0.22), value: composerFocused)
+        .inlineNavigationTitle()
+        .miloLifetime(milo)
         .toolbar {
+            if let sessionID, session?.wrapUp == nil, (session?.answerCount ?? 0) >= 2 {
+                Button("Avsluta och sammanfatta", systemImage: "checkmark.circle") {
+                    milo.stop(); speechTask?.cancel()
+                    Task { await speech.cancel() }
+                    chat.finishLesson(store: store, sessionID: sessionID, settings: settings)
+                }
+                .disabled(chat.isWorking || pendingAnswer != nil || speech.isListening || speech.isPreparing)
+            }
             Button("Inställningar", systemImage: "gearshape") { showingSettings = true }
         }
         .sheet(isPresented: $showingSettings) { SettingsView() }
         .task { resume() }
         .onDisappear {
-            chat.cancel(); narrator.stop(); speechTask?.cancel()
+            chat.cancel(); milo.stop(); speechTask?.cancel()
             Task { await speech.cancel() }
         }
         .onChange(of: access.revision) {
             chat.errorMessage = "API-nyckeln har ändrats. Tryck på Försök igen för att fortsätta."
-            chat.cancel(); narrator.stop(); speechTask?.cancel()
+            chat.cancel(); milo.stop(); speechTask?.cancel()
             Task { await speech.cancel() }
         }
     }
 
-    private var statusHeader: some View {
-        VStack(alignment: .leading, spacing: 8) {
-            if isFreeChat {
-                if !composerFocused {
-                    Text("FRITT SAMTAL · MILO RÄTTAR NÄR DET BEHÖVS")
-                        .font(.caption.weight(.semibold)).foregroundStyle(LanguLearn.purple)
-                }
-            } else if isAssessment && !assessmentFinished {
-                let count = store.state.assessment?.answeredCount ?? 0
-                if !composerFocused {
-                    Text("FRÅGA \(min(count + 1, 6)) AV 6 · TA DET I DIN TAKT")
-                        .font(.caption.weight(.semibold)).foregroundStyle(LanguLearn.magenta)
-                }
-                ProgressView(value: Double(count), total: 6)
-                    .accessibilityLabel("Fråga \(min(count + 1, 6)) av 6")
-            } else if case .lesson(let lesson) = mode {
-                if !composerFocused {
-                    Text(session?.requiresRetry == true
-                         ? "FÖRSÖK IGEN · DU FÅR HJÄLP PÅ VÄGEN"
-                         : "ÖVA \(settings.targetLanguage.displayName.uppercased()) · ETT STEG I TAGET")
-                        .font(.caption.weight(.semibold)).foregroundStyle(LanguLearn.purple)
-                }
-                ProgressView(value: Double(session?.achievedObjectives.count ?? 0), total: Double(lesson.objectives.count))
-                if !composerFocused {
-                    Text(session?.wrapUp != nil ? "Sammanfattningen är sparad" : "\(min(session?.answerCount ?? 0, LessonSession.answerBudget)) av \(LessonSession.answerBudget) svar · sedan sammanfattar vi")
-                        .font(.caption).foregroundStyle(.secondary)
-                }
-                if let sessionID, session?.wrapUp == nil, (session?.answerCount ?? 0) >= 2, !composerFocused {
-                    Button("Avsluta och sammanfatta", systemImage: "checkmark.circle") {
-                        narrator.stop(); speechTask?.cancel()
-                        Task { await speech.cancel() }
-                        chat.finishLesson(store: store, sessionID: sessionID, settings: settings)
-                    }.font(.callout).disabled(chat.isWorking || pendingAnswer != nil || speech.isListening || speech.isPreparing)
-                }
-            }
+    private var conversationContext: LocalizedStringResource {
+        if isFreeChat { return "Milo · Fritt samtal" }
+        if isAssessment {
+            return "Fråga \(min((store.state.assessment?.answeredCount ?? 0) + 1, 6)) av 6"
         }
-        .padding(.horizontal, 20).padding(.vertical, 10)
-        .frame(maxWidth: 760).frame(maxWidth: .infinity)
+        if session?.requiresRetry == true { return "Vi provar en gång till tillsammans." }
+        return "Milo · \(min(session?.answerCount ?? 0, LessonSession.answerBudget)) av \(LessonSession.answerBudget) svar"
+    }
+
+    @ViewBuilder private var statusHeader: some View {
+        if isAssessment && !assessmentFinished {
+            ProgressView(value: Double(store.state.assessment?.answeredCount ?? 0), total: 6)
+                .accessibilityLabel(Text(conversationContext))
+                .padding(.horizontal, 20).padding(.bottom, 6)
+        } else if case .lesson(let lesson) = mode, session?.wrapUp == nil {
+            ProgressView(value: Double(session?.achievedObjectives.count ?? 0), total: Double(max(1, lesson.objectives.count)))
+                .accessibilityLabel("Lektionens mål")
+                .padding(.horizontal, 20).padding(.bottom, 6)
+        }
     }
 
     private var composer: some View {
@@ -1124,6 +1153,17 @@ struct AdaptiveChatView: View {
             if isAssessment {
                 Button("Jag vet inte ännu") { submit("Jag vet inte ännu.") }
                     .font(.caption).disabled(chat.isWorking || pendingAnswer != nil)
+            }
+
+            if !isAssessment {
+                ExerciseHelpButton(
+                    onOpen: { composerFocused = false; milo.stop() },
+                    onTranscriptChange: { latestHelp = $0 }
+                ) {
+                    store.helpContext(settings: settings, activity: isFreeChat ? .conversation : .lesson,
+                                      task: title, draft: draft, sessionID: sessionID)
+                }
+                .disabled(chat.isWorking || pendingAnswer != nil || speech.isListening || speech.isPreparing || messages.isEmpty)
             }
 
             HStack(alignment: .bottom, spacing: 10) {
@@ -1162,7 +1202,7 @@ struct AdaptiveChatView: View {
     /// Optional dictation into the same text field the learner types in.
     private var micButton: some View {
         Button {
-            narrator.stop()
+            milo.stop()
             speechTask = Task {
                 if speech.isListening {
                     let heard = await speech.finish()
@@ -1227,7 +1267,8 @@ struct AdaptiveChatView: View {
 
     private func submit(_ text: String) {
         guard !chat.isWorking, pendingAnswer == nil else { return }
-        narrator.stop()
+        milo.stop()
+        latestHelp = nil
         if isAssessment { chat.assessment(store: store, course: settings.course, answer: text) }
         else if isFreeChat { chat.freeChat(store: store, settings: settings, answer: text) }
         else if let sessionID { chat.lesson(store: store, sessionID: sessionID, settings: settings, answer: text) }
@@ -1241,10 +1282,7 @@ struct LearningMessageBubble: View {
     var body: some View {
         VStack(alignment: .leading, spacing: 12) {
             if message.role == .assistant {
-                HStack(spacing: 8) {
-                    MiloAvatarView(mood: .still, size: 32)
-                    Text(TeacherIdentity.name).font(.caption.bold()).foregroundStyle(LanguLearn.purple)
-                }
+                Text(TeacherIdentity.name).font(.caption.bold()).foregroundStyle(LanguLearn.purple)
             }
             LearningMarkdownText(message.text).font(.body)
             if !message.translation.isEmpty {

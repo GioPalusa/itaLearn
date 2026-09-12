@@ -10,10 +10,13 @@ struct PronounGameView: View {
     @Environment(TutorSettings.self) private var settings
     @Environment(OpenAIAccess.self) private var access
     @State private var generator = LearningChat()
-    @State private var narrator = SpeechNarrator()
+    @State private var milo = MiloController()
     @State private var picked: String?
     @State private var streak = 0
     @State private var showingParadigm = false
+
+    /// Milo reads the finished sentence, so his controller owns the narrator.
+    private var narrator: SpeechNarrator { milo.narrator }
 
     private var progress: PronounGameProgress? { store.state.pronouns }
     private var round: PronounRound? {
@@ -29,13 +32,16 @@ struct PronounGameView: View {
                     if let round {
                         scoreboard(progress)
                         paradigmCard(progress.game)
-                        roundCard(round, game: progress.game)
+                        MiloPeek(controller: milo, size: 128) {
+                            roundCard(round, game: progress.game)
+                        }
                     } else {
                         finishedCard(progress)
                         paradigmCard(progress.game)
                     }
                 } else {
-                    introCard
+                    MiloPeek(controller: milo, size: 160, edge: .center) { introCard }
+                        .task { milo.present() }
                 }
                 if let error = generator.errorMessage ?? store.errorMessage {
                     Text(error).foregroundStyle(LanguLearn.red).font(.callout)
@@ -46,19 +52,19 @@ struct PronounGameView: View {
         }
         .langulearnCanvas()
         .navigationTitle("Pronomenspelet")
-        .onDisappear { narrator.stop(); generator.cancel() }
+        .onDisappear { generator.cancel() }
+        .miloLifetime(milo)
     }
 
     // MARK: - Before there is a game
 
     private var introCard: some View {
         VStack(alignment: .leading, spacing: 14) {
-            MiloView(size: 120).frame(maxWidth: .infinity)
             Text("Vem gör vad?").font(.il(26, .bold)).foregroundStyle(LanguLearn.ink)
             Text("Subjektspronomen är de småord som avgör vem meningen handlar om. Milo bygger ett spel för \(settings.targetLanguage.displayName.lowercased()): du får meningar med ett hål och väljer vem som gör saken.")
                 .font(.il(15)).foregroundStyle(LanguLearn.inkSecondary)
             if generator.isWorking {
-                MiloLoadingView(message: "Milo bygger pronomenspelet…")
+                MiloLoadingView(message: "Milo bygger pronomenspelet…", showsMascot: false)
             } else {
                 Button("Skapa spelet", systemImage: "sparkles") {
                     generator.generatePronounGame(store: store, settings: settings)
@@ -99,6 +105,12 @@ struct PronounGameView: View {
                 .font(.il(15)).foregroundStyle(LanguLearn.inkSecondary)
             sentence(round)
             pronounChips(game, round: round)
+            ExerciseHelpButton(onOpen: { milo.stop() }) {
+                store.helpContext(settings: settings, activity: .pronoun,
+                                  task: "Choose the subject pronoun for the blank: " + round.sentence,
+                                  material: [round.translation, game.overview] + game.pronouns.map { "\($0.pronoun): \($0.meaning) — \($0.note)" },
+                                  draft: picked ?? "")
+            }
             if let picked {
                 feedback(round, picked: picked)
             }
@@ -175,9 +187,8 @@ struct PronounGameView: View {
                         .buttonStyle(LanguLearnPrimaryButtonStyle())
                     if settings.targetLanguage.hasVoice {
                         Button("Lyssna", systemImage: "speaker.wave.2") {
-                            narrator.stop()
-                            narrator.speak(round.sentence.replacingOccurrences(of: PronounGame.blank, with: round.answer),
-                                           in: settings.targetLanguage)
+                            milo.speak(round.sentence.replacingOccurrences(of: PronounGame.blank, with: round.answer),
+                                       in: settings.targetLanguage)
                         }
                         .font(.callout)
                     }
@@ -248,14 +259,14 @@ struct PronounGameView: View {
 
     private func finishedCard(_ progress: PronounGameProgress) -> some View {
         VStack(alignment: .leading, spacing: 12) {
-            MiloView(mood: .celebrating, size: 110).frame(maxWidth: .infinity)
+            MiloView(mood: .celebrating, size: 220, zoom: 1.15).frame(maxWidth: .infinity)
             Text("Alla rundor klara").font(.il(24, .bold)).foregroundStyle(LanguLearn.ink)
             Text("\(progress.firstTryCount) av \(progress.game.rounds.count) satt direkt. Längsta svit: \(progress.bestStreak).")
                 .font(.il(15)).foregroundStyle(LanguLearn.inkSecondary)
             Button("Spela om samma rundor", systemImage: "arrow.counterclockwise") { replay() }
                 .buttonStyle(LanguLearnSecondaryButtonStyle())
             if generator.isWorking {
-                MiloLoadingView(message: "Milo skriver nya rundor…")
+                MiloLoadingView(message: "Milo skriver nya rundor…", showsMascot: false)
             } else {
                 Button("Nya rundor", systemImage: "sparkles") {
                     generator.refreshPronounGame(store: store, settings: settings)
@@ -274,6 +285,8 @@ struct PronounGameView: View {
         withAnimation(LanguLearnMotion.pop) { picked = form }
         let correct = form == round.answer
         streak = correct ? streak + 1 : 0
+        // Three in a row is worth applause; one is worth a smile.
+        if !correct { milo.encourage() } else if streak >= 3 { milo.applaud() } else { milo.joyful() }
         try? store.updatePronouns { progress in
             progress.attemptsByRound[round.id, default: 0] += 1
             if correct {
@@ -285,7 +298,7 @@ struct PronounGameView: View {
 
     private func advance() {
         picked = nil
-        narrator.stop()
+        milo.stop()
         try? store.updatePronouns { $0.cursor += 1 }
     }
 

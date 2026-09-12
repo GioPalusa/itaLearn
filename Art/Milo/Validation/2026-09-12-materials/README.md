@@ -11,4 +11,7 @@
   fallback has been compiled but not rendered on an older simulator.
 - Soft studio environment plus directional key/fill/rim is configured in app,
   so a Blender-only preview is not a rendering parity test.
+- Follow-up: `body.png` shows the installed material build in the full-body
+  studio. Hands retain their skin colour; shirt, jeans and shoes render with
+  distinct surfaces. Both hands remain lowered in the inspected idle frame.
 - No physical iPhone visual or performance validation was performed.

@@ -1,46 +1,56 @@
 import SwiftUI
 
-/// One live speaker above the content; historical message avatars remain still.
+/// A compact, persistent speaker row. It remains available while the learner types.
+/// The still mark costs no rig; speech controls belong to the conversation owner.
 struct MiloSpeechView: View {
-    let narrator: SpeechNarrator
+    let controller: MiloController
     var listening = false
     var thinking = false
-    var encouraging = false
+    var context: LocalizedStringResource = "Milo"
     @Environment(TutorSettings.self) private var settings
-    @Environment(\.scenePhase) private var scenePhase
 
-    private var mood: MiloMood {
-        if narrator.isSpeaking { return .speaking }
-        if narrator.isPreparing || thinking { return .thinking }
-        if listening { return .listening }
-        return encouraging ? .encouraging : .idle
-    }
+    private var narrator: SpeechNarrator { controller.narrator }
+
     var body: some View {
-        HStack(spacing: 14) {
-            MiloAvatarView(mood: mood, size: 72, mouthOpening: narrator.mouthOpening)
-            VStack(alignment: .leading, spacing: 6) {
-                Text("Milo").font(.headline)
-                if narrator.isPreparing {
-                    ProgressView("Förbereder uppläsning…").font(.caption)
-                } else if narrator.isSpeaking {
-                    Text("Lyssna på \(settings.targetLanguage.displayName.lowercased())").font(.caption).foregroundStyle(.secondary)
-                } else if listening {
-                    Text("Jag lyssnar. Ta det i din takt.").font(.caption).foregroundStyle(.secondary)
-                } else if encouraging {
-                    Text("Vi provar en gång till tillsammans.").font(.caption).foregroundStyle(.secondary)
+        VStack(alignment: .leading, spacing: 8) {
+            HStack(spacing: 10) {
+                MiloAvatarView(mood: .still, size: 44, showsFrame: true)
+                VStack(alignment: .leading, spacing: 3) {
+                    Text(context).font(.caption.weight(.semibold))
+                        .foregroundStyle(LanguLearn.purple)
+                    if narrator.isPreparing {
+                        Text("Förbereder uppläsning…").font(.caption).foregroundStyle(.secondary)
+                    } else if narrator.isSpeaking {
+                        Text("Lyssna på \(settings.targetLanguage.displayName.lowercased())")
+                            .font(.caption).foregroundStyle(.secondary)
+                    } else if listening {
+                        Text("Jag lyssnar. Ta det i din takt.").font(.caption).foregroundStyle(.secondary)
+                    } else if thinking {
+                        Text("Milo funderar…").font(.caption).foregroundStyle(.secondary)
+                    }
                 }
-                if let error = narrator.errorMessage {
-                    Text(error).font(.caption).foregroundStyle(LanguLearn.red)
-                    Button("Försök läsa upp igen") { narrator.retry() }.font(.caption)
-                }
+                .fixedSize(horizontal: false, vertical: true)
+                Spacer(minLength: 0)
                 if narrator.isPreparing || narrator.isSpeaking {
-                    Button("Stoppa uppläsningen", systemImage: "stop.fill") { narrator.stop() }.font(.caption)
+                    Button { narrator.stop() } label: {
+                        Image(systemName: "stop.fill")
+                            .frame(width: 44, height: 44)
+                            .background(LanguLearn.purple.opacity(0.08), in: .circle)
+                            .contentShape(.rect)
+                    }
+                    .buttonStyle(.plain)
+                    .foregroundStyle(LanguLearn.purple)
+                    .accessibilityLabel("Stoppa uppläsningen")
+                } else if thinking {
+                    ProgressView().accessibilityLabel("Milo funderar…")
                 }
             }
-            Spacer(minLength: 0)
+            if let error = narrator.errorMessage {
+                Text(error).font(.caption).foregroundStyle(LanguLearn.red)
+                Button("Försök läsa upp igen") { narrator.retry() }
+                    .font(.callout).frame(minHeight: 44)
+            }
         }
-        .onDisappear { narrator.stop() }
-        .onChange(of: scenePhase) { if scenePhase != .active { narrator.stop() } }
     }
 }
 
@@ -49,11 +59,12 @@ struct MiloSpeechView: View {
         .environment(TutorSettings(store: UserDefaults(suiteName: "LangLearn.preview")!))
 }
 private struct MiloSpeechPreview: View {
-    @State private var narrator = SpeechNarrator()
+    @State private var milo = MiloController()
     var body: some View {
         VStack(spacing: 20) {
-            MiloSpeechView(narrator: narrator)
-            Button("Lyssna") { narrator.speak(LearningLanguage.italian.sampleLine, in: .italian) }
-        }.padding(24).langulearnCanvas()
+            MiloSpeechView(controller: milo)
+            Button("Lyssna") { milo.speak(LearningLanguage.italian.sampleLine, in: .italian) }
+            Button("Applådera") { milo.applaud() }
+        }.padding(24).langulearnCanvas().miloLifetime(milo)
     }
 }

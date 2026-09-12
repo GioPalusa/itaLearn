@@ -9,7 +9,7 @@ struct MiloAvatarDemoView: View {
     var body: some View {
         ScrollView {
             VStack(spacing: 24) {
-                MiloAvatarView(controller: milo, size: size, onRigStatus: { rigStatus = $0 })
+                MiloAvatarView(controller: milo, size: size, showsFrame: true, onRigStatus: { rigStatus = $0 })
                     .frame(height: 240)
                 Text("Milo vid din sida").font(.title2.bold())
                 Text("Prova ett uttryck eller låt Milo läsa en hälsning.")
@@ -53,6 +53,7 @@ struct MiloAvatarDemoView: View {
         .navigationTitle("Milos avatar")
         .navigationBarTitleDisplayMode(.inline)
         .langulearnCanvas()
+        .miloLifetime(milo)
 #if DEBUG
         .task {
             let arguments = ProcessInfo.processInfo.arguments

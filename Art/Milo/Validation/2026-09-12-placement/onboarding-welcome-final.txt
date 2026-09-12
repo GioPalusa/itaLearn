@@ -1,0 +1,37 @@
+Device orientation: Unknown
+------------------------
+Application bundle identifier: se.palusa.langulearn
+Application UI orientation: Portrait
+Application, pid: 22020, label: 'LanguLearn'
+ Window, {{0.0, 0.0}, {390.0, 844.0}}, hitPoint: {195.0, 422.0}
+  Other, {{0.0, 0.0}, {390.0, 844.0}}, hitPoint: {195.0, 422.0}
+   Other, {{0.0, 0.0}, {390.0, 844.0}}, hitPoint: {195.0, 422.0}
+    Other, {{0.0, 0.0}, {390.0, 844.0}}, hitPoint: {195.0, 422.0}
+     Other, {{0.0, 0.0}, {390.0, 844.0}}, hitPoint: {195.0, 422.0}
+      Other, {{0.0, 0.0}, {390.0, 844.0}}, hitPoint: {195.0, 422.0}
+       Other, {{0.0, 0.0}, {390.0, 844.0}}, hitPoint: {195.0, 422.0}
+        Other, {{0.0, 0.0}, {390.0, 844.0}}, hitPoint: {195.0, 422.0}
+         Other, {{0.0, 0.0}, {390.0, 844.0}}, hitPoint: {195.0, 422.0}
+          Other, {{0.0, 0.0}, {390.0, 844.0}}, hitPoint: {195.0, 422.0}
+           Button, {{20.0, 55.0}, {44.0, 44.0}}, identifier: 'arrow.left', label: 'Föregående steg', Disabled, hitPoint: {42.0, 77.0}
+           StaticText, {{76.0, 66.8}, {94.0, 20.3}}, label: 'LanguLearn', hitPoint: {123.0, 77.0}
+           Other, {{322.0, 74.0}, {48.0, 6.0}}, label: 'Steg 1 av 3', hitPoint: {346.0, 77.0}
+           ScrollView, {{0.0, 107.0}, {390.0, 737.0}}, hitPoint: {195.0, 475.5}
+            Other, {{0.0, 107.0}, {390.0, 559.7}}, hitPoint: {195.0, 386.8}
+             Button, {{24.0, 119.0}, {342.0, 328.0}}, label: 'Hälsa på Milo', hitPoint: {195.0, 283.0}
+              StaticText, {{24.0, 119.0}, {342.0, 328.0}}, label: 'Hej! Jag är Milo.', hitPoint: {195.0, 283.0}
+              Other, {{31.0, 119.0}, {328.0, 328.0}}, hitPoint: {195.0, 283.0}
+             StaticText, {{27.0, 467.0}, {336.0, 81.7}}, label: 'Hitta orden.
+Med Milo vid din sida.', hitPoint: {195.0, 507.9}
+             StaticText, {{25.0, 560.7}, {340.0, 42.3}}, label: 'Öva i små samtal, få hjälp när du fastnar och bygg vidare på det du kan.', hitPoint: {195.0, 581.9}
+             StaticText, {{78.7, 624.0}, {234.8, 18.0}}, label: 'Vi börjar med sex korta frågor', hitPoint: {196.1, 633.0}
+            Other, {{357.0, 107.0}, {30.0, 593.0}}, label: 'Vertikal rullningslist, 1 sida', value: 0 %, hitPoint: {372.0, 403.5}
+             Other, {{384.0, 110.0}, {3.0, 461.0}}, hitPoint: {385.5, 340.5}
+            Other, {{357.0, 107.0}, {30.0, 593.0}}, label: 'Vertikal rullningslist, 1 sida', value: 0 %, hitPoint: {372.0, 403.5}
+             Other, {{384.0, 110.0}, {3.0, 461.0}}, hitPoint: {385.5, 340.5}
+           Button, {{24.0, 716.0}, {342.0, 56.3}}, label: 'Nu börjar vi', hitPoint: {195.0, 744.2}
+            StaticText, {{135.3, 734.0}, {91.3, 20.3}}, label: 'Nu börjar vi', hitPoint: {181.0, 744.2}
+            Image, {{236.7, 737.7}, {16.0, 13.3}}, identifier: 'arrow.right', label: 'Höger', hitPoint: {244.7, 744.3}
+           StaticText, {{117.0, 782.3}, {156.0, 15.7}}, label: 'Välj ditt språk i nästa steg', hitPoint: {195.0, 790.2}
+       Toolbar, {{0.0, 0.0}, {390.0, 844.0}}, identifier: 'Toolbar', label: 'Verktygsfält', hitPoint: {195.0, 422.0}
+        Other, {{0.0, 0.0}, {390.0, 844.0}}, hitPoint: {195.0, 422.0}

@@ -182,20 +182,55 @@ struct MiloTests {
             animator.configure(mood: mood, mouth: 0, wanders: false, restart: true)
             #expect(!animator.completedReaction)
         }
-        let applause = try #require(library.clips["Applaud"])
-        let strikingArm = try #require(library.jointNames.firstIndex(of: "upper_arm_R"))
-        let distances = applause.frames.map { simd_distance($0[strikingArm].vector, applause.frames[0][strikingArm].vector) }
-        let peaks = (1..<(distances.count - 1)).filter {
-            distances[$0] > 0.08 && distances[$0] >= distances[$0 - 1] && distances[$0] > distances[$0 + 1]
+    }
+
+    @MainActor @Test func applausePalmsMeetOnTheExportedSkeleton() async throws {
+        let entity = try await Entity(contentsOf: root.appendingPathComponent("LangLearn/Resources/Milo.usdz"))
+        var rig: ModelEntity?
+        func visit(_ node: Entity) {
+            if let model = node as? ModelEntity, model.jointNames.contains(where: { $0.hasSuffix("/hand_L") }) { rig = model }
+            for child in node.children { visit(child) }
         }
-        #expect(peaks.count >= 6, "Applause should contain repeated, separated hand contacts")
-        #expect(distances.last ?? 1 < 0.01, "Applause should finish with separated hands for a smooth return to idle")
+        visit(entity)
+        let model = try #require(rig)
+        let library = try MiloClipLibrary(contentsOf: root.appendingPathComponent("LangLearn/Resources/MiloClips.bin"))
+        let clip = try #require(library.clips["Applaud"])
+        let paths = model.jointNames
+        let left = try #require(paths.firstIndex { $0.hasSuffix("/hand_L") })
+        let right = try #require(paths.firstIndex { $0.hasSuffix("/hand_R") })
+        var gaps: [Float] = []
+        for frame in clip.frames {
+            var world = [simd_float4x4](repeating: matrix_identity_float4x4, count: paths.count)
+            for i in paths.indices {
+                var transform = model.jointTransforms[i]
+                let name = String(paths[i].split(separator: "/").last!)
+                if let index = library.jointNames.firstIndex(of: name) { transform.rotation *= frame[index] }
+                let parent = paths[i].split(separator: "/").dropLast().joined(separator: "/")
+                world[i] = (paths.firstIndex(of: parent).map { world[$0] } ?? matrix_identity_float4x4) * transform.matrix
+            }
+            let l = world[left] * SIMD4<Float>(0.012, 0.06, 0, 1)
+            let r = world[right] * SIMD4<Float>(-0.012, 0.06, 0, 1)
+            let gap = simd_distance(l, r)
+            gaps.append(gap)
+            if gap < 0.012 {
+                let ln = simd_normalize(world[left] * SIMD4<Float>(1, 0, 0, 0))
+                let rn = simd_normalize(world[right] * SIMD4<Float>(-1, 0, 0, 0))
+                #expect(simd_dot(ln, rn) < -0.98, "Palm surfaces must face each other at impact")
+            }
+        }
+        let contacts = gaps.indices.filter { gaps[$0] < 0.012 && ($0 == 0 || gaps[$0-1] >= 0.012) }
+        #expect(contacts.count == 6, "Six distinct palm contacts, measured on the exported rig")
+        #expect(gaps.filter { $0 < 0.012 }.count >= 12, "Contact must survive frame sampling")
+        #expect(gaps.first! > 0.20 && gaps.last! > 0.20)
+        var animator = MiloAnimator(library: library)
+        animator.configure(mood: .applauding, mouth: 0, wanders: false)
+        #expect(animator.sample(delta: 0).preservesBodyContacts)
     }
 
     @Test func studioFaceControlsWorkWithPausedIdleAndResetToNeutral() throws {
         let library = try MiloClipLibrary(contentsOf: root.appendingPathComponent("LangLearn/Resources/MiloClips.bin"))
         var animator = MiloAnimator(library: library)
-        var controls = MiloDebugControls(mouthOpening: 0, pausesBody: true)
+        var controls = MiloDebugControls(gaze: .zero, mouthOpening: 0, pausesBody: true)
         animator.configure(mood: .idle, mouth: 0, wanders: false, debug: controls)
         let neutral = animator.sample(delta: 0)
         controls.mouthOpening = 1
@@ -290,8 +325,80 @@ struct MiloTests {
         var blinks: [Float] = []
         for _ in 0..<300 { blinks.append(idle.sample(delta: 1 / 30).face["blinkL", default: 0]) }
         #expect(blinks.max() == 1)
-        #expect(blinks.filter { $0 > 0.2 }.count >= 12)
-        #expect(blinks.contains(0))
+        #expect(blinks.filter { $0 > 0.8 }.count >= 6)
+        #expect(try #require(blinks.min()) > 0.1)
+        #expect(try #require(blinks.min()) < 0.3)
+    }
+
+    @Test func upwardGazeRaisesBrowsAndDownwardGazeLowersLids() throws {
+        let library = try MiloClipLibrary(contentsOf: root.appendingPathComponent("LangLearn/Resources/MiloClips.bin"))
+        var animator = MiloAnimator(library: library)
+        func look(_ gaze: SIMD2<Float>) -> MiloPose {
+            animator.configure(mood: .idle, mouth: 0, wanders: false, debug: MiloDebugControls(gaze: gaze, pausesBody: true))
+            return animator.sample(delta: 0)
+        }
+        let forward = look(.zero)
+        let up = look([0, 0.2])
+        let down = look([0, -0.2])
+        for side in ["L", "R"] {
+            #expect(up.face["browRaise\(side)", default: 0] > forward.face["browRaise\(side)", default: 0] + 0.15)
+            #expect(down.face["browRaise\(side)"] == forward.face["browRaise\(side)"])
+            #expect(down.face["blink\(side)", default: 0] > forward.face["blink\(side)", default: 0] + 0.05)
+            let upDirection = try #require(up.joints["eye_\(side)"]).act([0, 0, 1])
+            let downDirection = try #require(down.joints["eye_\(side)"]).act([0, 0, 1])
+            #expect(upDirection.y > 0.15 && downDirection.y < -0.15)
+        }
+        #expect(look(.zero).face == forward.face)
+        let invalid = look([.nan, .infinity])
+        #expect(invalid.joints["eye_L"]?.vector == forward.joints["eye_L"]?.vector)
+    }
+
+    @Test func idleFaceMovesGentlyAndGazeExploresBothSidesWithoutOpeningMouth() throws {
+        let library = try MiloClipLibrary(contentsOf: root.appendingPathComponent("LangLearn/Resources/MiloClips.bin"))
+        var animator = MiloAnimator(library: library)
+        // A body preview must retain the natural gaze unless explicitly overridden.
+        animator.configure(mood: .idle, mouth: 0, wanders: false, debug: MiloDebugControls(pausesBody: true))
+        var faces: [[String: Float]] = []
+        var directions: [SIMD3<Float>] = []
+        for _ in 0..<1200 {
+            let pose = animator.sample(delta: 1 / 60)
+            faces.append(pose.face)
+            directions.append(try #require(pose.joints["eye_L"]).act([0, 0, 1]))
+            #expect(pose.joints["eye_L"]?.vector == pose.joints["eye_R"]?.vector)
+            #expect(pose.face["mouthOpen"] == 0)
+            #expect(pose.face["smileL", default: 0] >= 0.25)
+            #expect(pose.face["smileR", default: 0] >= 0.25)
+            #expect(pose.face.values.allSatisfy { $0.isFinite && (0...1).contains($0) })
+        }
+        #expect(try #require(directions.map(\.x).min()) < -0.12)
+        #expect(try #require(directions.map(\.x).max()) > 0.12)
+        #expect(try #require(directions.map(\.y).max()) > 0.09)
+        for name in ["smileL", "smileR", "browRaiseL", "browRaiseR"] {
+            let weights = faces.map { $0[name, default: 0] }
+            #expect(try #require(weights.max()) - #require(weights.min()) > 0.05)
+            #expect(zip(weights, weights.dropFirst()).allSatisfy { abs($0 - $1) < 0.05 })
+        }
+        #expect(faces.contains { abs($0["smileL", default: 0] - $0["smileR", default: 0]) > 0.015 })
+        animator.configure(mood: .speaking, mouth: 0, wanders: false)
+        let speaking = animator.sample(delta: 0)
+        #expect(try #require(faces.last?["smileL"]) - #require(speaking.face["smileL"]) > 0.1)
+    }
+
+    @Test func naturalGazeFollowsAuthoredHeadTurnsAndStillStaysNeutral() throws {
+        let library = try MiloClipLibrary(contentsOf: root.appendingPathComponent("LangLearn/Resources/MiloClips.bin"))
+        var animator = MiloAnimator(library: library)
+        animator.configure(mood: .listening, mouth: 0, wanders: false)
+        // The first hold has no independent side glance: eye movement follows
+        // the real LookAround clip's head/neck direction during that interval.
+        for _ in 0..<15 { _ = animator.sample(delta: 0.1) }
+        let pose = animator.sample(delta: 0)
+        let head = (try #require(pose.joints["neck"]) * #require(pose.joints["head"])).act([0, 0, 1])
+        let eye = try #require(pose.joints["eye_L"]).act([0, 0, 1])
+        #expect(abs(eye.x) > 0.005)
+        #expect(eye.x * head.x > 0)
+        animator.configure(mood: .still, mouth: 1, wanders: true)
+        let still = animator.sample(delta: 0.1)
+        #expect(still.joints.isEmpty && still.face.isEmpty && still.stageOffset == .zero)
     }
 
     @Test func manifestMatchesSnowRuntimeContract() throws {
@@ -335,6 +442,8 @@ struct MiloTests {
             let rightDirection = pose.jointRotation(for: "eye_R", resting: model.jointTransforms[right].rotation).act([0, 1, 0])
             #expect(simd_dot(leftDirection, rightDirection) > 0.995)
             #expect(abs(leftDirection.y - rightDirection.y) < 0.01)
+            #expect(leftDirection.x > 0.2 && rightDirection.x > 0.2)
+            #expect(abs(leftDirection.y) < 0.08 && abs(rightDirection.y) < 0.08)
         }
     }
 }

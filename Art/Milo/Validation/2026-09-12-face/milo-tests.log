@@ -1,0 +1,59 @@
+Building for debugging...
+[2 / 11] LangLearnCore
+[4 / 13] LangLearnCore
+/Users/palusa/Developer/ItaLearn/LangLearn/OpenAIClient.swift:33:76: warning: converting non-Sendable function value to '@Sendable () async throws -> String?' may introduce data races
+ 31 |     init(
+ 32 |         session: URLSession? = nil,
+ 33 |         keyProvider: @escaping @Sendable () async throws -> String? = Self.storedKey
+    |                                                                            `- warning: converting non-Sendable function value to '@Sendable () async throws -> String?' may introduce data races
+ 34 |     ) {
+ 35 |         let configuration = URLSessionConfiguration.ephemeral
+[11 / 16] LangLearnCoreTests-product
+[13 / 18] LangLearnCoreTests-product
+[16 / 22] LangLearnCoreTests-product
+[18 / 22] LangLearnCoreTests-product
+Build complete! (3,47 sec)
+􀟈  Test run started.
+􀄵  Testing Library Version: 2084
+􀄵  Target Platform: arm64e-apple-macos14.0
+􀟈  Suite "Milo animation and speech lifecycle" started.
+􀟈  Test cancelledAndReplacedSpeechCannotRestart() started.
+􀟈  Test naturalGazeFollowsAuthoredHeadTurnsAndStillStaysNeutral() started.
+􀟈  Test invalidClipMagicIsRejected() started.
+􀟈  Test reactionsAnimateThenReleaseTheirFacesAndCanReplay() started.
+􀟈  Test upwardGazeRaisesBrowsAndDownwardGazeLowersLids() started.
+􀟈  Test bundledModelContainsTheManifestRigAndFace() started.
+􀟈  Test clipHeaderSamplingAndRootOwnershipAreValid() started.
+􀟈  Test malformedCommandsDoNotInterruptTheAvatar() started.
+􀟈  Test animatorKeepsFaceIndependentFromBodyAndBoundsHomeMovement() started.
+􀟈  Test idleFaceMovesGentlyAndGazeExploresBothSidesWithoutOpeningMouth() started.
+􀟈  Test applausePalmsMeetOnTheExportedSkeleton() started.
+􀟈  Test manifestMatchesSnowRuntimeContract() started.
+􀟈  Test audioWriterFlushesAndCancellationRemovesTemporarySpeech() started.
+􀟈  Test switchingClipsStartsFromLastBodyPoseAndGreetingDoesNotRestartOnRefresh() started.
+􀟈  Test studioFaceControlsWorkWithPausedIdleAndResetToNeutral() started.
+􀟈  Test expressionsRiseAndReleaseAndIdleUsesRelaxedArms() started.
+􀟈  Test avatarCommandsReplaceReplayAndIgnoreStaleCompletions() started.
+􀟈  Test speakingUsesDistinctMouthShapesAndIdleBlinksFully() started.
+􀟈  Test walkingMovesBothLegsAndStaysOnStage() started.
+􁁛  Test cancelledAndReplacedSpeechCannotRestart() passed after 0.001 seconds.
+􁁛  Test invalidClipMagicIsRejected() passed after 0.001 seconds.
+􁁛  Test manifestMatchesSnowRuntimeContract() passed after 0.001 seconds.
+􁁛  Test audioWriterFlushesAndCancellationRemovesTemporarySpeech() passed after 0.010 seconds.
+􁁛  Test naturalGazeFollowsAuthoredHeadTurnsAndStillStaysNeutral() passed after 0.055 seconds.
+􁁛  Test switchingClipsStartsFromLastBodyPoseAndGreetingDoesNotRestartOnRefresh() passed after 0.062 seconds.
+􁁛  Test studioFaceControlsWorkWithPausedIdleAndResetToNeutral() passed after 0.077 seconds.
+􁁛  Test upwardGazeRaisesBrowsAndDownwardGazeLowersLids() passed after 0.082 seconds.
+􁁛  Test reactionsAnimateThenReleaseTheirFacesAndCanReplay() passed after 0.083 seconds.
+􁁛  Test clipHeaderSamplingAndRootOwnershipAreValid() passed after 0.087 seconds.
+􁁛  Test walkingMovesBothLegsAndStaysOnStage() passed after 0.096 seconds.
+􁁛  Test speakingUsesDistinctMouthShapesAndIdleBlinksFully() passed after 0.109 seconds.
+􁁛  Test malformedCommandsDoNotInterruptTheAvatar() passed after 0.111 seconds.
+􁁛  Test avatarCommandsReplaceReplayAndIgnoreStaleCompletions() passed after 0.111 seconds.
+􁁛  Test expressionsRiseAndReleaseAndIdleUsesRelaxedArms() passed after 0.116 seconds.
+􁁛  Test animatorKeepsFaceIndependentFromBodyAndBoundsHomeMovement() passed after 0.138 seconds.
+􁁛  Test idleFaceMovesGentlyAndGazeExploresBothSidesWithoutOpeningMouth() passed after 0.139 seconds.
+􁁛  Test bundledModelContainsTheManifestRigAndFace() passed after 0.503 seconds.
+􁁛  Test applausePalmsMeetOnTheExportedSkeleton() passed after 0.565 seconds.
+􁁛  Suite "Milo animation and speech lifecycle" passed after 0.565 seconds.
+􁁛  Test run with 19 tests in 1 suite passed after 0.565 seconds.

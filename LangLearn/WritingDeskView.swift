@@ -109,6 +109,13 @@ struct WritingDeskView: View {
                 Spacer()
             }
 
+            ExerciseHelpButton(onOpen: { editorFocused = false }) {
+                store.helpContext(settings: settings, activity: .writing,
+                                  task: prompt.isEmpty ? "Write a short text about a topic of your choice." : prompt,
+                                  draft: draft)
+            }
+            .disabled(reviewer.isWorking)
+
             Button("Be Milo läsa", systemImage: "text.magnifyingglass") {
                 editorFocused = false
                 reviewer.reviewWriting(store: store, settings: settings, prompt: prompt, text: draft)
@@ -126,7 +133,9 @@ struct WritingDeskView: View {
 
     private func feedbackCard(_ review: WritingReview) -> some View {
         VStack(alignment: .leading, spacing: 14) {
-            HStack {
+            HStack(spacing: 10) {
+                // The response is his, so it arrives signed with his face.
+                MiloAvatarView(mood: .still, size: 44)
                 Text("Milos respons").font(.il(17, .semibold)).foregroundStyle(LanguLearn.ink)
                 Spacer()
                 Text("\(review.feedback.score)/5")

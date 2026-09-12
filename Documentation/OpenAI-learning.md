@@ -28,6 +28,44 @@ New session properties are optional, preserving decoding of existing version-1 s
 
 Model messages explicitly parse Markdown emphasis, strike-through, inline code and links while preserving line breaks; the view also handles common headings, list markers and quotations. Corrections use exact word-level diffs, striking removed tokens and bolding inserted tokens. Accent, case and punctuation changes remain visible. Read-aloud strips inline Markdown syntax.
 
+## Beginner help with Milo
+
+**Be Milo om hjälp** is available before the learner answers in lessons, free conversations,
+writing, sentence puzzles, flashcards and the pronoun game. The sheet offers **Förklara uppgiften**,
+**Ge mig ett tips**, **Vad betyder det?** and **Hjälp mig komma igång**. Typing is optional;
+questions may be in the explanation language or a mix of languages. The placement assessment
+keeps its existing “Jag vet inte ännu” option to avoid coaching the assessment.
+
+Opening the sheet captures the current exercise, word bank or card content, unfinished draft,
+language pairing, profile and relevant lesson context. Pressing a help choice sends that snapshot
+and up to six prior help exchanges to GPT-5.6 Luna through the existing user-key transport.
+The model is instructed to explain in the chosen explanation language, translate examples,
+explain grammar terms plainly, and leave the learner a small step to do independently.
+A blank draft is explicitly supported. Follow-up questions can ask for a simpler explanation.
+The explanation can also be read aloud in the chosen explanation language.
+
+Help has its own response schema and request lifecycle. It cannot submit a learner answer,
+consume lesson turns, award objectives, mark game answers or finish a lesson. The draft stays
+in the exercise while the help sheet is open. After a response, the lesson or free-conversation
+chat shows **Milo gav ett tips**; tapping it reopens the same tip and follow-up thread until the
+learner submits the next answer. Help exchanges are not saved as assessed conversation turns. Failed
+requests can be retried with the same snapshot; dismissal and credential changes cancel the
+request and reject late replies. Missing credentials lead to Settings. Existing automatic
+sentence hints after repeated incorrect attempts remain available.
+
+Verification includes stub-transport coverage of Luna routing, language and exercise payload,
+plus empty drafts, native-language follow-ups, bounded help history, failure/retry, cancellation,
+response limits and unchanged learning progress. These tests make no live API calls and do not
+establish the pedagogical quality of live Luna responses.
+
+September 12 verification: all 91 core tests and the iOS simulator build passed. On an iPhone
+18 Pro simulator, help opened from lessons, empty sentence exercises and writing; opening and
+closing preserved selected words and the writing draft. All four help choices remained reachable
+at the largest system Dynamic Type setting after adding scalable button styling. These UI runs
+used local fixtures with no credentials. The separate macOS app build is blocked by existing
+platform errors in Milo rendering, onboarding and speech; macOS UI and live Luna replies are
+not verified by this change.
+
 ## Response contracts
 
 `LearningSchema` is the source of truth for the JSON Schema sent through Responses API `text.format` with `strict: true`. `AssessmentResult` and `LessonReply` are their Codable counterparts. All model-facing instructions are English; output explanations and lesson copy are written in the learner's chosen explanation language. The assessment schema pins `profile.nativeLanguage` and `profile.targetLanguage` to the codes of the chosen course, so a result for the wrong pairing is rejected before anything is saved.
