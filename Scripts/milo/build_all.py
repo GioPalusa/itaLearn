@@ -591,8 +591,48 @@ def build_clips(runtime_rig):
     clips = [(name, loops, frames[2:] if name.startswith("Idle_") and
               all(abs(q.w) > .9999 for q in frames[0]) else frames)
              for name, loops, frames in clips]
-    # The waving take was seated; retain standing legs and torso from the idle.
-    idle = clips[3][2][0]
+
+    # The source is a very slow performance with long holds. Preserve its
+    # natural body motion, but turn the clean open/contact poses into seven
+    # readable claps. A fourth-power sine gives each impact a brief contact and
+    # plenty of separation between beats.
+    applause = clips[9][2]
+    open_pose = applause[len(applause) * 2 // 10]
+    contact_pose = applause[len(applause) * 3 // 10]
+    arm_indices = [index for index, name in enumerate(JOINT_NAMES)
+                   if any(token in name for token in ("clavicle", "upper_arm", "forearm", "hand"))]
+    clap_frames = round(FPS * 0.52 * 7) + 1
+    natural_applause = []
+    for index in range(clap_frames):
+        source_index = round(index * (len(applause) - 1) / (clap_frames - 1))
+        frame = [rotation.copy() for rotation in applause[source_index]]
+        phase = (index / FPS / 0.52) % 1
+        contact = math.sin(math.pi * phase) ** 4
+        for joint in arm_indices:
+            # Hold Milo's left palm in front of his chest and bring the right
+            # hand to it. A stable target reads much more clearly in the small
+            # circular avatar than moving both hands across the whole torso.
+            frame[joint] = (contact_pose[joint].copy() if JOINT_NAMES[joint].endswith("_L")
+                            else open_pose[joint].slerp(contact_pose[joint], contact))
+        natural_applause.append(frame)
+    clips[9] = (clips[9][0], clips[9][1], natural_applause)
+    # Watching contains a held, bent wrist. Transfer the relaxed arm chains
+    # from LookAround across the entire loop, preserving its torso and head.
+    relaxed = clips[1][2]
+    watching = clips[3][2]
+    for index, frame in enumerate(watching):
+        donor = relaxed[round(index * (len(relaxed) - 1) / (len(watching) - 1))]
+        for joint, name in enumerate(JOINT_NAMES):
+            if any(token in name for token in ("clavicle", "upper_arm", "forearm", "hand")):
+                frame[joint] = donor[joint].copy()
+    clips.extend([
+        ("Dance", False, retarget_clip(SOURCES["walk_cc0"], runtime_rig, action_name="Dance_Loop")),
+        ("Present", False, retarget_clip(SOURCES["walk_cc0"], runtime_rig, action_name="Interact")),
+    ])
+    # The waving take was seated. Use the relaxed midpoint of LookAround as the
+    # standing base: unlike Watching's opening frame, its free arm and hand hang
+    # naturally at Milo's side.
+    idle = clips[1][2][len(clips[1][2]) // 2]
     for frame in clips[7][2]:
         for index, name in enumerate(JOINT_NAMES):
             if not (name.endswith("_L") and any(token in name for token in ("clavicle", "upper_arm", "forearm", "hand"))):
@@ -624,7 +664,7 @@ def rebuild_clips_only():
     manifest_path.write_text(json.dumps(manifest, indent=2) + "\n")
     shutil.copy2(manifest_path, RESOURCES / "MiloRigManifest.json")
     (EXPORT / "clips.json").write_text(json.dumps({"debugOnly": True, "clips": manifest["clips"]}, indent=2) + "\n")
-    for name, _, frames in clips[-2:]:
+    for name, _, frames in (clips[3], clips[7], clips[8], clips[9], clips[10], clips[11]):
         render_portrait(rig, objects, EXPORT / "preview" / f"{name}.png", frames[len(frames) // 2], False)
 
 

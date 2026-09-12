@@ -10,5 +10,5 @@ https://github.com/J-Ponzo/gltf-universal-animation-library/tree/main/glTF
 The mirror identifies this as the free Standard distribution from 2025-06-10.
 The exact glTF and binary hashes are pinned in Art/Milo/sources.json.
 
-Only Walk_Loop motion is retargeted to Snow. The source mannequin is not
+Walk_Loop, Dance_Loop and Interact motions are retargeted to Snow. The source mannequin is not
 bundled in the app. Retargeted clip retains the glTF's timing in seconds.

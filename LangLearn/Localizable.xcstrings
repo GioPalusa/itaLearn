@@ -270,6 +270,12 @@
     "Chatta fritt med Milo" : {
 
     },
+    "Dans" : {
+
+    },
+    "Dansar" : {
+
+    },
     "Dela bedömning som JSON" : {
 
     },
@@ -382,6 +388,9 @@
     "ENTAL" : {
 
     },
+    "Entusiastisk" : {
+
+    },
     "Ett nytt språk börjar med en kunskapskoll som bygger studieplanen. Dina andra språk ligger kvar precis som du lämnade dem." : {
 
     },
@@ -451,6 +460,9 @@
     "Går" : {
 
     },
+    "Glad" : {
+
+    },
     "Gör din första skrivövning så visas sammanfattningen här." : {
 
     },
@@ -515,6 +527,9 @@
 
     },
     "Klipp" : {
+
+    },
+    "Kom närmare" : {
 
     },
     "Kontrollera" : {
@@ -774,6 +789,9 @@
     "Nyckeln sparas i Nyckelringen på den här enheten. Dina meddelanden och relevant lärandehistorik skickas till OpenAI när du ber Milo om ett svar. Studieplanen och samtalen sparas lokalt i appen." : {
 
     },
+    "Nyfiken" : {
+
+    },
     "Om" : {
 
     },
@@ -1017,6 +1035,9 @@
     "Stoppa uppläsningen" : {
 
     },
+    "Styr ansiktet manuellt" : {
+
+    },
     "Subjektspronomen är de småord som avgör vem meningen handlar om. Milo bygger ett spel för %@: du får meningar med ett hål och väljer vem som gör saken." : {
 
     },
@@ -1161,10 +1182,16 @@
     "Visa min studieplan" : {
 
     },
+    "Visa något" : {
+
+    },
     "Visa svenska" : {
 
     },
     "Visar ett nytt studietips" : {
+
+    },
+    "Visar något" : {
 
     },
     "Visar välkomsten och språkvalet igen. Dina studier och din sparade nyckel påverkas inte." : {

@@ -3,7 +3,7 @@ import Observation
 
 /// Stable command names for app code or a decoded function-call argument.
 nonisolated enum MiloAction: String, Codable, Sendable {
-    case idle, laugh, applaud, wave, think, listen, encourage, speak, stop
+    case idle, laugh, applaud, wave, think, listen, encourage, speak, stop, curious, enthusiastic, joyful, leanIn, dance, present
 }
 
 nonisolated struct MiloCommand: Codable, Equatable, Sendable {
@@ -38,6 +38,12 @@ final class MiloController {
     func listen() { react(.listening) }
     func encourage() { react(.encouraging) }
     func idle() { react(.idle) }
+    func curious() { react(.curious) }
+    func enthusiastic() { react(.enthusiastic) }
+    func joyful() { react(.joyful) }
+    func leanIn() { react(.leanIn) }
+    func dance() { react(.dancing) }
+    func present() { react(.presenting) }
 
     func speak(_ text: String, in language: LearningLanguage) {
         stop()
@@ -53,6 +59,12 @@ final class MiloController {
     /// Validate before interrupting an existing reaction or spoken response.
     func perform(_ command: MiloCommand) throws {
         switch command.action {
+        case .curious: curious()
+        case .enthusiastic: enthusiastic()
+        case .joyful: joyful()
+        case .leanIn: leanIn()
+        case .dance: dance()
+        case .present: present()
         case .laugh: laugh()
         case .applaud: applaud()
         case .wave: wave()

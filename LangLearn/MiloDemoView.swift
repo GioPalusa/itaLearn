@@ -10,13 +10,14 @@ struct MiloDemoView: View {
     @State private var mood: MiloMood = .idle
     @State private var clipName = "Idle_Watching"
     @State private var mouth: Float = 0
+    @State private var manualFace = false
     @State private var gazeX: Float = 0
     @State private var gazeY: Float = 0
     @State private var zoom: Float = 1
     @State private var pausesBody = false
     @State private var walksAcrossStage = false
     @State private var blink = false
-    @State private var face = Dictionary(uniqueKeysWithValues: Self.shapes.map { ($0, Float.zero) })
+    @State private var face: [String: Float] = [:]
     @State private var trigger = 0
     @State private var narrator = SpeechNarrator()
     @State private var still = false
@@ -29,7 +30,7 @@ struct MiloDemoView: View {
             clipName: clipName,
             gaze: SIMD2(gazeX, gazeY),
             forcesBlink: blink,
-            face: face, mouthOpening: narrator.isSpeaking ? nil : mouth,
+            face: manualFace ? face : [:], mouthOpening: narrator.isSpeaking || !manualFace ? nil : mouth,
             pausesBody: pausesBody, walksAcrossStage: walksAcrossStage && clipName == "Walk"
         )
     }
@@ -54,6 +55,7 @@ struct MiloDemoView: View {
               VStack(spacing: 18) {
                 NavigationLink("Prova den runda avataren") { MiloAvatarDemoView() }
                     .buttonStyle(.borderedProminent).tint(LanguLearn.purple)
+                Toggle("Styr ansiktet manuellt", isOn: $manualFace)
                 GroupBox("Kamerafokus") {
                     valueSlider("Zoom mot ansiktet", value: $zoom, range: 1...4.5)
                     HStack {
@@ -67,6 +69,8 @@ struct MiloDemoView: View {
                 GroupBox("Animation") {
                     VStack(spacing: 12) {
                         Picker("Klipp", selection: $clipName) {
+                            Text("Dansar").tag("Dance")
+                            Text("Visar något").tag("Present")
                             Text("Går").tag("Walk")
                             Text("Vinkar").tag("Wave")
                             Text("Skrattar").tag("Laugh")
@@ -96,7 +100,7 @@ struct MiloDemoView: View {
                         valueSlider("Blick åt sidan", value: $gazeX, range: -0.32...0.32)
                         valueSlider("Blick upp och ner", value: $gazeY, range: -0.22...0.22)
                         Toggle("Blunda", isOn: $blink)
-                        valueSlider("Munöppning", value: $mouth, range: 0...1)
+                        valueSlider("Munöppning", value: Binding(get: { mouth }, set: { mouth = $0; manualFace = true }), range: 0...1)
                         Button(narrator.isSpeaking ? "Stoppa Milo" : "Låt Milo tala") {
                             if narrator.isSpeaking || narrator.isPreparing {
                                 narrator.stop()
@@ -115,7 +119,8 @@ struct MiloDemoView: View {
                             valueSlider(name, value: binding(for: name), range: 0...1)
                         }
                         Button("Nollställ ansiktet") {
-                            face = Dictionary(uniqueKeysWithValues: Self.shapes.map { ($0, Float.zero) })
+                            face = [:]
+                            manualFace = false
                             blink = false
                             mouth = 0
                             gazeX = 0
@@ -142,6 +147,7 @@ struct MiloDemoView: View {
             // sliders, after the live view has loaded; no learner data changes.
             guard ProcessInfo.processInfo.arguments.contains("--milo-face-check") else { return }
             zoom = 3.8
+            manualFace = true
             pausesBody = true
             guard await waitForLiveRig() else { return }
             for step in 0..<8 {
@@ -181,7 +187,7 @@ struct MiloDemoView: View {
 #endif
 
     private func binding(for name: String) -> Binding<Float> {
-        Binding(get: { face[name, default: 0] }, set: { face[name] = $0 })
+        Binding(get: { face[name, default: 0] }, set: { manualFace = true; face[name] = $0 })
     }
 
     private func valueSlider(_ title: String, value: Binding<Float>, range: ClosedRange<Float>) -> some View {

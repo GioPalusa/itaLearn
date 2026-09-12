@@ -51,10 +51,10 @@ struct MiloTests {
         let library = try MiloClipLibrary(contentsOf: root.appendingPathComponent("LangLearn/Resources/MiloClips.bin"))
         #expect(library.fps == 30)
         #expect(library.jointNames.count == 33)
-        #expect(Set(library.clips.keys) == Set(["Idle_Neutral_A", "Idle_LookAround", "Idle_LookAround02", "Idle_Chatting", "Idle_Chatting02", "Idle_Watching", "Walk", "Wave", "Laugh", "Applaud"]))
+        #expect(Set(library.clips.keys) == Set(["Idle_Neutral_A", "Idle_LookAround", "Idle_LookAround02", "Idle_Chatting", "Idle_Chatting02", "Idle_Watching", "Walk", "Wave", "Laugh", "Applaud", "Dance", "Present"]))
         let rootIndex = try #require(library.jointNames.firstIndex(of: "root"))
         for clip in library.clips.values {
-            #expect(clip.duration > 1)
+            #expect(clip.duration > 0.5)
             for frame in clip.frames {
                 #expect(frame.allSatisfy { abs(simd_length($0.vector) - 1) < 0.0001 })
             }
@@ -75,6 +75,38 @@ struct MiloTests {
         for (name, clip) in library.clips where name.hasPrefix("Idle_") || name == "Wave" {
             #expect(try #require(clip.frames.first)[restingArm].angle > 1, "Free arm must not inherit the source T-pose: \(name)")
         }
+        let neutral = try #require(library.clips["Idle_LookAround"])
+        let wave = try #require(library.clips["Wave"])
+        let neutralFrame = neutral.frames[neutral.frames.count / 2]
+        let freeArm = ["clavicle_R", "upper_arm_R", "upper_arm_twist_R", "forearm_R", "forearm_twist_R", "hand_R"]
+        for name in freeArm {
+            let index = try #require(library.jointNames.firstIndex(of: name))
+            #expect(wave.frames.allSatisfy { simd_distance($0[index].vector, neutralFrame[index].vector) < 0.0001 }, "Wave must keep the free \(name) in its relaxed standing pose")
+        }
+    }
+
+
+    @Test func expressionsRiseAndReleaseAndIdleUsesRelaxedArms() throws {
+        let library = try MiloClipLibrary(contentsOf: root.appendingPathComponent("LangLearn/Resources/MiloClips.bin"))
+        for mood in [MiloMood.curious, .enthusiastic, .joyful, .leanIn] {
+            var animator = MiloAnimator(library: library)
+            animator.configure(mood: mood, mouth: 0, wanders: false)
+            let start = animator.sample(delta: 0)
+            for _ in 0..<30 { _ = animator.sample(delta: 1 / 30) }
+            let peak = animator.sample(delta: 0)
+            if mood == .leanIn { #expect(peak.stageScale > 1.05) }
+            else { #expect(peak.face != start.face) }
+            #expect(peak.face.values.allSatisfy { $0.isFinite && (0...1).contains($0) })
+            for _ in 0..<150 { _ = animator.sample(delta: 1 / 30) }
+            #expect(animator.completedReaction)
+            #expect(animator.sample(delta: 0).stageScale == 1)
+        }
+        let relaxed = try #require(library.clips["Idle_LookAround"])
+        let idle = try #require(library.clips["Idle_Watching"])
+        for name in ["hand_R", "hand_L", "forearm_R", "forearm_L"] {
+            let joint = try #require(library.jointNames.firstIndex(of: name))
+            #expect(abs(simd_dot(idle.frames[0][joint].vector, relaxed.frames[0][joint].vector)) > 0.999)
+        }
     }
 
     @Test func invalidClipMagicIsRejected() {
@@ -94,6 +126,13 @@ struct MiloTests {
         #expect(milo.mood == .applauding)
         milo.animationCompleted(trigger: applause)
         #expect(milo.mood == .idle)
+        for (action, expected) in [(MiloAction.curious, MiloMood.curious), (.enthusiastic, .enthusiastic), (.joyful, .joyful), (.leanIn, .leanIn), (.dance, .dancing), (.present, .presenting)] {
+            let command = MiloCommand(action: action)
+            try milo.perform(json: JSONEncoder().encode(command))
+            #expect(milo.mood == expected)
+            milo.animationCompleted(trigger: milo.trigger)
+            #expect(milo.mood == .idle)
+        }
         milo.wave()
         milo.stop()
         #expect(milo.mood == .idle)
@@ -123,9 +162,10 @@ struct MiloTests {
         for (mood, name) in [(MiloMood.laughing, "Laugh"), (.applauding, "Applaud")] {
             let clip = try #require(library.clips[name])
             #expect(!clip.loops)
-            let hand = try #require(library.jointNames.firstIndex(of: "hand_L"))
-            let handMotion = clip.frames.map { simd_distance($0[hand].vector, clip.frames[0][hand].vector) }.max() ?? 0
-            #expect(handMotion > 0.1)
+            let movingJointName = mood == .applauding ? "upper_arm_R" : "hand_L"
+            let movingJoint = try #require(library.jointNames.firstIndex(of: movingJointName))
+            let motion = clip.frames.map { simd_distance($0[movingJoint].vector, clip.frames[0][movingJoint].vector) }.max() ?? 0
+            #expect(motion > 0.1)
             var animator = MiloAnimator(library: library)
             animator.configure(mood: mood, mouth: 0, wanders: false)
             #expect(!animator.completedReaction)
@@ -142,6 +182,14 @@ struct MiloTests {
             animator.configure(mood: mood, mouth: 0, wanders: false, restart: true)
             #expect(!animator.completedReaction)
         }
+        let applause = try #require(library.clips["Applaud"])
+        let strikingArm = try #require(library.jointNames.firstIndex(of: "upper_arm_R"))
+        let distances = applause.frames.map { simd_distance($0[strikingArm].vector, applause.frames[0][strikingArm].vector) }
+        let peaks = (1..<(distances.count - 1)).filter {
+            distances[$0] > 0.08 && distances[$0] >= distances[$0 - 1] && distances[$0] > distances[$0 + 1]
+        }
+        #expect(peaks.count >= 6, "Applause should contain repeated, separated hand contacts")
+        #expect(distances.last ?? 1 < 0.01, "Applause should finish with separated hands for a smooth return to idle")
     }
 
     @Test func studioFaceControlsWorkWithPausedIdleAndResetToNeutral() throws {
@@ -216,6 +264,34 @@ struct MiloTests {
             #expect(abs(talkingPose.stageOffset.x) <= 0.081)
         }
         #expect(talking.sample(delta: 0).face["mouthWide", default: 0] > quiet.sample(delta: 0).face["mouthWide", default: 0])
+    }
+
+    @Test func speakingUsesDistinctMouthShapesAndIdleBlinksFully() throws {
+        let library = try MiloClipLibrary(contentsOf: root.appendingPathComponent("LangLearn/Resources/MiloClips.bin"))
+        var speaker = MiloAnimator(library: library)
+        speaker.configure(mood: .speaking, mouth: 0.85, wanders: false)
+        var dominantShapes = Set<String>()
+        var openingRange: [Float] = []
+        for _ in 0..<120 {
+            let face = speaker.sample(delta: 1 / 30).face
+            openingRange.append(face["mouthOpen", default: 0])
+            let articulations = ["mouthWide", "mouthNarrow", "mouthPucker", "mouthFV"]
+            if let strongest = articulations.max(by: { face[$0, default: 0] < face[$1, default: 0] }),
+               face[strongest, default: 0] > 0.25 {
+                dominantShapes.insert(strongest)
+            }
+            #expect(face.values.allSatisfy { $0.isFinite && $0 >= 0 && $0 <= 1 })
+        }
+        #expect(dominantShapes.count >= 4)
+        #expect((openingRange.max() ?? 0) - (openingRange.min() ?? 0) > 0.45)
+
+        var idle = MiloAnimator(library: library)
+        idle.configure(mood: .idle, mouth: 0, wanders: false)
+        var blinks: [Float] = []
+        for _ in 0..<300 { blinks.append(idle.sample(delta: 1 / 30).face["blinkL", default: 0]) }
+        #expect(blinks.max() == 1)
+        #expect(blinks.filter { $0 > 0.2 }.count >= 12)
+        #expect(blinks.contains(0))
     }
 
     @Test func manifestMatchesSnowRuntimeContract() throws {

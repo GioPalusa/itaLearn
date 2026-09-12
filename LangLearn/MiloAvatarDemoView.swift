@@ -18,6 +18,14 @@ struct MiloAvatarDemoView: View {
                     HStack { reactionButtons }
                     VStack { reactionButtons }
                 }
+                LazyVGrid(columns: [GridItem(.adaptive(minimum: 130))]) {
+                    Button("Nyfiken") { milo.curious() }
+                    Button("Entusiastisk") { milo.enthusiastic() }
+                    Button("Glad") { milo.joyful() }
+                    Button("Kom närmare") { milo.leanIn() }
+                    Button("Dans") { milo.dance() }
+                    Button("Visa något") { milo.present() }
+                }.buttonStyle(.bordered).tint(LanguLearn.purple)
                 Button("Låt Milo prata", systemImage: "speaker.wave.2") {
                     milo.speak(LearningLanguage.italian.sampleLine, in: .italian)
                 }
@@ -47,13 +55,18 @@ struct MiloAvatarDemoView: View {
         .langulearnCanvas()
 #if DEBUG
         .task {
-            guard ProcessInfo.processInfo.arguments.contains("--milo-avatar-check") else { return }
+            let arguments = ProcessInfo.processInfo.arguments
+            let expressionCheck = arguments.contains("--milo-expression-check")
+            guard expressionCheck || arguments.contains("--milo-avatar-check") else { return }
             for _ in 0..<300 {
                 if rigStatus.contains("klipp") { break }
                 do { try await Task.sleep(for: .milliseconds(100)) } catch { return }
             }
             guard rigStatus.contains("klipp") else { return }
-            for action in [MiloAction.laugh, .applaud, .wave, .speak, .idle] {
+            let actions: [MiloAction] = expressionCheck
+                ? [.idle, .curious, .enthusiastic, .joyful, .leanIn, .dance, .present]
+                : [.laugh, .applaud, .wave, .speak, .idle]
+            for action in actions {
                 renderCheck = action.rawValue
                 try? milo.perform(MiloCommand(action: action, text: "Ciao! Sono Milo. Impariamo insieme, un passo alla volta.", language: "it"))
                 do { try await Task.sleep(for: .seconds(action == .speak ? 12 : 7)) } catch { return }

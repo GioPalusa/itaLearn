@@ -169,6 +169,7 @@ final class MiloScene {
     func apply(pose: MiloPose, smoothingDelta: Double) {
         let smoothing = Float(1 - exp(-max(0, smoothingDelta) * 12))
         stage.position += (pose.stageOffset - stage.position) * smoothing
+        stage.scale += (SIMD3(repeating: pose.stageScale) - stage.scale) * smoothing
         stage.orientation = simd_slerp(stage.orientation, simd_quatf(angle: pose.stageYaw, axis: [0, 1, 0]), smoothing)
         for model in models {
             var joints = model.rest

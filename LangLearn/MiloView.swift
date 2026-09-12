@@ -69,6 +69,7 @@ struct MiloGreetingCard: View {
     @Environment(TutorSettings.self) private var settings
     @Environment(\.dynamicTypeSize) private var dynamicTypeSize
     @State private var greetingIndex = 0
+    @State private var companion = MiloController()
     private var tips: [LocalizedStringResource] { [
         "Lite \(settings.targetLanguage.displayName.lowercased()) i taget. Vi tar nästa steg tillsammans.",
         "Fastnar du? Be mig om en ledtråd, så provar vi igen.",
@@ -103,14 +104,19 @@ struct MiloGreetingCard: View {
     private var mascot: some View {
         Button {
             greetingIndex = (greetingIndex + 1) % tips.count
+            if greetingIndex == 1 { companion.curious() }
+            else if greetingIndex == 2 { companion.present() }
+            else { companion.joyful() }
         } label: {
-            MiloView(size: 104, wanders: true, trigger: greetingIndex)
+            MiloView(mood: companion.mood, size: 104, wanders: true, trigger: companion.trigger,
+                     onAnimationCompleted: { companion.animationCompleted(trigger: $0) })
                 .padding(.horizontal, 14).padding(.vertical, 10)
                 .contentShape(Rectangle())
         }
         .buttonStyle(.plain)
         .accessibilityLabel("Hälsa på Milo")
         .accessibilityHint("Visar ett nytt studietips")
+        .onDisappear { companion.stop() }
     }
 
     private var words: some View {
