@@ -45,53 +45,120 @@ nonisolated struct OpenAIClient: Sendable {
         try await OpenAIKeyStore.shared.read()
     }
 
+    /// The token argument is an initial budget. Four repair attempts can increase it;
+    /// the final two defer to the model limit rather than clipping JSON locally.
     func respond<Value: Decodable & Sendable>(
         model: String, instructions: String, input: String,
-        schemaName: String, schema: [String: Any], as type: Value.Type, maxOutputTokens: Int? = nil
+        schemaName: String, schema: [String: Any], as type: Value.Type, maxOutputTokens: Int? = nil,
+        validate: (Value) throws -> Void = { _ in }
     ) async throws -> StructuredResponse<Value> {
         guard let key = try await keyProvider(), !key.isEmpty else { throw OpenAIError.missingKey }
-        try Task.checkCancellation()
-        var request = URLRequest(url: URL(string: "https://api.openai.com/v1/responses")!)
-        request.httpMethod = "POST"
-        request.setValue("Bearer \(key)", forHTTPHeaderField: "Authorization")
-        request.setValue("application/json", forHTTPHeaderField: "Content-Type")
-        request.httpBody = try JSONSerialization.data(withJSONObject: [
-            "model": model,
-            "store": false,
-            "instructions": instructions,
-            "input": [["role": "user", "content": input]],
-            "max_output_tokens": maxOutputTokens ?? (model == Self.plannerModel ? 10000 : 3500),
-            "text": ["format": ["type": "json_schema", "name": schemaName, "strict": true, "schema": schema]]
-        ])
-        let data: Data
-        let response: URLResponse
-        do { (data, response) = try await session.data(for: request) }
-        catch {
-            if Task.isCancelled || (error as? URLError)?.code == .cancelled { throw CancellationError() }
-            throw OpenAIError.connection
+        let initialBudget = max(8192, maxOutputTokens ?? (model == Self.plannerModel ? 10000 : 8192))
+        var repair = ""
+        for attempt in 0...4 {
+            try Task.checkCancellation()
+            var request = URLRequest(url: URL(string: "https://api.openai.com/v1/responses")!)
+            request.httpMethod = "POST"
+            request.setValue("Bearer \(key)", forHTTPHeaderField: "Authorization")
+            request.setValue("application/json", forHTTPHeaderField: "Content-Type")
+            var body: [String: Any] = [
+                "model": model, "store": false,
+                "instructions": instructions + repair,
+                "input": [["role": "user", "content": input]],
+                "text": ["format": ["type": "json_schema", "name": schemaName, "strict": true, "schema": schema]]
+            ]
+            if attempt < 3 { body["max_output_tokens"] = initialBudget * (1 << attempt) }
+            request.httpBody = try JSONSerialization.data(withJSONObject: body)
+            let data: Data
+            let response: URLResponse
+            do { (data, response) = try await session.data(for: request) }
+            catch {
+                if Task.isCancelled || (error as? URLError)?.code == .cancelled { throw CancellationError() }
+                Self.debug("schema=\(schemaName) attempt=\(attempt + 1)/5 transport=\((error as NSError).code)")
+                throw OpenAIError.connection
+            }
+            try Task.checkCancellation()
+            guard let http = response as? HTTPURLResponse else { throw OpenAIError.connection }
+            let context = "schema=\(schemaName) model=\(model) attempt=\(attempt + 1)/5 budget=\(body["max_output_tokens"] ?? "model default") request=\(http.value(forHTTPHeaderField: "x-request-id") ?? "unknown") HTTP=\(http.statusCode)"
+            Self.debug(context)
+            switch http.statusCode {
+            case 200...299: break
+            case 401: throw OpenAIError.unauthorized
+            case 403, 404: throw OpenAIError.modelUnavailable
+            case 429: throw OpenAIError.rateLimited
+            default: throw OpenAIError.server
+            }
+            // Never print provider bodies, learner text or credentials, even in DEBUG.
+            do {
+                let envelope = try JSONDecoder().decode(ResponseEnvelope.self, from: data)
+                Self.debug("\(context) status=\(envelope.status) incomplete=\(envelope.incomplete_details?.reason ?? "none") outputTokens=\(envelope.usage?.output_tokens ?? 0) reasoningTokens=\(envelope.usage?.output_tokens_details?.reasoning_tokens ?? 0)")
+                let content = envelope.output.flatMap { $0.content ?? [] }
+                if content.contains(where: { $0.type == "refusal" }) { throw OpenAIError.refused }
+                if envelope.status != "completed" {
+                    let reason = envelope.incomplete_details?.reason
+                    if envelope.status == "incomplete", ["max_output_tokens", "max_tokens"].contains(reason ?? "") {
+                        throw RepairFailure.truncated
+                    }
+                    throw OpenAIError.incomplete
+                }
+                let outputText = content.filter { $0.type == "output_text" }.compactMap(\.text).joined()
+                guard !outputText.isEmpty, outputText.utf8.count <= 1_000_000 else {
+                    throw LearningValidationError.invalidContract("output_text is empty or exceeds 1 MB")
+                }
+                let json = Data(outputText.utf8)
+                let value = try JSONDecoder().decode(type, from: json)
+                try validate(value)
+                try Task.checkCancellation()
+                return StructuredResponse(value: value, json: json)
+            } catch {
+                try Task.checkCancellation()
+                let reason: String
+                if let decoding = error as? DecodingError {
+                    reason = Self.decodingReason(decoding)
+                } else if let validation = error as? LearningValidationError {
+                    if case .invalidContract(let rule) = validation { reason = rule }
+                    else { reason = "domain validation rejected the response" }
+                } else if error is RepairFailure { reason = "JSON generation reached the output token limit" }
+                else { throw error }
+                Self.debug("\(context) rejected: \(reason); retry=\(attempt < 4)")
+                guard attempt < 4 else {
+                    if error is RepairFailure { throw OpenAIError.incomplete }
+                    if error is DecodingError { throw LearningValidationError.invalidResponse }
+                    throw error
+                }
+                repair = "\nReturn a fresh, complete JSON object matching the entire schema and all constraints. Keep explanations concise; never omit required fields or truncate JSON."
+                if case LearningValidationError.invalidContract(let rule) = error {
+                    // Rules are application-authored constants, never model output or learner text.
+                    repair += " The previous response violated this requirement: " + rule
+                }
+            }
         }
-        try Task.checkCancellation()
-        guard let http = response as? HTTPURLResponse else { throw OpenAIError.connection }
-        switch http.statusCode {
-        case 200...299: break
-        case 401: throw OpenAIError.unauthorized
-        case 403, 404: throw OpenAIError.modelUnavailable
-        case 429: throw OpenAIError.rateLimited
-        default: throw OpenAIError.server
-        }
-        // Never show provider error bodies: they may echo submitted content.
-        let envelope: ResponseEnvelope
-        do { envelope = try JSONDecoder().decode(ResponseEnvelope.self, from: data) }
-        catch { throw LearningValidationError.invalidResponse }
-        guard envelope.status == "completed" else { throw OpenAIError.incomplete }
-        let content = envelope.output.flatMap { $0.content ?? [] }
-        guard !content.contains(where: { $0.type == "refusal" }) else { throw OpenAIError.refused }
-        let outputText = content.filter { $0.type == "output_text" }.compactMap(\.text).joined()
-        guard !outputText.isEmpty, outputText.utf8.count <= 100_000 else { throw LearningValidationError.invalidResponse }
-        let json = Data(outputText.utf8)
-        do { return StructuredResponse(value: try JSONDecoder().decode(type, from: json), json: json) }
-        catch { throw LearningValidationError.invalidResponse }
+        throw OpenAIError.incomplete
     }
+
+    private enum RepairFailure: Error { case truncated }
+
+    private static func debug(_ message: String) {
+        #if DEBUG
+        print("[OpenAI] " + message)
+        #endif
+    }
+
+    private static func decodingReason(_ error: DecodingError) -> String {
+        // Do not use debugDescription: custom decoders may include submitted content.
+        switch error {
+        case .keyNotFound(let key, let context):
+            return "JSON missing key \(key.stringValue) at \(context.codingPath.map(\.stringValue).joined(separator: "."))"
+        case .typeMismatch(_, let context):
+            return "JSON type mismatch at \(context.codingPath.map(\.stringValue).joined(separator: "."))"
+        case .valueNotFound(_, let context):
+            return "JSON null value at \(context.codingPath.map(\.stringValue).joined(separator: "."))"
+        case .dataCorrupted(let context):
+            return "JSON malformed or invalid enum at \(context.codingPath.map(\.stringValue).joined(separator: "."))"
+        @unknown default: return "JSON decoding failed"
+        }
+    }
+
 }
 
 nonisolated private struct ResponseEnvelope: Decodable {
@@ -99,6 +166,14 @@ nonisolated private struct ResponseEnvelope: Decodable {
         struct Content: Decodable { var type: String; var text: String? }
         var content: [Content]?
     }
+    struct Incomplete: Decodable { var reason: String? }
+    struct Usage: Decodable {
+        struct Details: Decodable { var reasoning_tokens: Int? }
+        var output_tokens: Int?
+        var output_tokens_details: Details?
+    }
+    var incomplete_details: Incomplete?
+    var usage: Usage?
     var status: String
     var output: [Output]
 }

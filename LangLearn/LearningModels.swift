@@ -2,10 +2,11 @@ import Foundation
 
 nonisolated enum LearningValidationError: LocalizedError {
     case invalidResponse
+    case invalidContract(String)
     case unsupportedVersion
     var errorDescription: String? {
         switch self {
-        case .invalidResponse: "Lärarens svar gick inte att använda. Försök igen; din nuvarande plan finns kvar."
+        case .invalidResponse, .invalidContract: "Lärarens svar gick inte att använda. Försök igen; din nuvarande plan finns kvar."
         case .unsupportedVersion: "Dina sparade studier kräver en nyare version av LanguLearn."
         }
     }

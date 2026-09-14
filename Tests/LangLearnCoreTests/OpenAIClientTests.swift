@@ -26,6 +26,13 @@ private final class StubURLProtocol: URLProtocol, @unchecked Sendable {
     override func stopLoading() { }
 }
 
+private final class RequestAttempts: @unchecked Sendable {
+    private let lock = NSLock()
+    private var count = 0
+    func next() -> Int { lock.lock(); defer { lock.unlock() }; count += 1; return count }
+    var total: Int { lock.lock(); defer { lock.unlock() }; return count }
+}
+
 @Suite("OpenAI transport", .serialized)
 struct OpenAIClientTests {
     private func client(key: String? = "unit-test-only") -> OpenAIClient {
@@ -56,7 +63,7 @@ struct OpenAIClientTests {
     @Test func discoveryUsesBoundedStrictResponsesAndValidatesReturnedData() async throws {
         StubURLProtocol.install { request in
             let body = try #require(JSONSerialization.jsonObject(with: Self.body(request)) as? [String: Any])
-            #expect(body["max_output_tokens"] as? Int == 2500)
+            #expect(body["max_output_tokens"] == nil || (body["max_output_tokens"] as? Int ?? 0) >= 8192)
             #expect(body["store"] as? Bool == false)
             let format = try #require((body["text"] as? [String: Any])?["format"] as? [String: Any])
             #expect(format["name"] as? String == "journey_discovery_v1")
@@ -76,7 +83,7 @@ struct OpenAIClientTests {
     @Test func guidedPackRoundTripsThroughResponsesAndRejectsWrongCourse() async throws {
         StubURLProtocol.install { request in
             let body = try #require(JSONSerialization.jsonObject(with: Self.body(request)) as? [String: Any])
-            #expect(body["max_output_tokens"] as? Int == 8000)
+            #expect(body["max_output_tokens"] == nil || (body["max_output_tokens"] as? Int ?? 0) >= 8192)
             let text = try #require(body["text"] as? [String: Any])
             let format = try #require(text["format"] as? [String: Any])
             #expect(format["name"] as? String == "guided_journey_v1")
@@ -174,6 +181,72 @@ struct OpenAIClientTests {
             }
         }
         await #expect(throws: (any Error).self) { _ = try await response(client()) }
+    }
+
+    @Test func truncationRetriesFourTimesWithIncreasingRoom() async {
+        let attempts = RequestAttempts()
+        StubURLProtocol.install { request in
+            let number = attempts.next()
+            let body = try #require(JSONSerialization.jsonObject(with: Self.body(request)) as? [String: Any])
+            if number <= 3 { #expect(body["max_output_tokens"] as? Int == 8192 * (1 << (number - 1))) }
+            else { #expect(body["max_output_tokens"] == nil) }
+            return (200, Data(#"{"status":"incomplete","incomplete_details":{"reason":"max_output_tokens"},"output":[]}"#.utf8))
+        }
+        await #expect(throws: OpenAIError.self) { _ = try await response(client()) }
+        #expect(attempts.total == 5)
+    }
+
+    @Test(arguments: ["malformed", "contract", "truncated"])
+    func repairsAndReturnsOnlyValidCompleteJSON(failure: String) async throws {
+        let attempts = RequestAttempts()
+        StubURLProtocol.install { request in
+            let number = attempts.next()
+            if number == 1, failure == "truncated" {
+                return (200, Data(#"{"status":"incomplete","incomplete_details":{"reason":"max_output_tokens"},"output":[]}"#.utf8))
+            }
+            let payload = number == 1 && failure == "malformed" ? "{" :
+                String(decoding: try JSONEncoder().encode(AssessmentQuestion(question: number == 1 ? "invalid" : "Ciao?", translation: "Hej?", skill: "writing")), as: UTF8.self)
+            return (200, try JSONSerialization.data(withJSONObject: ["status": "completed", "output": [["content": [["type": "output_text", "text": payload]]]]]))
+        }
+        let result = try await client().respond(model: OpenAIClient.teacherModel, instructions: "Teach", input: "same answer",
+            schemaName: "question", schema: LearningSchema.question, as: AssessmentQuestion.self,
+            validate: { if $0.question == "invalid" { throw LearningValidationError.invalidContract("question constraint") } })
+        #expect(result.value.question == "Ciao?")
+        #expect(attempts.total == 2)
+    }
+
+    @Test(arguments: ["content_filter", "refusal", "unauthorized", "rate_limit"])
+    func doesNotRetryNonRepairableFailures(failure: String) async {
+        let attempts = RequestAttempts()
+        StubURLProtocol.install { _ in
+            _ = attempts.next()
+            if failure == "unauthorized" { return (401, Data()) }
+            if failure == "rate_limit" { return (429, Data()) }
+            if failure == "refusal" { return (200, Data(#"{"status":"completed","output":[{"content":[{"type":"refusal"}]}]}"#.utf8)) }
+            return (200, Data(#"{"status":"incomplete","incomplete_details":{"reason":"content_filter"},"output":[]}"#.utf8))
+        }
+        await #expect(throws: OpenAIError.self) { _ = try await response(client()) }
+        #expect(attempts.total == 1)
+    }
+
+    @Test func cancellationDuringValidationPreventsAnotherAttempt() async throws {
+        let attempts = RequestAttempts()
+        StubURLProtocol.install { _ in
+            _ = attempts.next()
+            let payload = String(decoding: try JSONEncoder().encode(AssessmentQuestion(question: "Ciao?", translation: "Hej?", skill: "writing")), as: UTF8.self)
+            return (200, try JSONSerialization.data(withJSONObject: ["status": "completed", "output": [["content": [["type": "output_text", "text": payload]]]]]))
+        }
+        let client = client()
+        let task = Task {
+            try await client.respond(model: OpenAIClient.teacherModel, instructions: "Teach", input: "Ciao",
+                schemaName: "question", schema: LearningSchema.question, as: AssessmentQuestion.self,
+                validate: { _ in
+                    withUnsafeCurrentTask { $0?.cancel() }
+                    throw LearningValidationError.invalidContract("test cancellation")
+                })
+        }
+        await #expect(throws: CancellationError.self) { _ = try await task.value }
+        #expect(attempts.total == 1)
     }
 
     @Test func missingKeyAndCancellationNeverReachTransport() async {

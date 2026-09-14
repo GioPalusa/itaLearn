@@ -35,45 +35,45 @@ nonisolated struct DiscoveryReply: Codable, Equatable, Sendable {
               Set(choices.map(\.id)).count == choices.count,
               Set(choices.map { JourneyStep.normalized($0.text) }).count == choices.count,
               choices.allSatisfy({ !$0.id.isEmpty && $0.id.count <= 40 && !$0.text.isEmpty && $0.text.count <= 200 }),
-              evidence.count <= 3 else { throw LearningValidationError.invalidResponse }
-        if request.mustRecommend && kind != .recommendation { throw LearningValidationError.invalidResponse }
+              evidence.count <= 3 else { throw LearningValidationError.invalidContract("language, field bounds, or unique choices invalid") }
+        if request.mustRecommend && kind != .recommendation { throw LearningValidationError.invalidContract("a recommendation is required now") }
         switch kind {
         case .question:
             guard mode == .none, target.isEmpty, translation.isEmpty, hint.isEmpty, correctChoiceID.isEmpty,
-                  !request.turns.contains(where: { $0.reply?.kind == .question }) else { throw LearningValidationError.invalidResponse }
+                  !request.turns.contains(where: { $0.reply?.kind == .question }) else { throw LearningValidationError.invalidContract("question must have mode none, empty probe fields and occur only once") }
         case .probe:
-            guard !target.isEmpty, !translation.isEmpty, !hint.isEmpty else { throw LearningValidationError.invalidResponse }
+            guard !target.isEmpty, !translation.isEmpty, !hint.isEmpty else { throw LearningValidationError.invalidContract("probe requires target, translation and hint") }
             let priorExperience = request.previousProfile?.startingExperience.isExperienced == true
                 || ["B1", "B2", "C1", "C2"].contains(request.priorAssessment?.cefr ?? "")
             let experienced = request.turns.last?.difficultyFeedback != .tooHard
                 && (experience.isExperienced || (request.turns.count == 1 && priorExperience))
             if experienced {
                 let minimum = ["ja", "zh", "th"].contains(request.course.target.code) ? 12 : 30
-                guard target.count >= minimum else { throw LearningValidationError.invalidResponse }
+                guard target.count >= minimum else { throw LearningValidationError.invalidContract("experienced learner requires a contextual probe") }
             }
             if mode == .write {
-                guard request.reading == .comfortable, choices.isEmpty, correctChoiceID.isEmpty else { throw LearningValidationError.invalidResponse }
+                guard request.reading == .comfortable, choices.isEmpty, correctChoiceID.isEmpty else { throw LearningValidationError.invalidContract("writing requires comfortable reading and no choices") }
             } else if mode == .listen {
-                guard (2...3).contains(choices.count), choices.contains(where: { $0.id == correctChoiceID }) else { throw LearningValidationError.invalidResponse }
-            } else { throw LearningValidationError.invalidResponse }
+                guard (2...3).contains(choices.count), choices.contains(where: { $0.id == correctChoiceID }) else { throw LearningValidationError.invalidContract("listening requires 2 or 3 choices and a valid correctChoiceID") }
+            } else { throw LearningValidationError.invalidContract("probe mode must be write or listen") }
         case .recommendation:
             guard mode == .none, choices.isEmpty, target.isEmpty, translation.isEmpty, hint.isEmpty, correctChoiceID.isEmpty, !evidence.isEmpty,
                   request.turns.contains(where: { $0.informsStartingActivity }) else {
-                throw LearningValidationError.invalidResponse
+                throw LearningValidationError.invalidContract("recommendation requires empty probe fields and evidence from a learner attempt")
             }
         }
         if kind == .recommendation, request.turns.last?.source == .skip, !request.turns.contains(where: { $0.difficultyFeedback == .tooHard }),
            !request.turns.dropLast().contains(where: { [.writing, .listening, .openResponse, .feedback].contains($0.source) }) {
             let known = ([request.previousProfile?.startingExperience] + request.turns.dropLast().map { $0.reply?.experience }).compactMap { $0 }
             let established = known.max { JourneyProfile.Experience.allCases.firstIndex(of: $0)! < JourneyProfile.Experience.allCases.firstIndex(of: $1)! }
-            if let established, experience != established { throw LearningValidationError.invalidResponse }
+            if let established, experience != established { throw LearningValidationError.invalidContract("skipping alone must preserve established experience") }
         }
         for item in evidence {
             guard let turn = request.turns.first(where: { $0.id.uuidString == item.turnID }),
-                  !item.quote.isEmpty, item.quote.count <= 300, turn.text.contains(item.quote) else { throw LearningValidationError.invalidResponse }
+                  !item.quote.isEmpty, item.quote.count <= 300, turn.text.contains(item.quote) else { throw LearningValidationError.invalidContract("evidence must quote an existing learner turn exactly") }
             if item.demonstrated {
                 guard !turn.usedHelp, turn.source == .writing || (turn.source == .listening && turn.heardAudio && turn.correctChoice == true) else {
-                    throw LearningValidationError.invalidResponse
+                    throw LearningValidationError.invalidContract("demonstrated evidence requires an unassisted written or correct heard answer")
                 }
             }
         }
@@ -197,7 +197,7 @@ nonisolated struct OpenAIDiscoveryService: JourneyDiscoveryService {
         The recommendation is a provisional starting ACTIVITY, not a certified level or proof of speaking fluency. experience=new/someWords/everyday/confident chooses its challenge. Preserve existing experience unless actual evidence and the learner's wishes justify changing it. goal and interests must faithfully summarize their stated life context; never invent details. reason briefly explains how the first mission will fit THIS person and what remains uncertain.
         Include 1–3 evidence items in a recommendation, each quoting an exact substring of a supplied turn.text, with turnID matching that turn.id. demonstrated=true ONLY for an unaided target-language writing sample or a correct listening answer with heardAudio=true. A story about experience, skipped answer or helped answer is never a demonstration. Do not claim pronunciation from text or self-report. Refer to priorAssessment only as earlier written evidence, not speaking ability.
         Always supply all schema fields. For question: mode=none, target/translation/hint/correctChoiceID empty; optional quick-reply choices. For recommendation: mode=none, target/translation/hint/correctChoiceID empty and choices=[]. For write probes choices=[] and correctChoiceID empty. Supply goal, interests, provisional experience and reason on every reply. No markdown.
-        """, input: String(decoding: try JSONEncoder().encode(request), as: UTF8.self), schemaName: "journey_discovery_v1", schema: LearningSchema.discovery(course: request.course), as: DiscoveryReply.self, maxOutputTokens: 2500)
+        """, input: String(decoding: try JSONEncoder().encode(request), as: UTF8.self), schemaName: "journey_discovery_v1", schema: LearningSchema.discovery(course: request.course), as: DiscoveryReply.self, maxOutputTokens: 8192, validate: { try $0.validate(for: request) })
         try response.value.validate(for: request)
         return response.value
     }
