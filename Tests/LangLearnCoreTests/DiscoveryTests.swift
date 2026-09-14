@@ -83,6 +83,33 @@ struct DiscoveryTests {
         request.turns.append(DiscoveryTurn(text: "Hoppa över", source: .skip))
         try discoverySummary(request.turns).validate(for: request)
     }
+    @Test func skippingCannotDowngradeExistingExperienceAndPriorWritingSetsProbeFloor() throws {
+        var request = try discoveryRequest()
+        request.previousProfile = JourneyProfile(experience: .confident, goal: "Resa")
+        request.turns.append(DiscoveryTurn(text: "Hoppa över", source: .skip))
+        var summary = discoverySummary(request.turns)
+        #expect(throws: LearningValidationError.self) { try summary.validate(for: request) }
+        summary.experience = .confident
+        try summary.validate(for: request)
+        // A recent richer proposal also protects somebody with an older beginner profile.
+        request.previousProfile?.experience = .new
+        request.turns[0].reply = discoveryProbe()
+        summary.experience = .everyday
+        try summary.validate(for: request)
+        summary.experience = .new
+        #expect(throws: LearningValidationError.self) { try summary.validate(for: request) }
+        request = try discoveryRequest()
+        request.priorAssessment = LearnerProfile(nativeLanguage: "sv", targetLanguage: "it", cefr: "B2", goal: "Resa", strengths: [], focusAreas: [])
+        var probe = discoveryProbe(); probe.target = "Ciao"; probe.experience = .someWords
+        #expect(throws: LearningValidationError.self) { try probe.validate(for: request) }
+    }
+    @Test func priorAssessmentIsOnlySharedWithMatchingLanguage() throws {
+        let draft = JourneyDiscovery(targetLanguage: "it", explanationLanguage: "sv", reading: .comfortable,
+            turns: [DiscoveryTurn(text: "Resa", source: .story)])
+        let foreign = LearnerProfile(nativeLanguage: "sv", targetLanguage: "ja", cefr: "B2", goal: "Resa", strengths: [], focusAreas: [])
+        let request = try DiscoveryRequest(course: LanguageCourse(target: .italian, native: .swedish), discovery: draft, previousProfile: nil, priorAssessment: foreign)
+        #expect(request.priorAssessment == nil)
+    }
     @Test func legacySnapshotsDecodeAndDraftRoundTrips() throws {
         let old = Data(#"{"sessions":[],"observations":[],"phrases":[]}"#.utf8)
         var progress = try JSONDecoder().decode(JourneyProgress.self, from: old)
@@ -158,6 +185,10 @@ struct DiscoveryStoreTests {
         #expect(store.journey.profile?.hasSpoken == true)
         let lesson = try JourneyRequest(course: course, progress: store.journey, track: .mission, topic: "", tone: "warm")
         #expect(lesson.startingSamples.first?.text == "Vorrei arrivare oggi.")
+        #expect(lesson.startingSamples.first?.target == discoveryProbe().target)
+        #expect(lesson.startingSamples.first?.usedHelp == false)
+        let payload = String(decoding: try JSONEncoder().encode(lesson.startingSamples), as: UTF8.self)
+        #expect(!payload.contains("evidence")) // Omit follow-up model replies from subsequent lesson calls.
     }
     @Test func lateResponseAfterCancellationOrLanguageSwitchCannotPublish() async throws {
         let (_, store) = try fixture()

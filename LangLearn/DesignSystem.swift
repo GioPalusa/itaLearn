@@ -129,7 +129,7 @@ extension View {
 
 // MARK: - Controls
 
-/// The 50 pt filled capsule used for every primary action in the design.
+/// A filled primary action with a 50 pt minimum height that grows with Dynamic Type.
 struct LanguLearnPrimaryButtonStyle: ButtonStyle {
     @Environment(\.isEnabled) var controlIsEnabled
     var background: AnyShapeStyle = AnyShapeStyle(LanguLearn.purple)
@@ -138,7 +138,11 @@ struct LanguLearnPrimaryButtonStyle: ButtonStyle {
 
     func makeBody(configuration: Configuration) -> some View {
         configuration.label
-            .font(.il(17, .semibold))
+            .font(.system(.headline, design: .rounded))
+            .multilineTextAlignment(.center)
+            .fixedSize(horizontal: false, vertical: true)
+            .padding(.horizontal, 20)
+            .padding(.vertical, 12)
             .foregroundStyle(foreground)
             .frame(maxWidth: .infinity, minHeight: 50)
             .background(background, in: .capsule)

@@ -16,7 +16,7 @@ struct JourneyPreview: View {
         NavigationStack {
             if let error { Text(error) }
             else if ready {
-                if arguments.contains("--journey-setup") { JourneySetupView() }
+                if arguments.contains("--journey-setup"), store.journey.discovery?.stage != .finished { JourneySetupView(service: DiscoveryPreviewService()) }
                 else if arguments.contains("--journey-lesson"), let session = store.journey.sessions.first { JourneyLessonView(sessionID: session.id) }
                 else { JourneyTodayView() }
             } else { ProgressView() }
@@ -32,6 +32,7 @@ struct JourneyPreview: View {
             do {
                 try store.updateJourney { progress in
                     progress.profile = JourneyProfile(reading: arguments.contains("--journey-script") ? .newScript : .comfortable, goal: "Beställa lunch på resan", interests: "Mat och små kaféer")
+                    if arguments.contains("--discovery-fresh") { progress.profile = nil }
                     if arguments.contains("--journey-lesson") {
                         var pack = FoundationContent.welcome(course: settings.course)!
                         if arguments.contains("--journey-script") {
@@ -61,6 +62,34 @@ struct JourneyPreview: View {
                 ready = true
             } catch { self.error = error.localizedDescription }
         }
+    }
+}
+/// Deterministic UI fixture only. Production always uses OpenAIDiscoveryService.
+private struct DiscoveryPreviewService: JourneyDiscoveryService {
+    var requiresAPIKey: Bool { false }
+    func reply(to request: DiscoveryRequest) async throws -> DiscoveryReply {
+        try await Task.sleep(for: .milliseconds(400))
+        let listening = request.reading != .comfortable
+        let japanese = request.course.target.code == "ja"
+        var reply = DiscoveryReply(targetLanguage: request.course.target.code, explanationLanguage: request.course.native.code,
+            kind: .probe, mode: listening ? .listen : .write,
+            prompt: listening ? "Vi provar med ljud. Vad föreslår personen?" : "På resan blir tåget inställt. Hur skulle du be om en annan lösning?",
+            target: japanese ? "電車が止まっています。明日の朝、バスで行きませんか。" : "Il treno è stato cancellato. Possiamo prenotare un posto per domani mattina?",
+            translation: japanese ? "Tåget går inte. Ska vi ta bussen i morgon bitti?" : "Tåget är inställt. Kan vi boka en plats i morgon bitti?",
+            hint: "Lyssna efter när personen föreslår att ni ska resa.",
+            choices: listening ? [.init(id: "a", text: "Att resa i morgon bitti"), .init(id: "b", text: "Att stanna hela veckan")] : [],
+            correctChoiceID: listening ? "a" : "", goal: request.turns[0].text,
+            interests: "", experience: .everyday, reason: "Vi börjar med en situation där du får använda språket för att lösa ett problem.", evidence: [])
+        if request.turns.count > 1 {
+            let last = request.turns.last!
+            reply.kind = .recommendation; reply.mode = .none
+            reply.prompt = "Vi börjar med att hitta en annan väg."
+            reply.target = ""; reply.translation = ""; reply.hint = ""; reply.choices = []; reply.correctChoiceID = ""
+            reply.reason = last.source == .skip ? "Du valde att hoppa över exemplet. Vi utgår från det du berättade och justerar när du provar nästa situation." : "Ditt första uppdrag handlar om att föreslå en lösning när resplaner ändras. Du får prova hela svar och kan be om stöd längs vägen."
+            if last.source == .skip, request.previousProfile?.startingExperience == .confident { reply.experience = .confident }
+            reply.evidence = [.init(turnID: last.id.uuidString, quote: String(last.text.prefix(300)), demonstrated: !last.usedHelp && (last.source == .writing || (last.source == .listening && last.heardAudio && last.correctChoice == true)))]
+        }
+        return reply
     }
 }
 #endif

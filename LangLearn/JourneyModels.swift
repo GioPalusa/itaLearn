@@ -1,6 +1,6 @@
 import Foundation
 
-/// Learner choices are separate from observations: difficulty is never inferred from typing speed.
+/// Starting activities are separate from observations: difficulty is never inferred from typing speed.
 nonisolated struct JourneyProfile: Codable, Equatable, Sendable {
     enum Reading: String, Codable, CaseIterable, Sendable {
         case comfortable, newScript, learningToRead
@@ -16,10 +16,10 @@ nonisolated struct JourneyProfile: Codable, Equatable, Sendable {
         case new, someWords, everyday, confident
         var title: String {
             switch self {
-            case .new: String(localized: "Jag börjar från noll")
-            case .someWords: String(localized: "Jag kan ord och enkla fraser")
-            case .everyday: String(localized: "Jag klarar vardagliga samtal")
-            case .confident: String(localized: "Jag uttrycker mig ganska fritt")
+            case .new: String(localized: "De första användbara orden")
+            case .someWords: String(localized: "Korta fraser i vardagen")
+            case .everyday: String(localized: "Hela vardagssituationer")
+            case .confident: String(localized: "Friare uttryck och nyanser")
             }
         }
         var isExperienced: Bool { self == .everyday || self == .confident }

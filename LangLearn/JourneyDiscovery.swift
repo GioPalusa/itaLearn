@@ -60,9 +60,10 @@ nonisolated struct DiscoveryReply: Codable, Equatable, Sendable {
                 throw LearningValidationError.invalidResponse
             }
         }
-        if kind == .recommendation, request.turns.last?.source == .skip,
-           let established = request.previousProfile?.startingExperience ?? request.turns.dropLast().last?.reply?.experience {
-            guard experience == established else { throw LearningValidationError.invalidResponse }
+        if kind == .recommendation, request.turns.last?.source == .skip {
+            let known = ([request.previousProfile?.startingExperience] + request.turns.dropLast().map { $0.reply?.experience }).compactMap { $0 }
+            let established = known.max { JourneyProfile.Experience.allCases.firstIndex(of: $0)! < JourneyProfile.Experience.allCases.firstIndex(of: $1)! }
+            if let established, experience != established { throw LearningValidationError.invalidResponse }
         }
         for item in evidence {
             guard let turn = request.turns.first(where: { $0.id.uuidString == item.turnID }),
@@ -123,6 +124,23 @@ nonisolated struct JourneyDiscovery: Codable, Equatable, Sendable {
     }
 }
 
+/// Only the actual task and answer are needed by future lessons, not the whole discovery conversation.
+nonisolated struct DiscoverySample: Encodable, Sendable {
+    var prompt: String
+    var target: String
+    var text: String
+    var source: DiscoveryTurn.Source
+    var usedHelp: Bool
+    var heardAudio: Bool
+    var correctChoice: Bool?
+
+    init(probe: DiscoveryReply?, answer: DiscoveryTurn) {
+        prompt = probe?.prompt ?? ""; target = probe?.target ?? ""
+        text = answer.text; source = answer.source; usedHelp = answer.usedHelp
+        heardAudio = answer.heardAudio; correctChoice = answer.correctChoice
+    }
+}
+
 nonisolated struct DiscoveryRequest: Encodable, Sendable {
     var course: LanguageCourse
     var reading: JourneyProfile.Reading
@@ -162,7 +180,7 @@ nonisolated struct OpenAIDiscoveryService: JourneyDiscoveryService {
         Usually return kind=probe immediately. If previous context or the story suggests experience, present a complete scenario with intentions, explanation, follow-up or nuance, not isolated hello/thanks words. A beginner gets a short supported situation. Change the next probe based on the actual previous answer; an experienced learner must not restart at the alphabet merely because their writing system is unfamiliar.
         A probe uses mode=write only when reading=comfortable. target is a short target-language situation or another person's message, NOT the answer to copy. prompt asks the learner to respond in their own words. Provide translation and hint for optional help; they are hidden initially.
         If reading is newScript/learningToRead, use mode=listen: target is a complete natural spoken message, with 2–3 distinct meaning choices in the explanation language and exactly one correctChoiceID. Keep oral complexity appropriate to experience. Do not assess writing or pronunciation from such a choice.
-        After one informative sample, return kind=recommendation. If evidence is uncertain you may offer one further probe. When mustRecommend=true return recommendation now. Skip means unknown, not failure. If the last turn is skipped, preserve previousProfile.startingExperience (use its experience or hasSpoken fallback), otherwise preserve the previous reply experience. Never infer low competence from skipping, one typo, asking for help, or using the explanation language.
+        After one informative sample, return kind=recommendation. If evidence is uncertain you may offer one further probe. When mustRecommend=true return recommendation now. Skip means unknown, not failure. If the last turn is skipped, preserve the highest starting challenge already proposed in previous replies or previousProfile (experience, or someWords/new according to hasSpoken if experience is absent). Ordered challenges: new < someWords < everyday < confident. Never infer low competence from skipping, one typo, asking for help, or using the explanation language.
         The recommendation is a provisional starting ACTIVITY, not a certified level or proof of speaking fluency. experience=new/someWords/everyday/confident chooses its challenge. Preserve existing experience unless actual evidence and the learner's wishes justify changing it. goal and interests must faithfully summarize their stated life context; never invent details. reason briefly explains how the first mission will fit THIS person and what remains uncertain.
         Include 1–3 evidence items in a recommendation, each quoting an exact substring of a supplied turn.text, with turnID matching that turn.id. demonstrated=true ONLY for an unaided target-language writing sample or a correct listening answer with heardAudio=true. A story about experience, skipped answer or helped answer is never a demonstration. Do not claim pronunciation from text or self-report. Refer to priorAssessment only as earlier written evidence, not speaking ability.
         Always supply all schema fields. For question: mode=none, target/translation/hint/correctChoiceID empty; optional quick-reply choices. For recommendation: mode=none, target/translation/hint/correctChoiceID empty and choices=[]. For write probes choices=[] and correctChoiceID empty. Supply goal, interests, provisional experience and reason on every reply. No markdown.

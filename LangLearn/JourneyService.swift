@@ -13,7 +13,7 @@ nonisolated struct JourneyRequest: Encodable, Sendable {
     var experience: JourneyProfile.Experience
     var priorAssessment: LearnerProfile?
     var recentDifficulty: [JourneyDifficulty]
-    var startingSamples: [DiscoveryTurn]
+    var startingSamples: [DiscoverySample]
 
     init(course: LanguageCourse, progress: JourneyProgress, track: JourneyTrack, topic: String, tone: String, priorAssessment: LearnerProfile? = nil) throws {
         guard let profile = progress.profile, topic.count <= 400 else { throw LearningValidationError.invalidResponse }
@@ -25,8 +25,13 @@ nonisolated struct JourneyRequest: Encodable, Sendable {
         allowsWriting = progress.allowsSupportedWriting
         experience = profile.startingExperience
         self.priorAssessment = priorAssessment?.targetLanguage == course.target.code ? priorAssessment : nil
-        startingSamples = progress.discovery?.stage == .finished && progress.discovery?.targetLanguage == course.target.code
-            ? Array((progress.discovery?.turns ?? []).filter { [.writing, .listening, .skip].contains($0.source) }.suffix(2)) : []
+        if let discovery = progress.discovery, discovery.stage == .finished, discovery.targetLanguage == course.target.code {
+            startingSamples = Array(discovery.turns.indices.dropFirst().compactMap { index -> DiscoverySample? in
+                let answer = discovery.turns[index]
+                guard [.writing, .listening, .skip].contains(answer.source) else { return nil }
+                return DiscoverySample(probe: discovery.turns[index - 1].reply, answer: answer)
+            }.suffix(2))
+        } else { startingSamples = [] }
         recentDifficulty = Array(progress.sessions.compactMap(\.difficultyFeedback).suffix(3))
     }
 
