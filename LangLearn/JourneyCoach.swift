@@ -71,9 +71,12 @@ final class JourneyCoach {
             defer { if generation == token { isWorking = false; task = nil } }
             do {
                 let pack: JourneyPack
-                if firstGreeting, let local = FoundationContent.welcome(course: course) { pack = local }
+                if firstGreeting, let local = FoundationContent.welcome(course: course) {
+                    guard profile?.startingExperience == .new else { throw LearningValidationError.invalidResponse }
+                    pack = local
+                }
                 else {
-                    let request = try JourneyRequest(course: course, progress: store.journey, track: track, topic: topic, tone: tone)
+                    let request = try JourneyRequest(course: course, progress: store.journey, track: track, topic: topic, tone: tone, priorAssessment: store.state.activePlan?.profile)
                     pack = try await service.generate(request)
                     try request.validate(pack)
                 }

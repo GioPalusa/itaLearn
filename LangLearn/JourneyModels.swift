@@ -6,17 +6,33 @@ nonisolated struct JourneyProfile: Codable, Equatable, Sendable {
         case comfortable, newScript, learningToRead
         var title: String {
             switch self {
-            case .comfortable: "Jag känner igen skriften"
-            case .newScript: "Tecknen är nya för mig"
-            case .learningToRead: "Jag vill ha hjälp att läsa"
+            case .comfortable: String(localized: "Jag känner igen skriften")
+            case .newScript: String(localized: "Tecknen är nya för mig")
+            case .learningToRead: String(localized: "Jag vill ha hjälp att läsa")
             }
         }
     }
+    enum Experience: String, Codable, CaseIterable, Sendable {
+        case new, someWords, everyday, confident
+        var title: String {
+            switch self {
+            case .new: String(localized: "Jag börjar från noll")
+            case .someWords: String(localized: "Jag kan ord och enkla fraser")
+            case .everyday: String(localized: "Jag klarar vardagliga samtal")
+            case .confident: String(localized: "Jag uttrycker mig ganska fritt")
+            }
+        }
+        var isExperienced: Bool { self == .everyday || self == .confident }
+    }
+    /// Optional so profiles saved before the richer experience picker still decode.
+    var experience: Experience? = nil
     var hasSpoken = false
     var reading: Reading = .comfortable
     var goal = ""
     var interests = ""
     var minutes = 5
+
+    var startingExperience: Experience { experience ?? (hasSpoken ? .someWords : .new) }
 
     func validate() throws {
         guard !goal.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty,
@@ -35,11 +51,11 @@ nonisolated enum JourneySkill: String, Codable, CaseIterable, Sendable {
     case listening, reading, script, writing, speaking
     var title: String {
         switch self {
-        case .listening: "Förstå det jag hör"
-        case .reading: "Förstå det jag läser"
-        case .script: "Känna igen tecken"
-        case .writing: "Formulera mig själv"
-        case .speaking: "Prova att säga orden"
+        case .listening: String(localized: "Förstå det jag hör")
+        case .reading: String(localized: "Förstå det jag läser")
+        case .script: String(localized: "Känna igen tecken")
+        case .writing: String(localized: "Formulera mig själv")
+        case .speaking: String(localized: "Prova att säga orden")
         }
     }
 }
@@ -181,6 +197,13 @@ nonisolated struct JourneyPhrase: Codable, Identifiable, Equatable, Sendable {
     var explanationLanguage: String
 }
 
+nonisolated enum JourneyDifficulty: String, Codable, CaseIterable, Sendable {
+    case tooEasy, justRight, tooHard
+    var title: String {
+        switch self { case .tooEasy: String(localized: "För lätt"); case .justRight: String(localized: "Lagom"); case .tooHard: String(localized: "För svårt") }
+    }
+}
+
 nonisolated struct JourneySession: Codable, Identifiable, Equatable, Sendable {
     var id = UUID()
     var pack: JourneyPack
@@ -196,6 +219,7 @@ nonisolated struct JourneySession: Codable, Identifiable, Equatable, Sendable {
     var pendingAnswer: String?
     var completedAt: Date?
     var startedAt = Date()
+    var difficultyFeedback: JourneyDifficulty? = nil
     var step: JourneyStep? { pack.steps.indices.contains(cursor) ? pack.steps[cursor] : nil }
     var canAdvance: Bool { evaluation?.accepted == true }
 
@@ -223,23 +247,32 @@ nonisolated struct JourneyProgress: Codable, Equatable, Sendable {
         let recognized = Set(observations.filter {
             $0.correct && $0.independent && !$0.selfReported && [.reading, .listening].contains($0.skill)
         }.map(\.skillID))
-        return profile.hasSpoken || recognized.count >= 3
+        return profile.startingExperience != .new || recognized.count >= 3
     }
 
     var recommendationReason: String {
         guard let profile else { return "Vi börjar där du är." }
-        if profile.reading != .comfortable { return "Du vill lära känna skriften. Vi tar några tecken i meningsfulla ord." }
+        if profile.reading != .comfortable {
+            return profile.startingExperience.isExperienced ? "Du har erfarenhet av språket. Vi kopplar den nya skriften till situationer du redan kan förstå." : "Du vill lära känna skriften. Vi tar några tecken i meningsfulla ord."
+        }
+        if let feedback = sessions.last(where: { $0.difficultyFeedback != nil })?.difficultyFeedback {
+            if feedback == .tooEasy { return "Du tyckte att det var för lätt. Nästa uppdrag får mer öppna frågor och en ny utmaning." }
+            if feedback == .tooHard { return "Du tyckte att det var för svårt. Nästa uppdrag får tydligare exempel och mindre steg." }
+        }
+        if profile.startingExperience.isExperienced && observations.isEmpty {
+            return "Du har redan en grund. Vi börjar med en hel situation utifrån ditt mål, med utrymme att uttrycka dig själv."
+        }
         if let recent = observations.last(where: { !$0.selfReported && (!$0.correct || !$0.independent) }) {
             return "Vi bygger vidare på \(recent.title.lowercased()) med stöd där det behövs."
         }
-        if !profile.hasSpoken && observations.isEmpty { return "Du är helt ny. Vi börjar med att lyssna och känna igen." }
+        if profile.startingExperience == .new && observations.isEmpty { return "Du är helt ny. Vi börjar med att lyssna och känna igen." }
         return "Vi väljer situationer som tar dig närmare ditt mål: \(profile.goal)"
     }
     var recommendedTrack: JourneyTrack {
         guard let profile else { return .foundations }
         let foundationComplete = sessions.contains { $0.pack.track == .foundations && $0.completedAt != nil }
         if profile.reading != .comfortable { return .foundations }
-        return !foundationComplete && !profile.hasSpoken ? .foundations : .mission
+        return !foundationComplete && profile.startingExperience == .new ? .foundations : .mission
     }
 
     /// A review is due after a day, then after 3 / 7 / 14 days following independent successful recall.

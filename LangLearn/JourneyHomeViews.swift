@@ -16,7 +16,18 @@ struct JourneySetupView: View {
                 Text("Berätta vad du vill kunna göra på \(settings.targetLanguage.displayName). Du kan ändra allt längs vägen.")
             }
             Section("Din startpunkt") {
-                Toggle("Jag har pratat språket förut", isOn: $profile.hasSpoken)
+                Picker("Vad passar in på dig?", selection: Binding<JourneyProfile.Experience?>(
+                    get: { profile.experience }, set: { value in
+                        profile.experience = value
+                        if let value { profile.hasSpoken = value != .new }
+                    })) {
+                    Text("Välj din erfarenhet").tag(nil as JourneyProfile.Experience?)
+                    ForEach(JourneyProfile.Experience.allCases, id: \.self) { Text($0.title).tag(Optional($0)) }
+                }.pickerStyle(.inline)
+                if let previous = store.state.activePlan?.profile {
+                    Text("Din tidigare skriftliga kunskapskoll uppskattade \(previous.cefr). Milo använder den som bakgrund, tillsammans med dina val idag.")
+                        .font(.footnote).foregroundStyle(.secondary)
+                }
                 Picker("Hur känns skriften?", selection: $profile.reading) {
                     ForEach(JourneyProfile.Reading.allCases, id: \.self) { Text($0.title).tag($0) }
                 }.pickerStyle(.inline)
@@ -42,12 +53,19 @@ struct JourneySetupView: View {
                         dismiss()
                     } catch let validation as LearningValidationError { self.error = "Skriv ett mål (högst 400 tecken) och håll även intressena under 400 tecken. \(validation.localizedDescription)" }
                     catch { self.error = error.localizedDescription }
-                }.font(.headline).disabled(profile.goal.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty)
+                }.font(.headline).disabled(profile.experience == nil || profile.goal.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty)
             }
         }
         .navigationTitle(editing ? "Det Milo vet om mig" : "Hej, nya möjligheter")
         .navigationBarTitleDisplayMode(.inline)
-        .task { profile = store.journey.profile ?? JourneyProfile() }
+        .task {
+            if var saved = store.journey.profile {
+                saved.experience = saved.startingExperience
+                profile = saved
+            } else {
+                profile = JourneyProfile(goal: store.state.activePlan?.profile.goal ?? "")
+            }
+        }
         .toolbar { if editing { Button("Avbryt") { dismiss() } } }
     }
 }
@@ -61,7 +79,7 @@ struct JourneyTodayView: View {
     var body: some View {
         ScrollView {
             VStack(alignment: .leading, spacing: 24) {
-                JourneyWelcome(name: settings.greetingName, goal: store.journey.profile?.goal ?? "", language: settings.targetLanguage)
+                JourneyWelcome(name: settings.greetingName, goal: store.journey.profile?.goal ?? "", language: settings.targetLanguage, experience: store.journey.profile?.startingExperience ?? .new)
                 if let session = store.journey.activeSession {
                     NavigationLink { JourneyLessonView(sessionID: session.id) } label: {
                         JourneyCard(title: "Fortsätt: \(session.pack.title)", subtitle: "Steg \(session.cursor + 1) av \(session.pack.steps.count) · allt du gjort finns kvar", symbol: "play.fill", color: LanguLearn.purple)
@@ -97,6 +115,7 @@ private struct JourneyWelcome: View {
     let name: String?
     let goal: String
     let language: LearningLanguage
+    let experience: JourneyProfile.Experience
     @State private var milo = MiloController()
     @State private var greetingTap = 0
     @Environment(\.dynamicTypeSize) private var typeSize
@@ -107,7 +126,7 @@ private struct JourneyWelcome: View {
             layout {
                 VStack(alignment: .leading, spacing: 8) {
                     Text(name.map { "Hej, \($0)!" } ?? "Hej, du!").font(.title.bold())
-                    Text("Tänk när orden kommer av sig själva.").font(.title3.weight(.medium))
+                    Text(experience == .confident ? "Hitta nyanserna. Gör språket till ditt." : experience == .everyday ? "Låt dina samtal ta nya vägar." : "Tänk när orden kommer av sig själva.").font(.title3.weight(.medium))
                 }.frame(maxWidth: .infinity, alignment: .leading)
                 Button {
                     greetingTap += 1
@@ -151,7 +170,7 @@ private struct JourneyTrackLink: View {
     var recommended = false
     var body: some View {
         NavigationLink { JourneyStartView(track: track) } label: {
-            JourneyCard(title: track == .foundations ? "Börja med ljud och tecken" : "Prova i verkliga livet",
+            JourneyCard(title: track == .foundations ? (store.journey.profile?.startingExperience.isExperienced == true ? "Koppla skriften till det du kan" : "Börja med ljud och tecken") : "Prova i verkliga livet",
                         subtitle: (recommended ? "Mitt förslag till dig · " : "") + (track == .foundations ? "Lyssna, upptäck betydelsen och lär känna skriften. Inga skrivna svar behövs." : "Ett litet vardagsuppdrag utifrån ditt mål, med exempel och hjälp hela vägen."),
                         symbol: track == .foundations ? "ear.badge.waveform" : "sun.horizon.fill",
                         color: track == .foundations ? LanguLearn.purple : LanguLearn.magenta)
@@ -197,7 +216,7 @@ struct JourneyStartView: View {
     init(track: JourneyTrack, topic: String = "") { self.track = track; _topic = State(initialValue: topic) }
 
     private var canStartGreeting: Bool {
-        track == .foundations && store.journey.sessions.isEmpty && FoundationContent.welcome(course: settings.course) != nil
+        track == .foundations && store.journey.profile?.startingExperience == .new && store.journey.sessions.isEmpty && FoundationContent.welcome(course: settings.course) != nil
     }
     var body: some View {
         ScrollView {
@@ -205,9 +224,19 @@ struct JourneyStartView: View {
                 Button { milo.wave() } label: {
                     MiloStage(controller: milo, size: 230, floorClearance: 0)
                 }.buttonStyle(.plain).accessibilityLabel("Hälsa på din guide Milo")
-                JourneyCard(title: track.title, subtitle: track == .foundations ? "Vi upptäcker några ljud och tecken i taget, i ord som betyder något för dig." : "Milo visar först. Sedan provar du med stöd, och tar ett litet steg själv när du är redo.", symbol: track == .foundations ? "waveform" : "sparkles", color: LanguLearn.purple)
+                VStack(alignment: .leading, spacing: 10) {
+                    Text(track.title).font(.title.bold())
+                    if store.journey.profile?.startingExperience.isExperienced == true {
+                        Text(track == .foundations ? "Du kan redan använda språket. Vi kopplar ljud och tecken till situationer du förstår." : "Du får en hel situation att ta dig an, med utrymme för egna svar. Exempel och tips finns när du vill ha dem.")
+                            .foregroundStyle(.secondary)
+                    } else {
+                        Text(track == .foundations ? "Vi upptäcker några ljud och tecken i taget, i ord som betyder något för dig." : "Milo visar först. Sedan provar du med stöd, och tar ett litet steg själv när du är redo.")
+                            .foregroundStyle(.secondary)
+                    }
+                }
                 if let profile = store.journey.profile {
                     Text("Utifrån ditt mål: \(profile.goal)").font(.headline)
+                    Text(profile.startingExperience.title).font(.subheadline).foregroundStyle(.secondary)
                     if track == .foundations || !store.journey.allowsSupportedWriting {
                         Label("Du kan svara genom att välja och lyssna. Inget skrivkrav.", systemImage: "hand.tap").font(.subheadline)
                     }

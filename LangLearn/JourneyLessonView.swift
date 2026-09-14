@@ -61,7 +61,11 @@ struct JourneyLessonView: View {
                             }.buttonStyle(.borderedProminent).controlSize(.large).frame(maxWidth: .infinity)
                         }
                     } else {
-                        JourneyCompletion(session: session, observations: store.journey.observations.filter { $0.sessionID == session.id }, milo: milo).id("step-top")
+                        JourneyCompletion(session: session, observations: store.journey.observations.filter { $0.sessionID == session.id }, milo: milo) { difficulty in
+                            edit { $0.difficultyFeedback = difficulty }
+                            if difficulty == .tooHard { milo.encourage() } else { milo.enthusiastic() }
+                        }.id("step-top")
+                        if let error = coach.errorMessage { Text(error).foregroundStyle(.red) }
                         Button("Tillbaka", systemImage: "arrow.left") { dismiss() }.buttonStyle(.borderedProminent)
                     }
                 }.padding(24).frame(maxWidth: 720).frame(maxWidth: .infinity)
@@ -100,6 +104,11 @@ struct JourneyLessonView: View {
     }
     private func speak(_ text: String, target: Bool) {
         guard let stepID = session?.step?.id else { return }
+        // Even a partially played phrase can help a reading answer. Mark that support
+        // before playback; listening tasks still require the completion callback below.
+        if target && session?.step?.kind == .meaningChoice {
+            coach.perform { try store.editJourneySession(sessionID, stepID: stepID) { $0.heardAudio = true } }
+        }
         milo.narrator.speak(text, in: target ? course.target : course.native) {
             if target {
                 coach.perform { try store.editJourneySession(sessionID, stepID: stepID) { $0.heardAudio = true } }
@@ -275,6 +284,7 @@ private struct JourneyCompletion: View {
     let session: JourneySession
     let observations: [JourneyObservation]
     let milo: MiloController
+    let chooseDifficulty: (JourneyDifficulty) -> Void
     var body: some View {
         VStack(alignment: .leading, spacing: 20) {
             Text("En liten stund som räknas.").font(.largeTitle.bold())
@@ -286,8 +296,31 @@ private struct JourneyCompletion: View {
             ForEach(observations) { observation in
                 Label(observation.title + " · " + (observation.selfReported ? "du provade att säga det" : !observation.correct ? "behövde ett nytt försök" : observation.independent ? "rätt utan tips" : "rätt med stöd"), systemImage: observation.correct ? "checkmark.circle" : "arrow.counterclockwise")
             }
+            JourneyDifficultyPicker(selected: session.difficultyFeedback, choose: chooseDifficulty)
             Text("Vi återkommer till det du övat. Ett rätt svar idag behöver få växa till något du minns imorgon.").font(.body)
             Text("Tryck på Milo för att fira tillsammans.").font(.footnote).foregroundStyle(.secondary)
+        }
+    }
+}
+
+private struct JourneyDifficultyPicker: View {
+    let selected: JourneyDifficulty?
+    let choose: (JourneyDifficulty) -> Void
+    @Environment(\.dynamicTypeSize) private var typeSize
+    var body: some View {
+        VStack(alignment: .leading, spacing: 12) {
+            Text("Hur kändes nivån?").font(.headline)
+            let layout = typeSize.isAccessibilitySize ? AnyLayout(VStackLayout(alignment: .leading)) : AnyLayout(HStackLayout())
+            layout {
+                ForEach(JourneyDifficulty.allCases, id: \.self) { difficulty in
+                    Button { choose(difficulty) } label: {
+                        Label(difficulty.title, systemImage: selected == difficulty ? "checkmark.circle.fill" : "circle")
+                            .padding(.vertical, 6)
+                    }.buttonStyle(.bordered).accessibilityAddTraits(selected == difficulty ? [.isSelected] : [])
+                }
+            }
+            Text(selected == nil ? "Ditt svar hjälper Milo att anpassa nästa stund." : "Sparat. Milo tar hänsyn till det när du skapar nästa stund.")
+                .font(.footnote).foregroundStyle(.secondary)
         }
     }
 }

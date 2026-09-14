@@ -29,6 +29,13 @@ struct JourneyStoreTests {
         restored.switchLanguage(to: .italian)
         #expect(restored.journey.observations.count == 1)
     }
+    @Test func audioSupportDoesNotCountAsIndependentReading() throws {
+        let (_, store, id) = try fixture()
+        try store.editJourneySession(id) { $0.heardAudio = true }
+        JourneyCoach().answer(store: store, sessionID: id, course: LanguageCourse(target: .italian, native: .swedish), answer: "hello")
+        #expect(store.journey.observations.first?.correct == true)
+        #expect(store.journey.observations.first?.independent == false)
+    }
     @Test func listeningRequiresPlaybackAndTextSupportChangesEvidence() throws {
         let (_, store, id) = try fixture()
         try store.editJourneySession(id) { $0.pack.steps[1].kind = .listeningChoice; $0.pack.steps[1].skill = .listening }

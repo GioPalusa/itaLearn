@@ -189,3 +189,56 @@ struct JourneyAdaptationTests {
         #expect(!progress.allowsSupportedWriting)
     }
 }
+
+@Suite("Experienced learners")
+struct ExperiencedJourneyTests {
+    let course = LanguageCourse(target: .italian, native: .swedish)
+
+    @Test func experienceRequiresMeaningfulApplicationEvenWithNoAppHistory() throws {
+        let progress = JourneyProgress(profile: JourneyProfile(experience: .confident, hasSpoken: true, goal: "Förhandla på jobbet"))
+        #expect(progress.recommendedTrack == .mission)
+        let request = try JourneyRequest(course: course, progress: progress, track: .mission, topic: "Förhandling", tone: "Warm")
+        #expect(request.experience == .confident)
+        #expect(throws: LearningValidationError.self) { try request.validate(journeyExamplePack()) }
+        var substantial = journeyExamplePack()
+        substantial.steps[2].target = "Preferirei discutere prima le condizioni del contratto."
+        try request.validate(substantial)
+    }
+
+    @Test func unfamiliarScriptDoesNotEraseOralExperience() throws {
+        let progress = JourneyProgress(profile: JourneyProfile(experience: .everyday, hasSpoken: true, reading: .newScript, goal: "Lära mig läsa det jag redan förstår"))
+        let request = try JourneyRequest(course: course, progress: progress, track: .foundations, topic: "Resa", tone: "Warm")
+        #expect(request.experience == .everyday)
+        #expect(!request.allowsWriting)
+        var pack = journeyExamplePack(track: .foundations)
+        pack.steps[1].kind = .scriptChoice; pack.steps[1].skill = .script; pack.steps[1].target = "a"
+        pack.steps[1].choices = [.init(id: "a", text: "a"), .init(id: "o", text: "o")]; pack.steps[1].correctChoiceID = "a"
+        #expect(throws: LearningValidationError.self) { try request.validate(pack) }
+        pack.steps[0].audioText = "Vorrei prenotare un tavolo per due persone, per favore."
+        try request.validate(pack)
+    }
+
+    @Test func earlierAssessmentAndRecentDifficultyTravelInBoundedContext() throws {
+        var progress = JourneyProgress(profile: JourneyProfile(experience: .everyday, hasSpoken: true, goal: "Resa"))
+        for difficulty in [JourneyDifficulty.tooHard, .justRight, .justRight, .tooEasy] {
+            var session = JourneySession(pack: journeyExamplePack()); session.completedAt = .now
+            session.difficultyFeedback = difficulty; progress.sessions.append(session)
+        }
+        let assessment = LearnerProfile(nativeLanguage: "sv", targetLanguage: "it", cefr: "B2", goal: "Arbete", strengths: ["Beskriva problem"], focusAreas: ["Artighet"])
+        let request = try JourneyRequest(course: course, progress: progress, track: .mission, topic: "Möte", tone: "Warm", priorAssessment: assessment)
+        #expect(request.priorAssessment?.cefr == "B2")
+        #expect(request.recentDifficulty == [.justRight, .justRight, .tooEasy])
+        let restored = try JSONDecoder().decode(JourneyProgress.self, from: JSONEncoder().encode(progress))
+        #expect(restored.sessions.last?.difficultyFeedback == .tooEasy)
+        #expect(restored.profile?.startingExperience == .everyday)
+        let other = try JourneyRequest(course: LanguageCourse(target: .english, native: .swedish), progress: progress, track: .mission, topic: "Möte", tone: "Warm", priorAssessment: assessment)
+        #expect(other.priorAssessment == nil)
+    }
+
+    @Test func olderProfilesRemainReadable() throws {
+        let old = Data(#"{"hasSpoken":true,"reading":"comfortable","goal":"Resa","interests":"Mat","minutes":5}"#.utf8)
+        let restored = try JSONDecoder().decode(JourneyProfile.self, from: old)
+        #expect(restored.experience == nil)
+        #expect(restored.startingExperience == .someWords)
+    }
+}

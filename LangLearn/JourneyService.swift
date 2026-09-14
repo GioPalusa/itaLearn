@@ -10,8 +10,11 @@ nonisolated struct JourneyRequest: Encodable, Sendable {
     var review: [JourneyObservation]
     var inventory: FoundationInventory
     var allowsWriting: Bool
+    var experience: JourneyProfile.Experience
+    var priorAssessment: LearnerProfile?
+    var recentDifficulty: [JourneyDifficulty]
 
-    init(course: LanguageCourse, progress: JourneyProgress, track: JourneyTrack, topic: String, tone: String) throws {
+    init(course: LanguageCourse, progress: JourneyProgress, track: JourneyTrack, topic: String, tone: String, priorAssessment: LearnerProfile? = nil) throws {
         guard let profile = progress.profile, topic.count <= 400 else { throw LearningValidationError.invalidResponse }
         try profile.validate()
         self.course = course; self.profile = profile; self.track = track; self.topic = topic; self.tone = tone
@@ -19,10 +22,26 @@ nonisolated struct JourneyRequest: Encodable, Sendable {
         review = Array(progress.dueObservations().prefix(4))
         inventory = .forLanguage(course.target)
         allowsWriting = progress.allowsSupportedWriting
+        experience = profile.startingExperience
+        self.priorAssessment = priorAssessment?.targetLanguage == course.target.code ? priorAssessment : nil
+        recentDifficulty = Array(progress.sessions.compactMap(\.difficultyFeedback).suffix(3))
     }
 
     func validate(_ pack: JourneyPack) throws {
         try pack.validate(course: course, track: track)
+        if experience.isExperienced {
+            // Sentence-level application is required; a pack of isolated vocabulary cannot
+            // silently become an experienced learner's first mission. Script units stay short.
+            let minimum = ["ja", "zh", "th"].contains(course.target.code) ? 12 : 30
+            if track == .mission {
+                guard pack.steps.contains(where: {
+                    ($0.kind == .write && $0.target.count >= minimum) ||
+                    ($0.kind == .listeningChoice && $0.audioText.count >= minimum)
+                }) else { throw LearningValidationError.invalidResponse }
+            } else {
+                guard pack.steps.contains(where: { $0.audioText.count >= minimum }) else { throw LearningValidationError.invalidResponse }
+            }
+        }
         if !allowsWriting {
             guard !pack.steps.contains(where: { [.write, .build].contains($0.kind) }) else { throw LearningValidationError.invalidResponse }
         }
@@ -55,6 +74,10 @@ nonisolated struct OpenAIJourneyService: JourneyService {
         Return a journey pack matching the provided JSON schema. Use ISO codes in targetLanguage/explanationLanguage.
         All instructions, hints, feedback, translations, skillTitle, title and reason must be in the explanation language.
         Personalize the situation using the learner's stated goal, interests and chosen topic. Explain the actual reason for this choice without inventing memories.
+        Being new to this app NEVER implies being new to the language. Use experience, priorAssessment and recentEvidence to choose the challenge. priorAssessment is an earlier informal WRITTEN estimate, not proof of speaking ability. Current explicit experience choices and reading preferences take priority over old estimates.
+        experience=new: teach first useful sounds and phrases. someWords: begin with a short useful exchange rather than isolated hello/thanks drills. everyday: use a complete situation with follow-up questions, explaining a problem or making arrangements. confident: use nuanced intentions, opinions, negotiation and register, with open responses and specific feedback. Never reset everyday/confident learners to single-word exercises because they have no app history.
+        Experienced mission packs MUST contain at least one write or listeningChoice task using a full sentence (at least 30 characters, or 12 for Japanese/Chinese/Thai). If the script is unfamiliar, preserve the learner's oral/conceptual experience: use meaningful spoken situations with script recognition alongside them, including at least one full-sentence audioText; never require typing unfamiliar script. Reading and oral experience are separate dimensions.
+        Adapt to recentDifficulty: tooEasy means a more open task or richer situation, not just more items; tooHard means smaller steps and clearer examples while retaining the person's goal; justRight maintains challenge. Keep this change within reading/accessibility constraints. The number of steps follows time, not proficiency.
         Use 3–4 steps for 3 minutes, 4–5 for 5 minutes, 6–8 for 10 minutes. Start with an example that teaches what the following question needs.
         Build from demonstration to supported recognition to a small new application. Never test unexplained words or script units.
         If allowsWriting is false, do not use write or build. This field reflects the learner's starting point and recent recognition, not a formal proficiency estimate. When it becomes true after early recognition, introduce only tiny supported writing tasks with a model example available. Use meaningChoice, listeningChoice, scriptChoice and optional say.
