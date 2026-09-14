@@ -36,7 +36,7 @@ final class JourneyDiscoveryCoach {
     }
     func restart(store: LearningStore) {
         cancel()
-        edit(store: store) { $0.stage = .story; $0.turns = []; $0.draft = ""; $0.usedHelp = false; $0.heardAudio = false; $0.isLocalStart = false }
+        edit(store: store) { $0.stage = .story; $0.turns = []; $0.draft = ""; $0.usedHelp = false; $0.heardAudio = false; $0.isLocalStart = false; $0.difficultyFeedback = nil }
     }
     func chooseReading(_ reading: JourneyProfile.Reading, store: LearningStore) {
         edit(store: store) {
@@ -58,14 +58,18 @@ final class JourneyDiscoveryCoach {
                 turn = DiscoveryTurn(text: draft.story, source: .story)
             } else if skip {
                 turn = DiscoveryTurn(text: "Jag vill gå vidare utan att svara på just den här uppgiften.", source: .skip)
-            } else if reply?.mode == .listen {
+            } else if answer.isEmpty, draft.difficultyFeedback == .tooHard, choiceID == nil {
+                turn = DiscoveryTurn(text: "Det här är för svårt för mig. Jag vill prova en enklare uppgift.", source: .feedback)
+            } else if reply?.mode == .listen, choiceID != nil {
                 guard draft.heardAudio || draft.usedHelp, let choice = reply?.choices.first(where: { $0.id == choiceID }) else { throw LearningValidationError.invalidResponse }
                 turn = DiscoveryTurn(text: choice.text, source: .listening, usedHelp: draft.usedHelp,
                                      heardAudio: draft.heardAudio, correctChoice: choiceID == reply?.correctChoiceID)
             } else {
                 guard !answer.isEmpty, answer.count <= 700 else { throw LearningValidationError.invalidResponse }
-                turn = DiscoveryTurn(text: answer, source: reply?.kind == .question ? .clarification : .writing, usedHelp: draft.usedHelp)
+                turn = DiscoveryTurn(text: answer, source: reply?.kind == .question ? .clarification : reply?.mode == .listen ? .openResponse : .writing, usedHelp: draft.usedHelp, heardAudio: draft.heardAudio)
             }
+            turn.usedHelp = draft.usedHelp; turn.heardAudio = draft.heardAudio
+            turn.difficultyFeedback = draft.difficultyFeedback
             draft.turns.append(turn)
         }
         guard errorMessage == nil else { return }
@@ -90,7 +94,7 @@ final class JourneyDiscoveryCoach {
                     guard var current = $0.discovery, !current.turns.isEmpty else { throw LearningValidationError.invalidResponse }
                     current.turns[current.turns.count - 1].reply = reply
                     current.stage = reply.kind == .recommendation ? .ready : .conversation
-                    current.draft = ""; current.usedHelp = false; current.heardAudio = false
+                    current.draft = ""; current.usedHelp = false; current.heardAudio = false; current.difficultyFeedback = nil
                     $0.discovery = current
                 }
             } catch is CancellationError { }

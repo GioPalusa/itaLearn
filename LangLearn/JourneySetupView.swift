@@ -28,7 +28,12 @@ struct JourneySetupView: View {
                     Color.clear.frame(height: 1).id("moment")
                     if let discovery {
                         DiscoveryMiloMoment(milo: milo, title: title(discovery), caption: caption(discovery), compact: isTyping) {
-                            milo.speak(title(discovery), in: settings.nativeLanguage)
+                            milo.speak(discovery.reply?.prompt ?? title(discovery), in: settings.nativeLanguage)
+                        }
+                        if discovery.pending == nil, let prompt = discovery.reply?.prompt {
+                            Text(prompt).font(.title3.weight(.medium))
+                                .frame(maxWidth: .infinity, alignment: .leading)
+                                .fixedSize(horizontal: false, vertical: true).textSelection(.enabled)
                         }
                         switch discovery.stage {
                         case .story: story(discovery)
@@ -93,8 +98,8 @@ struct JourneySetupView: View {
         switch draft.stage {
         case .story: String(localized: "Vad vill du öppna dörren till?")
         case .script: String(localized: "En sak innan vi provar.")
-        case .conversation: draft.pending != nil ? String(localized: "Jag tar med mig det du berättar…") : draft.reply?.prompt ?? String(localized: "Låt oss hitta din första utmaning.")
-        case .ready, .finished: draft.isLocalStart ? String(localized: "Då tar vi första steget tillsammans.") : draft.reply?.prompt ?? String(localized: "Här vill jag börja med dig.")
+        case .conversation: draft.pending != nil ? String(localized: "Jag tar med mig det du berättar…") : String(localized: "En situation i taget.")
+        case .ready, .finished: draft.isLocalStart ? String(localized: "Då tar vi första steget tillsammans.") : String(localized: "Här vill jag börja med dig.")
         }
     }
     private func caption(_ draft: JourneyDiscovery) -> String {
@@ -197,19 +202,31 @@ struct JourneySetupView: View {
         } else if let reply = draft.reply {
             VStack(alignment: .leading, spacing: 18) {
                 if reply.kind == .probe { probe(reply, draft: draft) }
-                if reply.mode != .listen {
-                    if !reply.choices.isEmpty {
-                        ForEach(reply.choices, id: \.id) { choice in
-                            Button(choice.text) { send(text: choice.text) }.buttonStyle(.bordered).controlSize(.large)
-                        }
+                if reply.kind == .question {
+                    ForEach(reply.choices, id: \.id) { choice in
+                        Button(choice.text) { send(text: choice.text) }.buttonStyle(.bordered).controlSize(.large)
                     }
-                    composer(reply.kind == .question ? "Berätta med egna ord…" : "Prova ett svar…", text: binding(\.draft, limit: 700))
-                    Button("Så här tänker jag", systemImage: "arrow.up") { send() }
-                        .buttonStyle(LanguLearnPrimaryButtonStyle()).disabled(draft.draft.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty)
                 }
+                Button {
+                    coach.edit(store: store) { $0.difficultyFeedback = $0.difficultyFeedback == .tooHard ? nil : .tooHard }
+                    milo.encourage()
+                } label: {
+                    Label("Det här är för svårt", systemImage: draft.difficultyFeedback == .tooHard ? "checkmark.circle.fill" : "hand.raised")
+                        .frame(minHeight: 44, alignment: .leading)
+                }.tint(LanguLearn.purple)
+                    .accessibilityAddTraits(draft.difficultyFeedback == .tooHard ? .isSelected : [])
+                if draft.difficultyFeedback == .tooHard {
+                    Text("Det tar vi med oss. Skriv gärna det du kan, eller be om en enklare uppgift direkt.").font(.callout).foregroundStyle(LanguLearn.purple)
+                }
+                Text(reply.mode == .listen ? "Du kan också berätta vad du uppfattade. Några ord eller en förklaring på ditt eget språk räcker." : "Skriv det du kan. Några ord, en del av svaret eller en förklaring på ditt eget språk räcker.")
+                    .font(.callout).foregroundStyle(.secondary)
+                composer(reply.kind == .question ? "Berätta med egna ord…" : "Det här kan jag säga eller förstå…", text: binding(\.draft, limit: 700))
+                Button(draft.difficultyFeedback == .tooHard ? (draft.draft.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty ? "Prova något enklare" : "Skicka mitt svar och anpassa nivån") : "Så här tänker jag", systemImage: "arrow.up") { send() }
+                    .buttonStyle(LanguLearnPrimaryButtonStyle())
+                    .disabled(draft.draft.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty && draft.difficultyFeedback != .tooHard)
                 Button("Hoppa över just den här") { isTyping = false; milo.stop(); coach.submit(store: store, course: settings.course, skip: true) }
                     .font(.subheadline).frame(minHeight: 44)
-                Text("En liten situation, ingen examen. Hjälp och hoppade frågor sänker inte automatiskt din startnivå.").font(.footnote).foregroundStyle(.secondary)
+                Text("Ditt svar och hur svårt det känns hjälper Milo att hitta en bättre start för dig.").font(.footnote).foregroundStyle(.secondary)
             }
         }
     }

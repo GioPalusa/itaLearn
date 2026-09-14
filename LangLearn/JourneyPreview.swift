@@ -73,10 +73,10 @@ private struct DiscoveryPreviewService: JourneyDiscoveryService {
         let japanese = request.course.target.code == "ja"
         var reply = DiscoveryReply(targetLanguage: request.course.target.code, explanationLanguage: request.course.native.code,
             kind: .probe, mode: listening ? .listen : .write,
-            prompt: listening ? "Vi provar med ljud. Vad föreslår personen?" : "På resan blir tåget inställt. Hur skulle du be om en annan lösning?",
-            target: japanese ? "電車が止まっています。明日の朝、バスで行きませんか。" : "Il treno è stato cancellato. Possiamo prenotare un posto per domani mattina?",
-            translation: japanese ? "Tåget går inte. Ska vi ta bussen i morgon bitti?" : "Tåget är inställt. Kan vi boka en plats i morgon bitti?",
-            hint: "Lyssna efter när personen föreslår att ni ska resa.",
+            prompt: listening ? "Lyssna på personen som berättar om resplanerna. Vad uppfattade du? Du kan välja ett svar eller berätta med egna ord, även om du bara förstod en del." : "Svara på italienska till vännen med egna ord. Skriv var eller när ni kan träffas och nämn något du vill göra. Du kan också svara med några ord eller berätta vad du förstår av meddelandet.",
+            target: japanese ? "電車が止まっています。明日の朝、バスで行きませんか。" : listening ? "Il treno è stato cancellato. Possiamo prenotare un posto per domani mattina?" : "Ciao! Sabato arrivo a Roma. Dove ci incontriamo? Vorrei anche prendere un caffè prima di visitare il centro. Tu che cosa vuoi fare?",
+            translation: japanese ? "Tåget går inte. Ska vi ta bussen i morgon bitti?" : listening ? "Tåget är inställt. Kan vi boka en plats i morgon bitti?" : "Hej! På lördag kommer jag till Rom. Var ska vi träffas? Jag skulle vilja ta en kaffe innan vi besöker centrum. Vad vill du göra?",
+            hint: listening ? "Lyssna efter när personen föreslår att ni ska resa." : "Du kan börja med Ciao och föreslå en plats eller något ni kan göra.",
             choices: listening ? [.init(id: "a", text: "Att resa i morgon bitti"), .init(id: "b", text: "Att stanna hela veckan")] : [],
             correctChoiceID: listening ? "a" : "", goal: request.turns[0].text,
             interests: "", experience: .everyday, reason: "Vi börjar med en situation där du får använda språket för att lösa ett problem.", evidence: [])
@@ -85,8 +85,9 @@ private struct DiscoveryPreviewService: JourneyDiscoveryService {
             reply.kind = .recommendation; reply.mode = .none
             reply.prompt = "Vi börjar med att hitta en annan väg."
             reply.target = ""; reply.translation = ""; reply.hint = ""; reply.choices = []; reply.correctChoiceID = ""
-            reply.reason = last.source == .skip ? "Du valde att hoppa över exemplet. Vi utgår från det du berättade och justerar när du provar nästa situation." : "Ditt första uppdrag handlar om att föreslå en lösning när resplaner ändras. Du får prova hela svar och kan be om stöd längs vägen."
-            if last.source == .skip, request.previousProfile?.startingExperience == .confident { reply.experience = .confident }
+            reply.reason = last.difficultyFeedback == .tooHard ? "Du berättade att uppgiften kändes för svår. Vi börjar med kortare fraser, mer stöd och det du redan kunde få fram." : last.source == .skip ? "Du valde att hoppa över exemplet. Vi utgår från det du berättade och justerar när du provar nästa situation." : "Ditt första uppdrag handlar om att föreslå en lösning när resplaner ändras. Du får prova hela svar och kan be om stöd längs vägen."
+            if last.difficultyFeedback == .tooHard { reply.experience = .someWords }
+            if last.source == .skip, last.difficultyFeedback == nil, request.previousProfile?.startingExperience == .confident { reply.experience = .confident }
             reply.evidence = [.init(turnID: last.id.uuidString, quote: String(last.text.prefix(300)), demonstrated: !last.usedHelp && (last.source == .writing || (last.source == .listening && last.heardAudio && last.correctChoice == true)))]
         }
         return reply

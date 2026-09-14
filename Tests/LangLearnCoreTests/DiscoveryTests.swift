@@ -103,6 +103,29 @@ struct DiscoveryTests {
         var probe = discoveryProbe(); probe.target = "Ciao"; probe.experience = .someWords
         #expect(throws: LearningValidationError.self) { try probe.validate(for: request) }
     }
+    @Test func difficultyAndOpenAnswersAreNotScoredListeningAndCanAdjustHistory() throws {
+        var request = try discoveryRequest()
+        request.previousProfile = JourneyProfile(experience: .confident, goal: "Resa")
+        request.turns[0].reply = discoveryProbe()
+        request.turns.append(DiscoveryTurn(text: "Det här är för svårt", source: .feedback, difficultyFeedback: .tooHard))
+        var easier = discoveryProbe(); easier.target = "Un caffè?"; easier.experience = .someWords
+        try easier.validate(for: request)
+        var summary = discoverySummary(request.turns); summary.experience = .someWords
+        try summary.validate(for: request)
+        summary.evidence[0].demonstrated = true
+        #expect(throws: LearningValidationError.self) { try summary.validate(for: request) }
+        request.turns[1] = DiscoveryTurn(text: "Jag förstod bara att de vill åka", source: .openResponse, heardAudio: true)
+        summary = discoverySummary(request.turns)
+        try summary.validate(for: request)
+        summary.evidence[0].demonstrated = true
+        #expect(throws: LearningValidationError.self) { try summary.validate(for: request) }
+        request.turns[1] = DiscoveryTurn(text: "Jag vill resa, men vet inte hur jag ska svara", source: .clarification, difficultyFeedback: .tooHard)
+        try discoverySummary(request.turns).validate(for: request)
+        #expect(request.turns[1].informsStartingActivity)
+        // A free-text report can also lead to a simpler probe despite old experience.
+        request.turns[1] = DiscoveryTurn(text: "Den här nivån är för hög för mig", source: .writing)
+        try easier.validate(for: request)
+    }
     @Test func priorAssessmentIsOnlySharedWithMatchingLanguage() throws {
         let draft = JourneyDiscovery(targetLanguage: "it", explanationLanguage: "sv", reading: .comfortable,
             turns: [DiscoveryTurn(text: "Resa", source: .story)])
@@ -189,6 +212,42 @@ struct DiscoveryStoreTests {
         #expect(lesson.startingSamples.first?.usedHelp == false)
         let payload = String(decoding: try JSONEncoder().encode(lesson.startingSamples), as: UTF8.self)
         #expect(!payload.contains("evidence")) // Omit follow-up model replies from subsequent lesson calls.
+    }
+    @Test func difficultyPersistsWithPartialAnswerAcrossRetryAndReachesNextLesson() async throws {
+        let (container, store) = try fixture()
+        let service = DiscoveryStub(); let coach = JourneyDiscoveryCoach(service: service)
+        coach.begin(store: store, course: course)
+        coach.edit(store: store) { $0.story = "Resa"; $0.stage = .script }
+        coach.chooseReading(.comfortable, store: store)
+        coach.submit(store: store, course: course); try await wait(coach)
+        coach.edit(store: store) { $0.draft = "Ciao… Jag vet inte hur jag ska fortsätta"; $0.difficultyFeedback = .tooHard; $0.usedHelp = true }
+        let restored = LearningStore(); restored.load(container: container, language: .italian)
+        #expect(restored.journey.discovery?.difficultyFeedback == .tooHard)
+        coach.submit(store: restored, course: course); try await wait(coach)
+        let answer = try #require(await service.requests.last?.turns.last)
+        #expect(answer.text == "Ciao… Jag vet inte hur jag ska fortsätta")
+        #expect(answer.difficultyFeedback == .tooHard && answer.usedHelp)
+        #expect(coach.accept(store: restored))
+        let lesson = try JourneyRequest(course: course, progress: restored.journey, track: .mission, topic: "", tone: "warm")
+        #expect(lesson.startingSamples.first?.difficultyFeedback == .tooHard)
+    }
+    @Test func listeningAllowsOpenCommentsWithoutPretendingTheyAreCorrectChoices() async throws {
+        let (_, store) = try fixture()
+        let coach = JourneyDiscoveryCoach(service: DiscoveryStub())
+        coach.begin(store: store, course: course)
+        var probe = discoveryProbe(); probe.mode = .listen
+        coach.edit(store: store) { $0.stage = .conversation; $0.reading = .newScript; $0.turns = [DiscoveryTurn(text: "Resa", source: .story, reply: probe)] }
+        coach.submit(store: store, course: course, text: "Jag förstår inte ännu, det här är för svårt")
+        try await wait(coach)
+        let answer = try #require(store.journey.discovery?.turns.last)
+        #expect(answer.source == .openResponse && answer.correctChoice == nil && !answer.heardAudio)
+        #expect(answer.reply?.evidence.first?.demonstrated == false)
+        coach.restart(store: store)
+        coach.edit(store: store) { $0.stage = .conversation; $0.reading = .comfortable; $0.turns = [DiscoveryTurn(text: "Resa", source: .story, reply: discoveryProbe())]; $0.difficultyFeedback = .tooHard; $0.usedHelp = true }
+        coach.submit(store: store, course: course); try await wait(coach)
+        #expect(store.journey.discovery?.turns.last?.source == .feedback)
+        #expect(store.journey.discovery?.turns.last?.difficultyFeedback == .tooHard)
+        #expect(store.journey.discovery?.turns.last?.usedHelp == true)
     }
     @Test func lateResponseAfterCancellationOrLanguageSwitchCannotPublish() async throws {
         let (_, store) = try fixture()

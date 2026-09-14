@@ -43,8 +43,10 @@ nonisolated struct DiscoveryReply: Codable, Equatable, Sendable {
                   !request.turns.contains(where: { $0.reply?.kind == .question }) else { throw LearningValidationError.invalidResponse }
         case .probe:
             guard !target.isEmpty, !translation.isEmpty, !hint.isEmpty else { throw LearningValidationError.invalidResponse }
-            let experienced = experience.isExperienced || request.previousProfile?.startingExperience.isExperienced == true
+            let priorExperience = request.previousProfile?.startingExperience.isExperienced == true
                 || ["B1", "B2", "C1", "C2"].contains(request.priorAssessment?.cefr ?? "")
+            let experienced = request.turns.last?.difficultyFeedback != .tooHard
+                && (experience.isExperienced || (request.turns.count == 1 && priorExperience))
             if experienced {
                 let minimum = ["ja", "zh", "th"].contains(request.course.target.code) ? 12 : 30
                 guard target.count >= minimum else { throw LearningValidationError.invalidResponse }
@@ -56,11 +58,12 @@ nonisolated struct DiscoveryReply: Codable, Equatable, Sendable {
             } else { throw LearningValidationError.invalidResponse }
         case .recommendation:
             guard mode == .none, choices.isEmpty, target.isEmpty, translation.isEmpty, hint.isEmpty, correctChoiceID.isEmpty, !evidence.isEmpty,
-                  request.turns.contains(where: { [.writing, .listening, .skip].contains($0.source) }) else {
+                  request.turns.contains(where: { $0.informsStartingActivity }) else {
                 throw LearningValidationError.invalidResponse
             }
         }
-        if kind == .recommendation, request.turns.last?.source == .skip {
+        if kind == .recommendation, request.turns.last?.source == .skip, !request.turns.contains(where: { $0.difficultyFeedback == .tooHard }),
+           !request.turns.dropLast().contains(where: { [.writing, .listening, .openResponse, .feedback].contains($0.source) }) {
             let known = ([request.previousProfile?.startingExperience] + request.turns.dropLast().map { $0.reply?.experience }).compactMap { $0 }
             let established = known.max { JourneyProfile.Experience.allCases.firstIndex(of: $0)! < JourneyProfile.Experience.allCases.firstIndex(of: $1)! }
             if let established, experience != established { throw LearningValidationError.invalidResponse }
@@ -78,15 +81,19 @@ nonisolated struct DiscoveryReply: Codable, Equatable, Sendable {
 }
 
 nonisolated struct DiscoveryTurn: Codable, Equatable, Identifiable, Sendable {
-    enum Source: String, Codable, Sendable { case story, clarification, writing, listening, skip }
+    enum Source: String, Codable, Sendable { case story, clarification, writing, listening, openResponse, feedback, skip }
     var id = UUID()
     var text: String
     var source: Source
     var usedHelp = false
     var heardAudio = false
     var correctChoice: Bool? = nil
+    var difficultyFeedback: JourneyDifficulty? = nil
     /// A nil reply is a persisted pending request. Retry reuses this exact turn.
     var reply: DiscoveryReply?
+    var informsStartingActivity: Bool {
+        [.writing, .listening, .openResponse, .feedback, .skip].contains(source) || difficultyFeedback == .tooHard
+    }
 }
 
 nonisolated struct JourneyDiscovery: Codable, Equatable, Sendable {
@@ -104,6 +111,7 @@ nonisolated struct JourneyDiscovery: Codable, Equatable, Sendable {
     var usedHelp = false
     var heardAudio = false
     var isLocalStart = false
+    var difficultyFeedback: JourneyDifficulty? = nil
     var reply: DiscoveryReply? { turns.last?.reply }
     var pending: DiscoveryTurn? { turns.last.flatMap { $0.reply == nil ? $0 : nil } }
 
@@ -133,11 +141,13 @@ nonisolated struct DiscoverySample: Encodable, Sendable {
     var usedHelp: Bool
     var heardAudio: Bool
     var correctChoice: Bool?
+    var difficultyFeedback: JourneyDifficulty?
 
     init(probe: DiscoveryReply?, answer: DiscoveryTurn) {
         prompt = probe?.prompt ?? ""; target = probe?.target ?? ""
         text = answer.text; source = answer.source; usedHelp = answer.usedHelp
         heardAudio = answer.heardAudio; correctChoice = answer.correctChoice
+        difficultyFeedback = answer.difficultyFeedback
     }
 }
 
@@ -178,9 +188,12 @@ nonisolated struct OpenAIDiscoveryService: JourneyDiscoveryService {
         Read the learner's actual story, previous profile, and earlier informal WRITTEN assessment. Being new to this app is NOT being new to the language. Do not ask the learner to choose a CEFR level or a competence category.
         Respond personally to something specific they said. Discover their purpose and likely starting challenge through one useful situation. Use at most one question to clarify an unclear goal or experience; offer up to three natural quick replies plus free text. Never repeat information already given.
         Usually return kind=probe immediately. If previous context or the story suggests experience, present a complete scenario with intentions, explanation, follow-up or nuance, not isolated hello/thanks words. A beginner gets a short supported situation. Change the next probe based on the actual previous answer; an experienced learner must not restart at the alphabet merely because their writing system is unfamiliar.
+        Keep prompt to one short, concrete instruction, preferably at most two short sentences. Partial answers are welcome: do not require a minimum sentence count or completion of every subtask.
+        difficultyFeedback=tooHard is explicit learner feedback, distinct from a skipped task or a wrong answer. Acknowledge it and use it in evaluation and future starting activities. If there is room for another probe, offer a simpler, smaller situation with less production required; otherwise recommend a gentler starting activity and explain why. Earlier experience is context, not a reason to ignore their requested adjustment. Retain any partial answer as evidence of what they DID understand. Never declare total beginner status just from difficulty on one situation.
+        Open responses can mix languages, give fragments, explain what was understood, or say in the explanation language that the task is too difficult. Treat such natural-language difficulty feedback like the explicit tooHard flag. Do not discard these answers because they don't follow the task format. Source=feedback contains only self-report; source=openResponse is an unscored comment on a listening task (use heardAudio and usedHelp for context), never an automatically correct listening answer or proof of target-language writing. Neither source can have demonstrated=true.
         A probe uses mode=write only when reading=comfortable. target is a short target-language situation or another person's message, NOT the answer to copy. prompt asks the learner to respond in their own words. Provide translation and hint for optional help; they are hidden initially.
         If reading is newScript/learningToRead, use mode=listen: target is a complete natural spoken message, with 2–3 distinct meaning choices in the explanation language and exactly one correctChoiceID. Keep oral complexity appropriate to experience. Do not assess writing or pronunciation from such a choice.
-        After one informative sample, return kind=recommendation. If evidence is uncertain you may offer one further probe. When mustRecommend=true return recommendation now. Skip means unknown, not failure. If the last turn is skipped, preserve the highest starting challenge already proposed in previous replies or previousProfile (experience, or someWords/new according to hasSpoken if experience is absent). Ordered challenges: new < someWords < everyday < confident. Never infer low competence from skipping, one typo, asking for help, or using the explanation language.
+        After one informative sample, return kind=recommendation. If evidence is uncertain you may offer one further probe. When mustRecommend=true return recommendation now. Skip means unknown, not failure. If the last turn is skipped and no turn contains explicit tooHard or natural-language difficulty feedback, preserve the highest starting challenge already proposed in previous replies or previousProfile (experience, or someWords/new according to hasSpoken if experience is absent). Ordered challenges: new < someWords < everyday < confident. Never infer low competence from skipping, one typo, asking for help, or using the explanation language.
         The recommendation is a provisional starting ACTIVITY, not a certified level or proof of speaking fluency. experience=new/someWords/everyday/confident chooses its challenge. Preserve existing experience unless actual evidence and the learner's wishes justify changing it. goal and interests must faithfully summarize their stated life context; never invent details. reason briefly explains how the first mission will fit THIS person and what remains uncertain.
         Include 1–3 evidence items in a recommendation, each quoting an exact substring of a supplied turn.text, with turnID matching that turn.id. demonstrated=true ONLY for an unaided target-language writing sample or a correct listening answer with heardAudio=true. A story about experience, skipped answer or helped answer is never a demonstration. Do not claim pronunciation from text or self-report. Refer to priorAssessment only as earlier written evidence, not speaking ability.
         Always supply all schema fields. For question: mode=none, target/translation/hint/correctChoiceID empty; optional quick-reply choices. For recommendation: mode=none, target/translation/hint/correctChoiceID empty and choices=[]. For write probes choices=[] and correctChoiceID empty. Supply goal, interests, provisional experience and reason on every reply. No markdown.

@@ -28,7 +28,7 @@ nonisolated struct JourneyRequest: Encodable, Sendable {
         if let discovery = progress.discovery, discovery.stage == .finished, discovery.targetLanguage == course.target.code {
             startingSamples = Array(discovery.turns.indices.dropFirst().compactMap { index -> DiscoverySample? in
                 let answer = discovery.turns[index]
-                guard [.writing, .listening, .skip].contains(answer.source) else { return nil }
+                guard answer.informsStartingActivity else { return nil }
                 return DiscoverySample(probe: discovery.turns[index - 1].reply, answer: answer)
             }.suffix(2))
         } else { startingSamples = [] }
@@ -85,7 +85,7 @@ nonisolated struct OpenAIJourneyService: JourneyService {
         Being new to this app NEVER implies being new to the language. Use experience, priorAssessment and recentEvidence to choose the challenge. priorAssessment is an earlier informal WRITTEN estimate, not proof of speaking ability. Current explicit experience choices and reading preferences take priority over old estimates.
         experience=new: teach first useful sounds and phrases. someWords: begin with a short useful exchange rather than isolated hello/thanks drills. everyday: use a complete situation with follow-up questions, explaining a problem or making arrangements. confident: use nuanced intentions, opinions, negotiation and register, with open responses and specific feedback. Never reset everyday/confident learners to single-word exercises because they have no app history.
         Experienced mission packs MUST contain at least one write or listeningChoice task using a full sentence (at least 30 characters, or 12 for Japanese/Chinese/Thai). If the script is unfamiliar, preserve the learner's oral/conceptual experience: use meaningful spoken situations with script recognition alongside them, including at least one full-sentence audioText; never require typing unfamiliar script. Reading and oral experience are separate dimensions.
-        startingSamples are informal discovery answers, not certified proficiency. Use their actual situation, response, and support flags to choose the next mission. A skipped or helped answer is not proof of low competence; do not infer pronunciation or fluency.
+        startingSamples are informal discovery answers, not certified proficiency. Use their actual situation, response, and support flags to choose the next mission. Explicit tooHard or natural-language difficulty feedback asks for a gentler starting activity: honor it and build on any partial understanding. Open responses on listening tasks are unscored comments, not automatic listening successes. A skipped or helped answer is not proof of low competence; do not infer pronunciation or fluency.
         Adapt to recentDifficulty: tooEasy means a more open task or richer situation, not just more items; tooHard means smaller steps and clearer examples while retaining the person's goal; justRight maintains challenge. Keep this change within reading/accessibility constraints. The number of steps follows time, not proficiency.
         Use 3–4 steps for 3 minutes, 4–5 for 5 minutes, 6–8 for 10 minutes. Start with an example that teaches what the following question needs.
         Build from demonstration to supported recognition to a small new application. Never test unexplained words or script units.

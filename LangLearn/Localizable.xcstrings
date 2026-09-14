@@ -219,9 +219,6 @@
     "Applåderar" : {
 
     },
-    "Att känna igen tecknen och att kunna prata är olika saker. Milo hjälper dig med båda." : {
-
-    },
     "Avatarens storlek" : {
 
     },
@@ -253,9 +250,6 @@
 
     },
     "Berätta om dig och %@. Vad har du provat — och vad längtar du efter att kunna göra?" : {
-
-    },
-    "Berätta vad du vill kunna göra på %@. Du kan ändra allt längs vägen." : {
 
     },
     "Beställ något gott och fråga vad det kostar." : {
@@ -354,7 +348,13 @@
     "Det här kan du" : {
 
     },
+    "Det här kan jag säga eller förstå…" : {
+
+    },
     "Det här passar mig" : {
+
+    },
+    "Det här är för svårt" : {
 
     },
     "Det här är jag" : {
@@ -364,6 +364,9 @@
 
     },
     "Det kunde jag" : {
+
+    },
+    "Det tar vi med oss. Skriv gärna det du kan, eller be om en enklare uppgift direkt." : {
 
     },
     "Diktera på %@" : {
@@ -393,9 +396,6 @@
     "Din nästa stund" : {
 
     },
-    "Din resa börjar där du är." : {
-
-    },
     "Din rutt" : {
 
     },
@@ -409,13 +409,7 @@
         }
       }
     },
-    "Din startpunkt" : {
-
-    },
     "Din studieplan, dina kunskapskollar och samtal sparas lokalt. För varje svar skickar appen bara den aktuella lektionen, en kort lärandesammanfattning och de senaste meddelandena till OpenAI. Kunskapskollen använder sina sex svar och din nuvarande plan." : {
-
-    },
-    "Din tidigare skriftliga kunskapskoll uppskattade %@. Milo använder den som bakgrund, tillsammans med dina val idag." : {
 
     },
     "Dina avklarade lektioner ligger kvar och går att repetera." : {
@@ -436,9 +430,6 @@
     "Dina studier kunde inte öppnas" : {
 
     },
-    "Dina val och dina övningsresultat används för kommande uppgifter. Du kan se och ändra profilen i Min resa. När du skapar en AI-lektion skickas relevant studiekontext till OpenAI." : {
-
-    },
     "Ditt försök" : {
 
     },
@@ -455,6 +446,9 @@
 
     },
     "Ditt svar hjälper Milo att anpassa nästa stund." : {
+
+    },
+    "Ditt svar och hur svårt det känns hjälper Milo att hitta en bättre start för dig." : {
 
     },
     "Ditt svar är sparat. Fortsätt när du vill." : {
@@ -495,6 +489,9 @@
 
     },
     "Du kan ansluta OpenAI senare för personliga lektioner." : {
+
+    },
+    "Du kan också berätta vad du uppfattade. Några ord eller en förklaring på ditt eget språk räcker." : {
 
     },
     "Du kan redan använda språket. Vi kopplar ljud och tecken till situationer du förstår." : {
@@ -545,9 +542,6 @@
     "En hälsning från Milo" : {
 
     },
-    "En lagom stund" : {
-
-    },
     "En liten rättning" : {
 
     },
@@ -570,6 +564,9 @@
 
     },
     "En sak innan vi provar." : {
+
+    },
+    "En situation i taget." : {
 
     },
     "Entusiastisk" : {
@@ -725,9 +722,6 @@
     "Hej, du!" : {
 
     },
-    "Hej, nya möjligheter" : {
-
-    },
     "Hela Milo" : {
 
     },
@@ -753,9 +747,6 @@
 
     },
     "Hur kändes nivån?" : {
-
-    },
-    "Hur känns skriften?" : {
 
     },
     "Hur lång stund vill du börja med?" : {
@@ -806,12 +797,6 @@
     "Jag har… och skulle vilja…" : {
 
     },
-    "Jag kan ord och enkla fraser" : {
-
-    },
-    "Jag klarar vardagliga samtal" : {
-
-    },
     "Jag känner igen skriften" : {
 
     },
@@ -827,9 +812,6 @@
     "Jag tar med mig det du berättar…" : {
 
     },
-    "Jag uttrycker mig ganska fritt" : {
-
-    },
     "Jag vet inte ännu" : {
 
     },
@@ -843,9 +825,6 @@
 
     },
     "Jag vill kunna prata mer med människor som är viktiga för mig." : {
-
-    },
-    "Jag vill kunna…" : {
 
     },
     "Jag vill känna mig hemma på resan och kunna prata med dem jag möter." : {
@@ -1256,9 +1235,6 @@
     "Nästan — prova igen" : {
 
     },
-    "Något att längta till" : {
-
-    },
     "Okej, en liten paus för ett leende." : {
 
     },
@@ -1337,6 +1313,9 @@
     "Prova nästa gång" : {
 
     },
+    "Prova något enklare" : {
+
+    },
     "Radera alla mina studier" : {
 
     },
@@ -1373,9 +1352,6 @@
     "Röst eller diktering saknas för det här språket på din enhet. Du kan alltid läsa och skriva med Milo." : {
 
     },
-    "Saker jag gillar (valfritt)" : {
-
-    },
     "Sammanfattning" : {
 
     },
@@ -1406,6 +1382,9 @@
     "Skapas en gång per språk. Sedan kan du spela utan internet." : {
 
     },
+    "Skicka mitt svar och anpassa nivån" : {
+
+    },
     "Skicka sparat svar igen" : {
 
     },
@@ -1419,6 +1398,9 @@
 
     },
     "Skriftligt underlag från %@ · inte ett CEFR-prov" : {
+
+    },
+    "Skriv det du kan. Några ord, en del av svaret eller en förklaring på ditt eget språk räcker." : {
 
     },
     "Skriv ditt svar…" : {
@@ -1455,9 +1437,6 @@
 
     },
     "Spara användbara uttryck inne i lektionen." : {
-
-    },
-    "Spara mina val" : {
 
     },
     "Spara nyckel" : {
@@ -1602,9 +1581,6 @@
     "Tidigare texter (%lld)" : {
 
     },
-    "Till exempel: beställa lunch, prata med min partner eller förstå en låt." : {
-
-    },
     "Till min studieplan" : {
 
     },
@@ -1663,9 +1639,6 @@
 
     },
     "Vad heter du?" : {
-
-    },
-    "Vad passar in på dig?" : {
 
     },
     "Vad ska jag öva härnäst?" : {
@@ -1749,12 +1722,6 @@
     "Visa kunskapskollen" : {
 
     },
-    "Visa mig med ljud" : {
-
-    },
-    "Visa min start" : {
-
-    },
     "Visa min studieplan" : {
 
     },
@@ -1783,9 +1750,6 @@
 
     },
     "Visar välkomsten och språkvalet igen. Dina studier och din sparade nyckel påverkas inte." : {
-
-    },
-    "Välj din erfarenhet" : {
 
     },
     "Välj ditt språk" : {
