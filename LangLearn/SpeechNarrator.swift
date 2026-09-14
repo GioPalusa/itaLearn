@@ -110,10 +110,12 @@ final class SpeechNarrator: NSObject, AVAudioPlayerDelegate {
             try await Self.audioSession.acquire(token)
             guard token == playback.generation, playback.phase == .preparing else { return }
 #endif
-            let player = try AVAudioPlayer(contentsOf: url)
+            let player = try await Self.preparePlayer(url: url)
+            guard token == playback.generation, playback.phase == .preparing else {
+                await Self.stopPlayer(player)
+                return
+            }
             player.delegate = self
-            player.isMeteringEnabled = true
-            player.prepareToPlay()
             self.player = player
             guard player.play(), playback.start(token) else { fail(token); return }
             meterTask = Task { [weak self] in
@@ -125,6 +127,21 @@ final class SpeechNarrator: NSObject, AVAudioPlayerDelegate {
                 }
             }
         } catch { fail(token) }
+    }
+
+    /// AVAudioPlayer is Sendable in the SDK. Only this task owns it until preparation finishes.
+    nonisolated private static func preparePlayer(url: URL) async throws -> AVAudioPlayer {
+        try await Task.detached(priority: .userInitiated) {
+            let player = try AVAudioPlayer(contentsOf: url)
+            player.isMeteringEnabled = true
+            guard player.prepareToPlay() else { throw SpeechSessionError.preparationFailed }
+            return player
+        }.value
+    }
+
+    nonisolated private static func stopPlayer(_ player: AVAudioPlayer?) async {
+        guard let player else { return }
+        await Task.detached(priority: .userInitiated) { player.stop() }.value
     }
 
 #if os(iOS) || os(visionOS)
@@ -164,15 +181,19 @@ final class SpeechNarrator: NSObject, AVAudioPlayerDelegate {
     private func releaseAudio() {
         meterTask?.cancel(); meterTask = nil
         timeoutTask?.cancel(); timeoutTask = nil
-        player?.stop(); player = nil
+        let retiredPlayer = player; player = nil
         // Invalidate the writer before stopping synthesis, whose terminal callback may run immediately.
         writer?.cancel(); writer = nil
         synthesizer?.stopSpeaking(at: .immediate); synthesizer = nil
 #if os(iOS) || os(visionOS)
         if let token = audioSessionToken {
             audioSessionToken = nil
-            Self.audioSession.release(token)
+            Self.audioSession.release(token, stopPlayback: { await Self.stopPlayer(retiredPlayer) })
+        } else {
+            Task { await Self.stopPlayer(retiredPlayer) }
         }
+#else
+        Task { await Self.stopPlayer(retiredPlayer) }
 #endif
     }
 
@@ -260,7 +281,7 @@ nonisolated final class SpeechAudioWriter: @unchecked Sendable {
     private enum AudioError: Error { case invalidBuffer, empty }
 }
 
-nonisolated enum SpeechSessionError: Error { case activationFailed }
+nonisolated enum SpeechSessionError: Error { case activationFailed, preparationFailed }
 
 /// Serializes shared-session changes across awaits. A stale stop cannot deactivate a newer speaker.
 @MainActor final class SpeechSessionCoordinator {
@@ -282,10 +303,11 @@ nonisolated enum SpeechSessionError: Error { case activationFailed }
         tail = operation
         try await operation.value
     }
-    @discardableResult func release(_ token: UUID) -> Task<Void, Error> {
+    @discardableResult func release(_ token: UUID, stopPlayback: @escaping @Sendable () async -> Void = {}) -> Task<Void, Error> {
         let previous = tail
         let operation = Task {
             _ = try? await previous?.value
+            await stopPlayback()
             guard owner == token else { return }
             try await deactivate()
             owner = nil

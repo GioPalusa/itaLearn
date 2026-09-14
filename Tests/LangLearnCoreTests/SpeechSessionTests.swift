@@ -10,6 +10,7 @@ private actor SessionEvents {
         values.append("active")
     }
     func deactivate() { values.append("inactive") }
+    func stopPlayback() { values.append("stopped") }
 }
 
 @MainActor @Suite("Speech session ordering")
@@ -20,10 +21,10 @@ struct SpeechSessionTests {
         let firstID = UUID(), nextID = UUID()
         let first = Task { try await session.acquire(firstID) }
         while await events.values.isEmpty { await Task.yield() }
-        let release = session.release(firstID)
+        let release = session.release(firstID, stopPlayback: { await events.stopPlayback() })
         try await session.acquire(nextID)
         try await first.value; try await release.value
-        #expect(await events.values == ["activating", "active", "inactive", "activating", "active"])
+        #expect(await events.values == ["activating", "active", "stopped", "inactive", "activating", "active"])
         // A late duplicate stop for the old speaker cannot switch off the new one.
         try await session.release(firstID).value
         #expect(await events.values.last == "active")
