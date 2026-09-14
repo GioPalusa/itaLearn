@@ -274,6 +274,8 @@ nonisolated struct LearningState: Codable, Sendable {
     var freeChat: FreeChatSession?
     /// Texts the learner wrote and had reviewed, newest last.
     var writings: [WritingReview]?
+    /// Optional for decoding existing studies without resetting plans or language progress.
+    var journey: JourneyProgress?
 
     mutating func apply(_ result: AssessmentResult, rawJSON: Data, course: LanguageCourse) throws {
         try result.validate(hasCurrentPlan: activePlan != nil, course: course)
