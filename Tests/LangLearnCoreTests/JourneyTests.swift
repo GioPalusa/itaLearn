@@ -139,3 +139,53 @@ struct FoundationTests {
         #expect(throws: LearningValidationError.self) { try foundation.validate(journeyExamplePack(track: .foundations)) }
     }
 }
+
+@Suite("Journey quality safeguards")
+struct JourneyQualityTests {
+    @Test func repeatedSameDaySuccessDoesNotDelayReview() {
+        let now = Date(timeIntervalSince1970: 1_000_000)
+        var progress = JourneyProgress()
+        for _ in 0..<5 {
+            progress.record(JourneyObservation(id: UUID(), skillID: "hello", title: "Hälsa", skill: .reading,
+                correct: true, independent: true, selfReported: false, date: now, phrase: "Ciao", translation: "Hej"))
+        }
+        #expect(progress.dueObservations(at: now.addingTimeInterval(86401)).count == 1)
+    }
+    @Test func completingGreetingDoesNotClaimScriptReadiness() {
+        var progress = JourneyProgress(profile: JourneyProfile(reading: .newScript, goal: "Resa"))
+        var session = JourneySession(pack: journeyExamplePack(track: .foundations))
+        session.completedAt = .now
+        progress.sessions = [session]
+        #expect(progress.recommendedTrack == .foundations)
+    }
+    @Test func emptyLookingContentCannotBecomeALesson() {
+        var pack = journeyExamplePack()
+        pack.steps[0].instruction = "  \n  "
+        #expect(throws: LearningValidationError.self) { try pack.validate(course: LanguageCourse(target: .italian, native: .swedish), track: .mission) }
+    }
+}
+
+@Suite("Evidence-based activity choices")
+struct JourneyAdaptationTests {
+    @Test func writingActivitiesGrowFromSeveralSkillsButNeverBypassUnknownScript() {
+        var progress = JourneyProgress(profile: JourneyProfile(goal: "Resa"))
+        #expect(!progress.allowsSupportedWriting)
+        for id in ["hello", "thanks", "coffee"] {
+            progress.record(JourneyObservation(id: UUID(), skillID: id, title: id, skill: .reading, correct: true,
+                independent: true, selfReported: false, date: .now, phrase: id, translation: id))
+        }
+        #expect(progress.allowsSupportedWriting)
+        progress.profile?.reading = .newScript
+        #expect(!progress.allowsSupportedWriting)
+        progress.profile?.hasSpoken = true
+        #expect(!progress.allowsSupportedWriting)
+    }
+    @Test func supportedAnswersAndRepeatingOneSkillDoNotUnlockWriting() {
+        var progress = JourneyProgress(profile: JourneyProfile(goal: "Resa"))
+        for index in 0..<8 {
+            progress.record(JourneyObservation(id: UUID(), skillID: "hello", title: "Hälsa", skill: .reading, correct: true,
+                independent: index.isMultiple(of: 2), selfReported: false, date: .now, phrase: "Ciao", translation: "Hej"))
+        }
+        #expect(!progress.allowsSupportedWriting)
+    }
+}

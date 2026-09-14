@@ -72,7 +72,8 @@ nonisolated struct JourneyStep: Codable, Identifiable, Equatable, Sendable {
     var explanation: String
 
     func validate() throws {
-        guard !id.isEmpty, id.count <= 80, !skillID.isEmpty, skillID.count <= 80,
+        guard [id, skillID, skillTitle, instruction, target, translation, explanation].allSatisfy({ !$0.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty }),
+              !id.isEmpty, id.count <= 80, !skillID.isEmpty, skillID.count <= 80,
               !skillTitle.isEmpty, skillTitle.count <= 150,
               !instruction.isEmpty, instruction.count <= 600,
               !target.isEmpty, target.count <= 500, !translation.isEmpty, translation.count <= 600,
@@ -80,9 +81,9 @@ nonisolated struct JourneyStep: Codable, Identifiable, Equatable, Sendable {
               (1...3).contains(hints.count), hints.allSatisfy({ !$0.isEmpty && $0.count <= 500 }),
               Set(choices.map(\.id)).count == choices.count,
               choices.allSatisfy({ !$0.id.isEmpty && $0.id.count <= 40 && !$0.text.isEmpty && $0.text.count <= 300 }),
-              tokens.count <= 14, tokens.allSatisfy({ !$0.isEmpty && $0.count <= 80 }),
+              tokens.count <= 14, tokens.allSatisfy({ !Self.normalized($0).isEmpty && $0.count <= 80 }),
               acceptedAnswers.count <= 4,
-              acceptedAnswers.allSatisfy({ !$0.isEmpty && $0.count <= 500 }) else {
+              acceptedAnswers.allSatisfy({ !Self.normalized($0).isEmpty && $0.count <= 500 }) else {
             throw LearningValidationError.invalidResponse
         }
         switch kind {
@@ -170,6 +171,7 @@ nonisolated struct JourneyObservation: Codable, Identifiable, Equatable, Sendabl
     var date: Date
     var phrase: String
     var translation: String
+    var sessionID: UUID? = nil
 }
 
 nonisolated struct JourneyPhrase: Codable, Identifiable, Equatable, Sendable {
@@ -214,6 +216,25 @@ nonisolated struct JourneyProgress: Codable, Equatable, Sendable {
     var phrases: [JourneyPhrase] = []
 
     var activeSession: JourneySession? { sessions.last(where: { $0.completedAt == nil }) }
+
+    /// This opens a scaffolded activity, not a proficiency claim. Unknown script still takes priority.
+    var allowsSupportedWriting: Bool {
+        guard let profile, profile.reading == .comfortable else { return false }
+        let recognized = Set(observations.filter {
+            $0.correct && $0.independent && !$0.selfReported && [.reading, .listening].contains($0.skill)
+        }.map(\.skillID))
+        return profile.hasSpoken || recognized.count >= 3
+    }
+
+    var recommendationReason: String {
+        guard let profile else { return "Vi börjar där du är." }
+        if profile.reading != .comfortable { return "Du vill lära känna skriften. Vi tar några tecken i meningsfulla ord." }
+        if let recent = observations.last(where: { !$0.selfReported && (!$0.correct || !$0.independent) }) {
+            return "Vi bygger vidare på \(recent.title.lowercased()) med stöd där det behövs."
+        }
+        if !profile.hasSpoken && observations.isEmpty { return "Du är helt ny. Vi börjar med att lyssna och känna igen." }
+        return "Vi väljer situationer som tar dig närmare ditt mål: \(profile.goal)"
+    }
     var recommendedTrack: JourneyTrack {
         guard let profile else { return .foundations }
         let foundationComplete = sessions.contains { $0.pack.track == .foundations && $0.completedAt != nil }

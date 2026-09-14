@@ -30,11 +30,11 @@ extension LearningStore {
                 guard session.pendingAttemptID == attemptID, session.pendingAnswer == answer else { throw LearningValidationError.invalidResponse }
                 try evaluation.validate(step: step, answer: answer)
             }
-            let supported = session.hintCount > 0 || session.revealedText || session.attempts > 0 || step.kind == .build
+            let supported = session.hintCount > 0 || session.revealedText || session.attempts > 0 || step.kind == .build || (step.kind == .meaningChoice && session.heardAudio)
             let skill: JourneySkill = step.kind == .listeningChoice && session.revealedText ? .reading : step.skill
             progress.record(JourneyObservation(id: attemptID, skillID: step.skillID, title: step.skillTitle,
                 skill: skill, correct: evaluation.accepted, independent: !supported && !selfReported,
-                selfReported: selfReported, date: .now, phrase: step.target, translation: step.translation))
+                selfReported: selfReported, date: .now, phrase: step.target, translation: step.translation, sessionID: sessionID))
             session.evaluation = evaluation; session.attempts += 1
             session.pendingAttemptID = nil; session.pendingAnswer = nil
             progress.sessions[index] = session

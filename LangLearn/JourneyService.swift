@@ -9,6 +9,7 @@ nonisolated struct JourneyRequest: Encodable, Sendable {
     var recentEvidence: [JourneyObservation]
     var review: [JourneyObservation]
     var inventory: FoundationInventory
+    var allowsWriting: Bool
 
     init(course: LanguageCourse, progress: JourneyProgress, track: JourneyTrack, topic: String, tone: String) throws {
         guard let profile = progress.profile, topic.count <= 400 else { throw LearningValidationError.invalidResponse }
@@ -17,15 +18,21 @@ nonisolated struct JourneyRequest: Encodable, Sendable {
         recentEvidence = Array(progress.observations.suffix(20))
         review = Array(progress.dueObservations().prefix(4))
         inventory = .forLanguage(course.target)
+        allowsWriting = progress.allowsSupportedWriting
     }
 
     func validate(_ pack: JourneyPack) throws {
         try pack.validate(course: course, track: track)
-        if profile.reading != .comfortable || !profile.hasSpoken {
+        if !allowsWriting {
             guard !pack.steps.contains(where: { [.write, .build].contains($0.kind) }) else { throw LearningValidationError.invalidResponse }
         }
         for step in pack.steps where step.kind == .scriptChoice {
-            guard inventory.units.contains(step.target), !step.audioText.isEmpty else { throw LearningValidationError.invalidResponse }
+            guard inventory.units.contains(step.target), !step.audioText.isEmpty,
+                  step.choices.allSatisfy({ inventory.units.contains($0.text) }),
+                  step.choices.first(where: { $0.id == step.correctChoiceID })?.text == step.target else { throw LearningValidationError.invalidResponse }
+        }
+        if ["ja", "zh", "th"].contains(course.target.code), pack.steps.contains(where: { $0.kind == .build }) {
+            throw LearningValidationError.invalidResponse
         }
         if track == .foundations && profile.reading != .comfortable {
             guard pack.steps.contains(where: { $0.kind == .scriptChoice }) else { throw LearningValidationError.invalidResponse }
@@ -50,16 +57,17 @@ nonisolated struct OpenAIJourneyService: JourneyService {
         Personalize the situation using the learner's stated goal, interests and chosen topic. Explain the actual reason for this choice without inventing memories.
         Use 3–4 steps for 3 minutes, 4–5 for 5 minutes, 6–8 for 10 minutes. Start with an example that teaches what the following question needs.
         Build from demonstration to supported recognition to a small new application. Never test unexplained words or script units.
-        If the learner has never spoken OR reading is not comfortable, do not use write or build. Use meaningChoice, listeningChoice, scriptChoice and optional say.
+        If allowsWriting is false, do not use write or build. This field reflects the learner's starting point and recent recognition, not a formal proficiency estimate. When it becomes true after early recognition, introduce only tiny supported writing tasks with a model example available. Use meaningChoice, listeningChoice, scriptChoice and optional say.
         Foundations: no write/build, teach at most 2–3 units. If reading is not comfortable include scriptChoice. Use inventory.units for scriptChoice.target. Respect inventory.guidance.
-        For scriptChoice, show the target unit, explain its role in a familiar whole word, and use choices to distinguish it from other units. Do not put the correct answer in instruction or hints[0].
+        For scriptChoice, show the target unit, explain its role in a familiar whole word, and ask the learner to match it among other units. Every choice text is exactly an inventory unit; correctChoiceID points to the choice whose text equals target. Do not put the correct answer in instruction or hints[0].
         listeningChoice: audioText contains a complete target-language phrase; choices contain meanings in the explanation language. Do not disclose the heard phrase in instruction.
         meaningChoice: target is the phrase being understood, choices are meanings in the explanation language. scriptChoice skill=script; listeningChoice skill=listening; meaningChoice skill=reading.
         build/write skill=writing, say skill=speaking. say is voluntary imitation, never pronunciation scoring.
         Each step needs a stable skillID such as greetings.hello shared across lessons, a specific skillTitle, and 1–3 progressively clearer hints. Include a useful explanatory feedback sentence, not generic praise.
         Use real whole-word audioText, never invented phonetic spelling or isolated phonemes. Every step has target and translation, including write where these are the model answer hidden until feedback.
         Choices: 2–4 unique IDs and meanings, exactly one correctChoiceID. Build: 2–14 shuffled tokens and 1–4 acceptedAnswers buildable from the token bank including repetitions. Write accepts natural equivalent answers, assessed separately.
-        Empty inapplicable arrays and strings. No markdown. Steps have unique IDs. Reuse review skillIDs when reviewing; use recentEvidence to adjust support, never infer ability from selfReported speech. Recognition is not independent writing.
+        Do not use build for Japanese, Chinese or Thai because this app joins tiles with spaces; use choice or write when ready.
+        Empty inapplicable arrays and strings. No markdown. Steps have unique IDs. Reuse review skillIDs when reviewing; use recentEvidence to adjust support, never infer ability from selfReported speech. Recognition is not independent writing. After incorrect or supported answers, use a simpler example and fewer choices for that skill; after independent success, vary the situation before adding complexity.
         """, input: try Self.json(request), schemaName: "guided_journey_v1", schema: LearningSchema.journey(course: request.course, track: request.track), as: JourneyPack.self, maxOutputTokens: 8000)
         try request.validate(response.value)
         return response.value
