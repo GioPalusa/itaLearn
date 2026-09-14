@@ -53,6 +53,28 @@ struct OpenAIClientTests {
         return data
     }
 
+    @Test func guidedPackRoundTripsThroughResponsesAndRejectsWrongCourse() async throws {
+        StubURLProtocol.install { request in
+            let body = try #require(JSONSerialization.jsonObject(with: Self.body(request)) as? [String: Any])
+            #expect(body["max_output_tokens"] as? Int == 8000)
+            let text = try #require(body["text"] as? [String: Any])
+            let format = try #require(text["format"] as? [String: Any])
+            #expect(format["name"] as? String == "guided_journey_v1")
+            #expect(format["strict"] as? Bool == true)
+            let payload = String(decoding: try JSONEncoder().encode(journeyExamplePack()), as: UTF8.self)
+            return (200, try JSONSerialization.data(withJSONObject: ["status": "completed", "output": [
+                ["type": "message", "content": [["type": "output_text", "text": payload]]]
+            ]]))
+        }
+        let service = OpenAIJourneyService(client: client())
+        let progress = JourneyProgress(profile: JourneyProfile(hasSpoken: true, goal: "Resa"))
+        let request = try JourneyRequest(course: LanguageCourse(target: .italian, native: .swedish), progress: progress, track: .mission, topic: "Hälsa", tone: "Warm")
+        #expect(try await service.generate(request).steps.count == 3)
+        var wrongCourse = request
+        wrongCourse.course = LanguageCourse(target: .english, native: .swedish)
+        await #expect(throws: LearningValidationError.self) { try await service.generate(wrongCourse) }
+    }
+
     @Test func sendsStrictSchemaToRequestedModelWithoutRemoteConversationStorage() async throws {
         StubURLProtocol.install { request in
             #expect(request.url?.absoluteString == "https://api.openai.com/v1/responses")

@@ -111,3 +111,31 @@ struct JourneyTests {
         #expect(progress.dueObservations(at: now.addingTimeInterval(86401)).count == 1)
     }
 }
+
+@Suite("Foundation content and generation contract")
+struct FoundationTests {
+    @Test func starterWorksForEveryTarget() throws {
+        for target in LearningLanguage.catalog {
+            for native in [LearningLanguage.swedish, .english] {
+                let course = LanguageCourse(target: target, native: native)
+                let pack = try #require(FoundationContent.welcome(course: course))
+                try pack.validate(course: course, track: .foundations)
+                #expect(!pack.steps.contains { [.write, .build].contains($0.kind) })
+                let inventory = FoundationInventory.forLanguage(target)
+                #expect(!inventory.units.isEmpty)
+                #expect(Set(inventory.units).count == inventory.units.count)
+            }
+        }
+    }
+    @Test func learnerReadinessIsEnforcedBeyondSchema() throws {
+        let course = LanguageCourse(target: .italian, native: .swedish)
+        var progress = JourneyProgress(profile: JourneyProfile(goal: "Resa"))
+        let request = try JourneyRequest(course: course, progress: progress, track: .mission, topic: "Kafé", tone: "Warm")
+        #expect(throws: LearningValidationError.self) { try request.validate(journeyExamplePack()) }
+        progress.profile?.hasSpoken = true
+        try JourneyRequest(course: course, progress: progress, track: .mission, topic: "Kafé", tone: "Warm").validate(journeyExamplePack())
+        progress.profile?.reading = .newScript
+        let foundation = try JourneyRequest(course: course, progress: progress, track: .foundations, topic: "", tone: "Warm")
+        #expect(throws: LearningValidationError.self) { try foundation.validate(journeyExamplePack(track: .foundations)) }
+    }
+}

@@ -47,7 +47,7 @@ nonisolated struct OpenAIClient: Sendable {
 
     func respond<Value: Decodable & Sendable>(
         model: String, instructions: String, input: String,
-        schemaName: String, schema: [String: Any], as type: Value.Type
+        schemaName: String, schema: [String: Any], as type: Value.Type, maxOutputTokens: Int? = nil
     ) async throws -> StructuredResponse<Value> {
         guard let key = try await keyProvider(), !key.isEmpty else { throw OpenAIError.missingKey }
         try Task.checkCancellation()
@@ -60,7 +60,7 @@ nonisolated struct OpenAIClient: Sendable {
             "store": false,
             "instructions": instructions,
             "input": [["role": "user", "content": input]],
-            "max_output_tokens": model == Self.plannerModel ? 10000 : 3500,
+            "max_output_tokens": maxOutputTokens ?? (model == Self.plannerModel ? 10000 : 3500),
             "text": ["format": ["type": "json_schema", "name": schemaName, "strict": true, "schema": schema]]
         ])
         let data: Data
