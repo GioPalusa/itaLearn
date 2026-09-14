@@ -95,6 +95,13 @@ struct JourneyLessonView: View {
             guard let result else { return }
             if result.accepted { milo.joyful() } else { milo.encourage() }
         }
+        .sensoryFeedback(trigger: session?.attempts ?? 0) { oldAttempts, newAttempts in
+            guard newAttempts > oldAttempts, let accepted = self.session?.evaluation?.accepted else { return nil }
+            return accepted ? .success : .error
+        }
+        .sensoryFeedback(.success, trigger: session?.completedAt != nil) { wasComplete, isComplete in
+            !wasComplete && isComplete
+        }
         .task { if session?.completedAt != nil { milo.joyful() } else { milo.present() } }
         }
     }
@@ -327,5 +334,6 @@ private struct JourneyDifficultyPicker: View {
             Text(selected == nil ? "Ditt svar hjälper Milo att anpassa nästa stund." : "Sparat. Milo tar hänsyn till det när du skapar nästa stund.")
                 .font(.footnote).foregroundStyle(.secondary)
         }
+        .sensoryFeedback(.selection, trigger: selected)
     }
 }

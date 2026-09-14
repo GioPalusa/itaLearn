@@ -166,6 +166,12 @@ struct LanguLearnPrimaryButtonStyle: ButtonStyle {
             .shadow(color: .black.opacity(0.10), radius: 4, y: 4)
             .scaleEffect(configuration.isPressed ? 0.98 : 1)
             .animation(.spring(duration: 0.2), value: configuration.isPressed)
+            .sensoryFeedback(
+                .impact(weight: .medium, intensity: 0.8),
+                trigger: configuration.isPressed
+            ) { wasPressed, isPressed in
+                !wasPressed && isPressed
+            }
     }
 }
 
@@ -182,6 +188,9 @@ struct LanguLearnSecondaryButtonStyle: ButtonStyle {
             .background(fill, in: .capsule)
             .scaleEffect(configuration.isPressed ? 0.98 : 1)
             .animation(.spring(duration: 0.2), value: configuration.isPressed)
+            .sensoryFeedback(.selection, trigger: configuration.isPressed) { wasPressed, isPressed in
+                !wasPressed && isPressed
+            }
     }
 }
 

@@ -11,6 +11,7 @@ struct JourneySetupView: View {
     @State private var coach: JourneyDiscoveryCoach
     @State private var milo = MiloController()
     @State private var showsConnection = false
+    @State private var selectionFeedback = 0
     @FocusState private var isTyping: Bool
     var editing: Bool
 
@@ -52,7 +53,7 @@ struct JourneySetupView: View {
                 .frame(maxWidth: 620).frame(maxWidth: .infinity)
             }
             .scrollDismissesKeyboard(.interactively)
-            .background(Color(red: 0.96, green: 0.94, blue: 0.99).ignoresSafeArea())
+            .langulearnCanvas()
             .onChange(of: discovery?.stage) {
                 isTyping = false; milo.stop()
                 if discovery?.stage == .ready { milo.joyful() } else { milo.curious() }
@@ -94,6 +95,7 @@ struct JourneySetupView: View {
         .onChange(of: access.revision) { coach.cancel() }
         .onChange(of: settings.course) { coach.cancel() }
         .onChange(of: coach.isWorking) { if coach.isWorking { milo.think() } else { milo.leanIn() } }
+        .sensoryFeedback(.selection, trigger: selectionFeedback)
     }
 
     private func title(_ draft: JourneyDiscovery) -> String {
@@ -122,6 +124,7 @@ struct JourneySetupView: View {
             }
             Button {
                 coach.edit(store: store) { $0.startsFromZero.toggle() }
+                selectionFeedback += 1
                 milo.encourage()
             } label: {
                 Label(draft.startsFromZero ? "Jag börjar från noll — vi tar det tillsammans" : "Jag börjar från noll", systemImage: draft.startsFromZero ? "checkmark.circle.fill" : "sparkle")
@@ -141,7 +144,11 @@ struct JourneySetupView: View {
         inspiration("Min vardag", symbol: "sun.max", text: "Jag vill använda språket i min vardag.")
     }
     private func inspiration(_ title: LocalizedStringKey, symbol: String, text: String.LocalizationValue) -> some View {
-        Button { coach.edit(store: store) { $0.story = String(localized: text) }; isTyping = true } label: {
+        Button {
+            coach.edit(store: store) { $0.story = String(localized: text) }
+            selectionFeedback += 1
+            isTyping = true
+        } label: {
             VStack(spacing: 8) {
                 Image(systemName: symbol).font(.title3)
                 Text(title).font(.footnote.weight(.medium)).fixedSize(horizontal: false, vertical: true)
@@ -180,6 +187,7 @@ struct JourneySetupView: View {
     }
     private func selectReading(_ reading: JourneyProfile.Reading) {
         coach.chooseReading(reading, store: store)
+        selectionFeedback += 1
         if discovery?.stage == .conversation, connected { coach.submit(store: store, course: settings.course) }
     }
 
@@ -229,6 +237,7 @@ struct JourneySetupView: View {
                 }
                 Button {
                     coach.edit(store: store) { $0.difficultyFeedback = $0.difficultyFeedback == .tooHard ? nil : .tooHard }
+                    selectionFeedback += 1
                     milo.encourage()
                 } label: {
                     Label("Det här är för svårt", systemImage: draft.difficultyFeedback == .tooHard ? "checkmark.circle.fill" : "hand.raised")
@@ -299,7 +308,10 @@ struct JourneySetupView: View {
             Text("Hur lång stund vill du börja med?").font(.headline)
             HStack(spacing: 12) {
                 ForEach([3, 5, 10], id: \.self) { minutes in
-                    Button { coach.edit(store: store) { $0.minutes = minutes } } label: {
+                    Button {
+                        coach.edit(store: store) { $0.minutes = minutes }
+                        selectionFeedback += 1
+                    } label: {
                         Text("\(minutes) min").font(.headline).frame(maxWidth: .infinity).padding(.vertical, 16)
                             .background(draft.minutes == minutes ? LanguLearn.purple : .white, in: Capsule())
                             .foregroundStyle(draft.minutes == minutes ? .white : LanguLearn.purple)

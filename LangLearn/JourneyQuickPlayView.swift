@@ -97,6 +97,20 @@ struct JourneyQuickPlayView: View {
                 .ignoresSafeArea()
         )
         .hideNavigationBar()
+        .onChange(of: selectedTokens) {
+            if result == false { result = nil }
+        }
+        .sensoryFeedback(.selection, trigger: selectedTokens)
+        .sensoryFeedback(.selection, trigger: revealed) { wasRevealed, isRevealed in
+            !wasRevealed && isRevealed
+        }
+        .sensoryFeedback(trigger: result) { _, result in
+            guard let result else { return nil }
+            return result ? .success : .error
+        }
+        .sensoryFeedback(.success, trigger: index) { oldIndex, newIndex in
+            oldIndex < steps.count && newIndex >= steps.count
+        }
         .onDisappear { narrator.stop() }
     }
 

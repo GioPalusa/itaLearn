@@ -113,6 +113,7 @@ struct FlashcardPracticeView: View {
     @State private var errorMessage: String?
     @State private var milo = MiloController()
     @State private var dragOffset: CGSize = .zero
+    @State private var ratingFeedback = 0
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
 
     /// Milo speaks the words on this screen, so his controller owns the narrator.
@@ -134,6 +135,8 @@ struct FlashcardPracticeView: View {
         .frame(maxWidth: 760).frame(maxWidth: .infinity)
         .langulearnCanvas()
         .hideNavigationBar()
+        .sensoryFeedback(.selection, trigger: revealed)
+        .sensoryFeedback(.impact(weight: .medium, intensity: 0.75), trigger: ratingFeedback)
         .onAppear(perform: restoreIfNeeded)
         .onDisappear { persist() }
         .miloLifetime(milo)
@@ -377,6 +380,7 @@ struct FlashcardPracticeView: View {
             // The rating is the moment worth answering: a word kept, or a word
             // the learner is coming back to. Either way he replies in place.
             if known { milo.joyful() } else { milo.encourage() }
+            ratingFeedback += 1
             if !known { queue.append(card) }
             withAnimation(reduceMotion ? nil : LanguLearnMotion.move) {
                 index += 1; revealed = false
@@ -433,6 +437,7 @@ struct SentencePracticeView: View {
     @State private var milo = MiloController()
     @State private var chat = LearningChat()
     @State private var targetedSlot: Int?
+    @State private var tileFeedback = 0
     @State private var restored = false
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
     /// Lets a word fly between the bank and its place instead of blinking across.
@@ -472,6 +477,11 @@ struct SentencePracticeView: View {
         .hideNavigationBar()
         .motion(LanguLearnMotion.settle, checked)
         .motion(LanguLearnMotion.settle, correct)
+        .sensoryFeedback(.selection, trigger: tileFeedback)
+        .sensoryFeedback(trigger: checked) { wasChecked, isChecked in
+            guard !wasChecked && isChecked else { return nil }
+            return correct ? .success : .error
+        }
         .onAppear(perform: restoreIfNeeded)
         .onChange(of: currentPuzzleID) {
             if let puzzle = currentPuzzle { resyncIfPuzzleChanged(puzzle) }
@@ -710,7 +720,10 @@ struct SentencePracticeView: View {
             .accessibilityLabel("\(puzzle.words[tile]), lägg till ord")
             .accessibilityAction(named: "Lägg först") {
                 guard !correct else { return }
-                assembly.insert(tile, at: 0, wordCount: puzzle.words.count); checked = false; persistPosition()
+                assembly.insert(tile, at: 0, wordCount: puzzle.words.count)
+                checked = false
+                tileFeedback += 1
+                persistPosition()
             }
         }
     }
@@ -806,6 +819,7 @@ struct SentencePracticeView: View {
     private func move(_ change: () -> Void) {
         withAnimation(reduceMotion ? nil : LanguLearnMotion.move) { change() }
         checked = false
+        tileFeedback += 1
         persistPosition()
     }
 

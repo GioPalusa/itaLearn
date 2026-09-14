@@ -65,5 +65,6 @@ private struct MainTabs: View {
                 NavigationStack { JourneyLibraryView() }
             }
         }
+        .sensoryFeedback(.selection, trigger: selection)
     }
 }

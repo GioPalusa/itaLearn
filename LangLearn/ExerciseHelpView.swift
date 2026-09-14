@@ -186,5 +186,8 @@ private struct ExerciseHelpButtonStyle: ButtonStyle {
             .background(prominent ? LanguLearn.purple : LanguLearn.purple.opacity(0.1),
                         in: .rect(cornerRadius: 16))
             .opacity(isEnabled ? (configuration.isPressed ? 0.75 : 1) : 0.5)
+            .sensoryFeedback(.selection, trigger: configuration.isPressed) { wasPressed, isPressed in
+                !wasPressed && isPressed
+            }
     }
 }

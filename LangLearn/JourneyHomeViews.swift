@@ -289,6 +289,7 @@ private struct JourneyDurationPicker: View {
                 }
             }
         }
+        .sensoryFeedback(.selection, trigger: minutes)
     }
 }
 

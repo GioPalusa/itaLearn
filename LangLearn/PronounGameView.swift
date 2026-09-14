@@ -52,6 +52,10 @@ struct PronounGameView: View {
         }
         .langulearnCanvas()
         .navigationTitle("Pronomenspelet")
+        .sensoryFeedback(trigger: picked) { _, choice in
+            guard let choice, let answer = round?.answer else { return nil }
+            return choice == answer ? .success : .error
+        }
         .onDisappear { generator.cancel() }
         .miloLifetime(milo)
     }
