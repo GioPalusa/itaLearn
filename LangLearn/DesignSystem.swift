@@ -23,7 +23,7 @@ nonisolated enum LanguLearn {
     static let hairline = Color.black.opacity(0.08)
     static let cardBorder = Color.black.opacity(0.06)
 
-    static let cardRadius: CGFloat = 16
+    static let cardRadius: CGFloat = 22
 
     /// `linear-gradient(225deg, #C0338B, #2EAAE1)` — top-trailing to bottom-leading.
     static let brandGradient = LinearGradient(
@@ -48,7 +48,7 @@ nonisolated enum LanguLearn {
 extension Font {
     /// Design-sized system font. `Font.system(size:)` still scales with Dynamic Type.
     static func il(_ size: CGFloat, _ weight: Font.Weight = .regular) -> Font {
-        .system(size: size, weight: weight)
+        .system(size: size, weight: weight, design: .rounded)
     }
 
     static func ilMono(_ size: CGFloat, _ weight: Font.Weight = .bold) -> Font {
@@ -74,6 +74,22 @@ private struct LangLearnCardModifier: ViewModifier {
     }
 }
 
+private struct LangLearnCanvasModifier: ViewModifier {
+    func body(content: Content) -> some View {
+#if os(macOS)
+        content
+            .scrollContentBackground(.hidden)
+            .background(LanguLearn.canvas)
+#else
+        content
+            .scrollContentBackground(.hidden)
+            .background(LanguLearn.canvas)
+            .toolbarBackground(LanguLearn.canvas, for: .navigationBar)
+            .toolbarColorScheme(.light, for: .navigationBar)
+#endif
+    }
+}
+
 extension View {
     func langulearnCard(padding: CGFloat = 16) -> some View {
         modifier(LangLearnCardModifier(padding: padding))
@@ -81,7 +97,7 @@ extension View {
 
     /// The tinted canvas every screen in the design sits on.
     func langulearnCanvas() -> some View {
-        background(LanguLearn.canvas)
+        modifier(LangLearnCanvasModifier())
     }
 
     /// The design draws its own headers, so the system bar is hidden.

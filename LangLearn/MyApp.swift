@@ -30,6 +30,8 @@ import SwiftUI
 #endif
             }
             .environment(settings)
+            .autocorrectionDisabled()
+            .fontDesign(.rounded)
             .preferredColorScheme(.light)
         }
     }
