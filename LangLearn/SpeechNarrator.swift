@@ -23,7 +23,7 @@ final class SpeechNarrator: NSObject, AVAudioPlayerDelegate {
     @ObservationIgnored private var lastText = ""
     /// Retrying has to reach for the same voice, not a default one.
     @ObservationIgnored private var lastLanguage: LearningLanguage?
-    @ObservationIgnored private var ownsAudioSession = false
+    @ObservationIgnored private var audioSessionToken: UUID?
 
     override init() {
         super.init()
@@ -105,11 +105,10 @@ final class SpeechNarrator: NSObject, AVAudioPlayerDelegate {
         guard token == playback.generation, playback.phase == .preparing else { return }
         do {
 #if os(iOS) || os(visionOS)
-            let session = AVAudioSession.sharedInstance()
-            try session.setCategory(.playback, mode: .spokenAudio, options: [.duckOthers])
-            try await Self.setAudioSession(active: true, options: [])
+            // Register ownership before suspension so stop() also releases a pending activation.
+            audioSessionToken = token
+            try await Self.audioSession.acquire(token)
             guard token == playback.generation, playback.phase == .preparing else { return }
-            ownsAudioSession = true
 #endif
             let player = try AVAudioPlayer(contentsOf: url)
             player.delegate = self
@@ -128,17 +127,32 @@ final class SpeechNarrator: NSObject, AVAudioPlayerDelegate {
         } catch { fail(token) }
     }
 
-    #if os(iOS) || os(visionOS)
-    /// `setActive` blocks while the route is reconfigured, so it is moved off the
-    /// main thread rather than off the call. AVAudioSession has no completion
-    /// handler form of it: the async APIs are `activate`/`deactivate`, which are
-    /// iOS 27 only and take different option types.
-    nonisolated private static func setAudioSession(active: Bool, options: AVAudioSession.SetActiveOptions = []) async throws {
-        try await Task.detached(priority: .userInitiated) {
-            try AVAudioSession.sharedInstance().setActive(active, options: options)
-        }.value
-    }
-    #endif
+#if os(iOS) || os(visionOS)
+    @ObservationIgnored private static let audioSession = SpeechSessionCoordinator(
+        activate: {
+            // Category configuration also blocks while the audio route changes.
+            try await Task.detached(priority: .userInitiated) {
+                try AVAudioSession.sharedInstance().setCategory(.playback, mode: .spokenAudio, options: [.duckOthers])
+            }.value
+            if #available(iOS 27.0, visionOS 27.0, *) {
+                guard try await AVAudioSession.sharedInstance().activate(options: []) else { throw SpeechSessionError.activationFailed }
+            } else {
+                try await Task.detached(priority: .userInitiated) {
+                    try AVAudioSession.sharedInstance().setActive(true)
+                }.value
+            }
+        },
+        deactivate: {
+            if #available(iOS 27.0, visionOS 27.0, *) {
+                guard try await AVAudioSession.sharedInstance().deactivate(options: .notifyOthersOnDeactivation) else { throw SpeechSessionError.activationFailed }
+            } else {
+                try await Task.detached(priority: .userInitiated) {
+                    try AVAudioSession.sharedInstance().setActive(false, options: .notifyOthersOnDeactivation)
+                }.value
+            }
+        }
+    )
+#endif
 
     private func fail(_ token: UUID) {
         guard playback.finish(token) else { return }
@@ -155,11 +169,9 @@ final class SpeechNarrator: NSObject, AVAudioPlayerDelegate {
         writer?.cancel(); writer = nil
         synthesizer?.stopSpeaking(at: .immediate); synthesizer = nil
 #if os(iOS) || os(visionOS)
-        if ownsAudioSession {
-            ownsAudioSession = false
-            Task {
-                try? await Self.setAudioSession(active: false, options: .notifyOthersOnDeactivation)
-            }
+        if let token = audioSessionToken {
+            audioSessionToken = nil
+            Self.audioSession.release(token)
         }
 #endif
     }
@@ -246,4 +258,39 @@ nonisolated final class SpeechAudioWriter: @unchecked Sendable {
     }
     deinit { cancel() }
     private enum AudioError: Error { case invalidBuffer, empty }
+}
+
+nonisolated enum SpeechSessionError: Error { case activationFailed }
+
+/// Serializes shared-session changes across awaits. A stale stop cannot deactivate a newer speaker.
+@MainActor final class SpeechSessionCoordinator {
+    private let activate: @Sendable () async throws -> Void
+    private let deactivate: @Sendable () async throws -> Void
+    private var tail: Task<Void, Error>?
+    private var owner: UUID?
+
+    init(activate: @escaping @Sendable () async throws -> Void, deactivate: @escaping @Sendable () async throws -> Void) {
+        self.activate = activate; self.deactivate = deactivate
+    }
+    func acquire(_ token: UUID) async throws {
+        let previous = tail
+        let operation = Task {
+            _ = try? await previous?.value
+            try await activate()
+            owner = token
+        }
+        tail = operation
+        try await operation.value
+    }
+    @discardableResult func release(_ token: UUID) -> Task<Void, Error> {
+        let previous = tail
+        let operation = Task {
+            _ = try? await previous?.value
+            guard owner == token else { return }
+            try await deactivate()
+            owner = nil
+        }
+        tail = operation
+        return operation
+    }
 }
