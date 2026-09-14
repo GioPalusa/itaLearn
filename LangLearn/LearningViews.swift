@@ -384,6 +384,11 @@ struct LessonOverviewView: View {
                     .langulearnCard(padding: 18)
                 }
                 .task { milo.present() }
+                NavigationLink {
+                    JourneyStartView(track: .mission, topic: String((lesson.title + ": " + lesson.summary).prefix(400)))
+                } label: {
+                    Label("Öva innehållet med stegvis guidning", systemImage: "hand.point.up.left")
+                }.buttonStyle(LanguLearnPrimaryButtonStyle())
                 NavigationLink { LessonPracticeView(lesson: lesson) } label: {
                     Label("Ordkort och bygg meningar", systemImage: "rectangle.on.rectangle.angled")
                 }.buttonStyle(LanguLearnSecondaryButtonStyle())

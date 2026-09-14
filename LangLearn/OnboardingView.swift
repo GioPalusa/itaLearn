@@ -112,7 +112,7 @@ private struct OnboardingWelcome: View {
                     .fixedSize(horizontal: false, vertical: true)
             }
             .multilineTextAlignment(.center)
-            Label("Vi börjar med sex korta frågor", systemImage: "bubble.left.and.bubble.right")
+            Label("Börja från noll eller bygg på det du kan", systemImage: "bubble.left.and.bubble.right")
                 .font(.subheadline).foregroundStyle(LanguLearn.purple)
                 .multilineTextAlignment(.center)
         }
@@ -246,6 +246,7 @@ private struct OnboardingFooter: View {
 }
 
 private struct OnboardingConnectionStep: View {
+    @Environment(TutorSettings.self) private var settings
     @Binding var isSaving: Bool
     @State private var milo = MiloController()
 
@@ -256,9 +257,14 @@ private struct OnboardingConnectionStep: View {
                 .miloLifetime(milo)
             VStack(alignment: .leading, spacing: 10) {
                 Text("Vi börjar där du är.").font(.largeTitle.bold()).accessibilityAddTraits(.isHeader)
-                Text("Efter sex korta frågor får du en studieplan att börja med. Svara gärna att du inte vet – det hjälper mig också.")
+                Text("Du väljer vad du vill kunna göra och hur bekväm du är med ljud och tecken. Sedan hittar vi en lagom start.")
                     .foregroundStyle(.secondary)
             }
+            Button("Välj min start först") {
+                settings.hasOnboarded = true
+                settings.confirmLanguageChoice()
+            }.buttonStyle(.borderedProminent).controlSize(.large)
+            Text("Du kan ansluta OpenAI senare för personliga lektioner.").font(.footnote).foregroundStyle(.secondary)
             APIKeyForm(isOnboarding: true, showsLearnerName: false, onSavingChanged: { isSaving = $0 })
         }
     }

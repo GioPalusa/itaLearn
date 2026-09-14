@@ -11,12 +11,10 @@ struct ContentView: View {
         Group {
             if !access.isReady {
                 MiloLoadingView(message: "Milo gör plats för dina studier…").padding(24)
-            } else if !access.hasKey || !settings.hasChosenLanguage {
-                // The key lives in the Keychain and outlives the app, so it
-                // cannot stand in for "has been introduced": a learner who
-                // onboarded before the language step still owes us that answer.
+            } else if !settings.hasChosenLanguage {
+                // Language selection precedes the journey; a local first lesson needs no API key.
                 OnboardingView()
-            } else if !store.isLoaded {
+            } else if !store.isLoaded || store.language != settings.chosenTarget {
                 ContentUnavailableView {
                     Label("Kunde inte öppna dina studier", systemImage: "externaldrive.badge.exclamationmark")
                 } description: {
@@ -24,12 +22,12 @@ struct ContentView: View {
                 } actions: {
                     Button("Försök igen") { loadStudies() }
                 }
-            } else if store.state.activePlan == nil {
-                NavigationStack { AdaptiveChatView(mode: .assessment) }
-                    .id(store.language?.code)
+            } else if store.journey.profile == nil {
+                NavigationStack { JourneySetupView() }
+                    .id((store.language?.code ?? "") + settings.nativeLanguage.code)
             } else {
                 MainTabs()
-                    .id(store.language?.code)
+                    .id((store.language?.code ?? "") + settings.nativeLanguage.code)
             }
         }
         .environment(store)
@@ -39,8 +37,7 @@ struct ContentView: View {
             loadStudies()
             await access.load()
         }
-        // Studies are saved per language, so a switch swaps in that language's
-        // plan; a language with none routes to a kunskapskoll, which builds one.
+        // Switching restores the chosen language, including its own journey profile and drafts.
         .onChange(of: settings.chosenTarget) { loadStudies() }
     }
 
@@ -58,14 +55,14 @@ private struct MainTabs: View {
 
     var body: some View {
         TabView(selection: $selection) {
-            Tab("Min studieplan", systemImage: "point.topleft.down.to.point.bottomright.curvepath", value: .plan) {
-                NavigationStack { LearningPathView() }
+            Tab("Idag", systemImage: "sun.max", value: .plan) {
+                NavigationStack { JourneyTodayView() }
             }
-            Tab("Öva", systemImage: "gamecontroller", value: .practice) {
-                NavigationStack { PracticeHubView() }
+            Tab("Upptäck", systemImage: "sparkles", value: .practice) {
+                NavigationStack { JourneyExploreView() }
             }
-            Tab("Mitt lärande", systemImage: "books.vertical", value: .progress) {
-                NavigationStack { LearningProgressView() }
+            Tab("Min resa", systemImage: "books.vertical", value: .progress) {
+                NavigationStack { JourneyLibraryView() }
             }
         }
     }

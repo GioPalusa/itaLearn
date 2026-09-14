@@ -2,10 +2,33 @@
 
 LangLearn uses a user-provided OpenAI API key, GPT-5.6 Sol for placement and planning, and GPT-5.6 Luna for teaching. The learner picks both languages during onboarding: the target language they are learning and the language Milo explains, corrects and summarizes in. `LearningLanguage.catalog` holds the offered pair of languages, each with a speech/dictation locale, an English name used in model instructions and any usage habit worth handing the tutor. `LanguageCourse` carries the chosen pairing into every request, both as prompt text and as JSON data. The app's own UI strings remain Swedish. The existing Apple-model dependency and Private Cloud Compute entitlement have been removed.
 
-## Implemented flow
+## Guided journeys (September 14)
 
-1. At startup, the learner enters their own API key. Settings supports replacing or removing it. Keys are stored with Keychain Services, `WhenUnlockedThisDeviceOnly`, with synchronisation disabled. No key is bundled, saved in preferences, or written to learning records. Key entry checks format; the first model request verifies actual API access.
-2. A local welcome opens a six-question written placement chat. After each of the first five answers Sol generates one adaptive follow-up. The learner can say they do not know. After answer six, Sol returns a strict JSON assessment; there is no seventh question.
+The default navigation is **Idag**, **Upptäck**, **Min resa**. Each target language has its own explicit starting profile: self-reported experience (new, simple phrases, everyday conversation, or free expression), familiarity with the script, practical goal, interests and session length. A new profile requires an explicit experience choice; it does not silently default an experienced learner to beginner. Placement is optional. Profile choices are editable and separate from observed answers.
+
+Two tracks share one resumable lesson engine:
+
+- **Ljud och tecken** starts with demonstration, meaning, listening and script matching, plus voluntary speech imitation. It never requires typing. Language-specific inventories constrain script choices; kana, Hangul blocks and Chinese characters are not described as Latin-style alphabets. Audio demonstrates whole words. These are introductory inventories, not a complete reviewed orthography curriculum or stroke-order course.
+- **Vardagsuppdrag** uses the learner's goal, interests, selected situation and recent evidence. New learners answer with choices. Learners comfortable with the script can encounter supported writing after three independently recognized skills, or when they explicitly report some prior experience. This changes activities, not an asserted proficiency level. Examples and hints remain available.
+
+Experienced users start with a complete situation, follow-up questions or open responses; their mission must contain a sentence-level writing or listening task. A prior assessment for the same target language is included as an informal written estimate, never proof of speaking ability. Experienced speakers learning a new script retain meaningful spoken situations alongside script recognition. Completing a lesson offers **För lätt**, **Lagom**, **För svårt**; the last three choices are included in generation context to change the next challenge while preserving reading constraints.
+
+A network-free greeting is bundled for every target with Swedish or English explanations. Other explanation languages, and subsequent personalized lessons, require the existing user API key. The key can be added after selecting a starting profile. The offline greeting is offered only for a completely new learner, not as the default for someone experienced.
+
+`JourneyRequest` includes at most 20 recent observations and four due review items. A single Luna request prepares 3–8 steps with hints, examples and local answer keys (`guided_journey_v1`, strict schema, 8,000 output tokens maximum). Choice answers and word tiles are checked locally. Only free writing makes an additional request (`guided_answer_v1`, 1,500 output tokens maximum). Invalid JSON, wrong language codes, invalid choices, impossible tile answers, unsuitable typing requirements and out-of-inventory script choices are rejected before display. Schema conformance does not prove linguistic or pedagogical accuracy.
+
+Sessions persist their cursor, draft, tiles, hints, playback evidence and pending writing attempt. Pending answers have stable attempt IDs; duplicate/stale results cannot award evidence twice. Leaving a screen cancels its request. Failed requests need an explicit retry; there is no automatic paid retry loop.
+
+Recognition, writing and self-reported speech remain distinct. Hearing a reading prompt or revealing a listening transcript marks support; transcript-assisted listening becomes reading evidence. A speaking attempt is self-reported, with no microphone or pronunciation score. Reviews use 1/3/7/14-day intervals, counting successful days rather than repeated same-day taps. Explicit profile preferences about unfamiliar script remain in force after a greeting is completed.
+
+Milo is owned by the active screen: a responsive portrait on Today, a full figure introducing a session, a portrait attached to the current teaching card, and a full-figure completion celebration. Taps trigger curiosity, laughter, a greeting or a celebration. Guidance and answer reactions use actual session events. Profile/library decoration uses the existing matching still portraits. Reduce Motion uses the existing still-image fallback. Feedback and hints scroll into view, and advancing restores the top of the next step.
+
+For reproducible simulator checks, launch `--journey-preview` with optional `--journey-lesson`, `--journey-script`, `--journey-complete`, `--journey-large-text` or `--journey-setup`. These DEBUG fixtures use an isolated in-memory store and do not read credentials. Generated-pack quality and real OpenAI account/model access require separate live validation.
+
+## Optional assessment and existing curriculum
+
+1. For generated lessons and assessment, the learner supplies their own API key. Settings supports replacing or removing it. Keys are stored with Keychain Services, `WhenUnlockedThisDeviceOnly`, with synchronisation disabled. No key is bundled, saved in preferences, or written to learning records. Key entry checks format; the first model request verifies actual API access.
+2. Choosing the optional knowledge check under Upptäck opens a six-question written placement chat. After each of the first five answers Sol generates one adaptive follow-up. The learner can say they do not know. After answer six, Sol returns a strict JSON assessment; there is no seventh question.
 3. The app validates the version, languages, estimated level, lesson counts, IDs, prerequisites and required content before saving anything. It retains the original response JSON and renders the returned lessons as the study plan. This is an informal estimate of written ability, not a certified CEFR assessment or an assessment of pronunciation.
 4. Luna receives the learner profile, the selected lesson, achieved objective indices, a compact pedagogical summary and at most 16 recent messages. It corrects errors, explains them in the learner's chosen explanation language, and asks for another attempt when needed. Each reply replaces the compact learning summary so important errors and the current task survive context trimming.
 5. The app refuses replies that simultaneously request a retry and award objectives or finish a lesson. Opening turns cannot award progress. A separate wrap-up assessment determines mastery from demonstrated objectives and success criteria, after at least two learner answers and with no unresolved retry. Prerequisites determine which lessons are available.
@@ -116,6 +139,8 @@ Luna returns `reply` (target language), `translation` (explanation language), nu
 
 ## Verification
 
+September 14 guided-journey checks: 116 core tests passed, including production transport with simulated Responses payloads, old snapshot decoding, local scoring, support tracking, script/readiness validation, persistence and duplicate/stale attempt protection. The complete iOS Simulator Debug build passed. iPhone 17 Pro / iOS 27 checks covered the greeting flow (wrong answer, hint, correct answer, skipped speech and completion), automatic feedback scrolling, Japanese script choices at accessibility3, editable reading preferences, and visible Milo tap reactions. The experience picker and saved difficulty-feedback controls were also verified at accessibility3. The final start-card simplification and fixture wording correction received build validation; they were not separately rerun visually. Live OpenAI responses, speech quality and physical-device behavior remain unverified.
+
 Run the production-core tests with the Xcode 27 toolchain:
 
 ```sh
@@ -127,7 +152,7 @@ swift test --disable-sandbox --scratch-path /tmp/langlearn-core-build
 
 The package compiles the app's actual model, service, transport, Keychain wrapper, settings and persistence sources. Tests use isolated SwiftData stores and a stub URLProtocol; they make no live API requests and do not write credentials.
 
-Verified during implementation: iOS and macOS Debug builds; 30 Swift Testing tests, including parameterized API-error cases, assessment boundaries, schema validation, retries, cancellation, persistence and migration; iPhone previews of key entry, generated plan, correction/retry chat, recap, flashcards and sentence puzzles. The test runner emits sandbox-related SwiftPM cache and Core Data notification warnings; persistence and migration assertions pass.
+Earlier implementation verification: iOS and macOS Debug builds; 30 Swift Testing tests, including parameterized API-error cases, assessment boundaries, schema validation, retries, cancellation, persistence and migration; iPhone previews of key entry, generated plan, correction/retry chat, recap, flashcards and sentence puzzles. The test runner emits sandbox-related SwiftPM cache and Core Data notification warnings; persistence and migration assertions pass.
 
 Still requires a signed-device run with a user-entered key: Keychain save/replace/relaunch, account access to both models, a complete real assessment and Luna lesson, pedagogical quality, speech capture/playback and reassessment quality, plus live wrap-up/practice generation and physical drag-and-drop interaction. Preview fixtures are not real model responses.
 

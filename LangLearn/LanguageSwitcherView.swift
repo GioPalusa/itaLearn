@@ -57,7 +57,7 @@ struct LanguageSwitcherView: View {
                         Label("Lägg till språk", systemImage: "plus.circle")
                     }
                 } footer: {
-                    Text("Ett nytt språk börjar med en kunskapskoll som bygger studieplanen. Dina andra språk ligger kvar precis som du lämnade dem.")
+                    Text("Ett nytt språk börjar med dina mål och din egen startpunkt. Dina andra språk ligger kvar precis som du lämnade dem.")
                 }
             }
             .navigationTitle("Språk")

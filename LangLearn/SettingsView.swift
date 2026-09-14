@@ -26,7 +26,7 @@ struct SettingsView: View {
                         ForEach(TeacherTone.allCases) { Text($0.label).tag($0) }
                     }
                     Toggle("Rätta även stavning", isOn: $settings.correctsSpelling)
-                    Text("Nivån anpassas efter din senaste kunskapskoll. Du kan göra en ny från Min studieplan.")
+                    Text("Ändra din startpunkt och dina mål i Min resa. En frivillig kunskapskoll finns under Upptäck.")
                         .font(.footnote).foregroundStyle(.secondary)
                     NavigationLink {
                         MiloDemoView()
