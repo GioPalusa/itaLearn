@@ -84,6 +84,11 @@ Palm contact lasts several frames. Runtime secondary smoothing is bypassed
 for this clip so it cannot shorten the hand travel; transition blending remains. The runtime layers a smile and rhythmic mouth/eyelid movement
 over laughter. Both clips play once; source hashes are pinned with the other recordings.
 
+`Thinking` uses Mixamo's “Thinking While Standing” motion, downloaded without
+skin at 30 fps. It is retargeted to Snow, looped with the same short tail blend
+as the idle recordings and is used only for moments when Milo prepares or
+evaluates something. Its exact source hash is pinned in `Art/Milo/sources.json`.
+
 To rebuild clips and manifests using the existing generated rig, without
 rebaking textures or touching the Blender master, append `--clips-only` after
 the repository argument to `build_all.py`. This also renders the wave and reaction body

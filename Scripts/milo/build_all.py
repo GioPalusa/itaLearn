@@ -609,6 +609,9 @@ def build_clips(runtime_rig):
     clips.extend([
         ("Dance", False, retarget_clip(SOURCES["walk_cc0"], runtime_rig, action_name="Dance_Loop")),
         ("Present", False, retarget_clip(SOURCES["walk_cc0"], runtime_rig, action_name="Interact")),
+        # FBX import updates the Blender scene fps. Keep this source last so its
+        # 30 fps metadata cannot change how the existing glTF clips are sampled.
+        ("Thinking", True, retarget_clip(SOURCES["thinking"], runtime_rig)),
     ])
     # The waving take was seated. Use the relaxed midpoint of LookAround as the
     # standing base: unlike Watching's opening frame, its free arm and hand hang
@@ -645,7 +648,12 @@ def rebuild_clips_only():
     manifest_path.write_text(json.dumps(manifest, indent=2) + "\n")
     shutil.copy2(manifest_path, RESOURCES / "MiloRigManifest.json")
     (EXPORT / "clips.json").write_text(json.dumps({"debugOnly": True, "clips": manifest["clips"]}, indent=2) + "\n")
-    for name, _, frames in (clips[3], clips[7], clips[8], clips[9], clips[10], clips[11]):
+    thinking_frames = next(frames for name, _, frames in clips if name == "Thinking")
+    render_portrait(
+        rig, objects, ROOT / "LangLearn/Assets.xcassets/MiloThinking.imageset/milo-thinking.png",
+        thinking_frames[len(thinking_frames) // 2], False, True,
+    )
+    for name, _, frames in (clips[3], clips[7], clips[8], clips[9], clips[10], clips[11], clips[12]):
         render_portrait(rig, objects, EXPORT / "preview" / f"{name}.png", frames[round(.72 * FPS) if name == "Applaud" else len(frames) // 2], False)
 
 
@@ -742,8 +750,12 @@ def main() -> None:
     (EXPORT / "clips.json").write_text(json.dumps({"debugOnly": True, "clips": manifest["clips"]}, indent=2) + "\n")
 
     portrait_pose = clips[0][2][len(clips[0][2]) // 2]
+    thinking_frames = next(frames for name, _, frames in clips if name == "Thinking")
     render_portrait(runtime_rig, runtime_objects, ROOT / "LangLearn/Assets.xcassets/Milo.imageset/milo.png", portrait_pose, False, True)
-    render_portrait(runtime_rig, runtime_objects, ROOT / "LangLearn/Assets.xcassets/MiloThinking.imageset/milo-thinking.png", portrait_pose, True, True)
+    render_portrait(
+        runtime_rig, runtime_objects, ROOT / "LangLearn/Assets.xcassets/MiloThinking.imageset/milo-thinking.png",
+        thinking_frames[len(thinking_frames) // 2], False, True,
+    )
     identity_pose = [Quaternion() for _ in JOINT_NAMES]
     render_portrait(runtime_rig, runtime_objects, EXPORT / "preview/Rest_Pose.png", identity_pose, False)
     render_portrait(runtime_rig, runtime_objects, EXPORT / "preview/Face_CloseUp.png", identity_pose, False, True)

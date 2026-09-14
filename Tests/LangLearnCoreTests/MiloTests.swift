@@ -51,7 +51,7 @@ struct MiloTests {
         let library = try MiloClipLibrary(contentsOf: root.appendingPathComponent("LangLearn/Resources/MiloClips.bin"))
         #expect(library.fps == 30)
         #expect(library.jointNames.count == 33)
-        #expect(Set(library.clips.keys) == Set(["Idle_Neutral_A", "Idle_LookAround", "Idle_LookAround02", "Idle_Chatting", "Idle_Chatting02", "Idle_Watching", "Walk", "Wave", "Laugh", "Applaud", "Dance", "Present"]))
+        #expect(Set(library.clips.keys) == Set(["Idle_Neutral_A", "Idle_LookAround", "Idle_LookAround02", "Idle_Chatting", "Idle_Chatting02", "Idle_Watching", "Walk", "Wave", "Laugh", "Applaud", "Thinking", "Dance", "Present"]))
         let rootIndex = try #require(library.jointNames.firstIndex(of: "root"))
         for clip in library.clips.values {
             #expect(clip.duration > 0.5)
@@ -71,6 +71,19 @@ struct MiloTests {
         }
         #expect(library.clips["Walk"]?.loops == true)
         #expect(library.clips["Wave"]?.loops == false)
+        let thinking = try #require(library.clips["Thinking"])
+        #expect(thinking.loops)
+        #expect(thinking.frames.count == 128)
+        let thinkingArm = try #require(library.jointNames.firstIndex(of: "forearm_R"))
+        let thinkingMotion = thinking.frames.map {
+            simd_distance($0[thinkingArm].vector, thinking.frames[0][thinkingArm].vector)
+        }.max() ?? 0
+        #expect(thinkingMotion > 0.05)
+        var thinkingAnimator = MiloAnimator(library: library)
+        thinkingAnimator.configure(mood: .thinking, mouth: 0, wanders: false)
+        let thinkingPose = thinkingAnimator.sample(delta: 0.1)
+        #expect(simd_distance(try #require(thinkingPose.joints["forearm_R"]).vector,
+                              thinking.sample(time: 0.1).rotations[thinkingArm].vector) < 0.0001)
         let restingArm = try #require(library.jointNames.firstIndex(of: "upper_arm_R"))
         for (name, clip) in library.clips where name.hasPrefix("Idle_") || name == "Wave" {
             #expect(try #require(clip.frames.first)[restingArm].angle > 1, "Free arm must not inherit the source T-pose: \(name)")

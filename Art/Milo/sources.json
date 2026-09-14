@@ -48,6 +48,10 @@
     "applaud": {
       "path": "${MILO_ASSET_ROOT}/Movements & Animations/ClassicTV_Shots/Mixamo/Clap_SlowClap_mixamo.fbx",
       "sha256": "298fcf384c0d8f9f0addee1c929eaa45988cb15733e874d012997114f520b507"
+    },
+    "thinking": {
+      "path": "${MILO_ASSET_ROOT}/Movements & Animations/Mixamo/Thinking.fbx",
+      "sha256": "4966266cd6f244711d2cf218d80e1d43e8f6e74848d0346ecad1a14d2592e393"
     }
   }
 }

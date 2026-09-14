@@ -317,7 +317,7 @@ nonisolated struct MiloAnimator: Sendable {
         case .applauding: "Applaud"
         case .encouraging: "Idle_Chatting"
         case .celebrating: "Idle_Chatting02"
-        case .thinking: "Idle_LookAround02"
+        case .thinking: "Thinking"
         case .listening: "Idle_LookAround"
         case .speaking: "Idle_Neutral_A"
         case .still, .idle: "Idle_Watching"

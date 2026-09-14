@@ -75,6 +75,7 @@ struct MiloDemoView: View {
                             Text("Vinkar").tag("Wave")
                             Text("Skrattar").tag("Laugh")
                             Text("Applåderar").tag("Applaud")
+                            Text("Funderar").tag("Thinking")
                             Text("Väntar lugnt").tag("Idle_Watching")
                             Text("Lugn konversation").tag("Idle_Neutral_A")
                             Text("Tittar omkring").tag("Idle_LookAround")
@@ -192,6 +193,14 @@ struct MiloDemoView: View {
                 walksAcrossStage = false
                 clipName = "Idle_Watching"
             } catch { return }
+        }
+        .task {
+            guard ProcessInfo.processInfo.arguments.contains("--milo-thinking-check") else { return }
+            zoom = 2.6
+            guard await waitForLiveRig() else { return }
+            clipName = "Thinking"
+            mood = .thinking
+            renderCheck = "Thinking"
         }
 #endif
     }

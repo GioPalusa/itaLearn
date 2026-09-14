@@ -156,6 +156,12 @@
       "frames": 76,
       "fps": 30,
       "loops": false
+    },
+    {
+      "name": "Thinking",
+      "frames": 128,
+      "fps": 30,
+      "loops": true
     }
   ]
 }
