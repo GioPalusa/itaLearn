@@ -217,7 +217,8 @@ nonisolated struct JourneyProgress: Codable, Equatable, Sendable {
     var recommendedTrack: JourneyTrack {
         guard let profile else { return .foundations }
         let foundationComplete = sessions.contains { $0.pack.track == .foundations && $0.completedAt != nil }
-        return !foundationComplete && (!profile.hasSpoken || profile.reading != .comfortable) ? .foundations : .mission
+        if profile.reading != .comfortable { return .foundations }
+        return !foundationComplete && !profile.hasSpoken ? .foundations : .mission
     }
 
     /// A review is due after a day, then after 3 / 7 / 14 days following independent successful recall.
@@ -226,7 +227,7 @@ nonisolated struct JourneyProgress: Codable, Equatable, Sendable {
         Dictionary(grouping: observations.filter { !$0.selfReported }, by: { "\($0.skillID):\($0.skill.rawValue)" })
             .values.compactMap { history in
                 guard let latest = history.max(by: { $0.date < $1.date }) else { return nil }
-                let successes = history.filter { $0.correct && $0.independent }.count
+                let successes = Set(history.filter { $0.correct && $0.independent }.map { Int($0.date.timeIntervalSince1970 / 86400) }).count
                 let days = !latest.correct || !latest.independent ? 1 : [1, 3, 7, 14][min(max(successes - 1, 0), 3)]
                 return now.timeIntervalSince(latest.date) >= Double(days * 86400) ? latest : nil
             }.sorted { $0.date < $1.date }
