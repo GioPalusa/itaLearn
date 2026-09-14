@@ -44,7 +44,7 @@ struct JourneyLessonView: View {
                         if let evaluation = session.evaluation {
                             JourneyFeedback(evaluation: evaluation, selfReported: step.kind == .say, speak: { milo.speak(evaluation.feedback, in: course.native) }).id("feedback")
                         }
-                        if coach.isWorking { ProgressView("Milo läser ditt svar…") }
+                        if coach.isWorking { MiloLoadingView(message: "Milo läser ditt svar…", showsMascot: false) }
                         if let error = coach.errorMessage {
                             Text(error).foregroundStyle(.red)
                             if let pending = session.pendingAnswer {
@@ -149,11 +149,16 @@ private struct JourneyTeachingCard: View {
     let saved: Bool
     private var showsTarget: Bool { ![.write, .build, .listeningChoice].contains(step.kind) || session.revealedText || session.canAdvance }
     private var showsMeaning: Bool { step.kind == .example || step.kind == .say || session.canAdvance || ([.write, .build].contains(step.kind) && session.revealedText) }
+    private var instruction: String {
+        step.instruction
+            .replacingOccurrences(of: "Läs modellen", with: "Läs exemplet", options: .caseInsensitive)
+            .replacingOccurrences(of: "modellmeningen", with: "exempelmeningen", options: .caseInsensitive)
+    }
 
     var body: some View {
         VStack(alignment: .leading, spacing: 0) {
             HStack(alignment: .bottom) {
-                Text(step.kind == .example ? "Milo visar" : step.skillTitle).font(.subheadline.bold()).foregroundStyle(LanguLearn.purple).padding(.bottom, 20)
+                Text(step.kind == .example ? "Så här kan det låta" : step.skillTitle).font(.subheadline.bold()).foregroundStyle(LanguLearn.purple).padding(.bottom, 20)
                 Spacer()
                 Button { milo.curious() } label: {
                     MiloAvatarView(controller: milo, size: step.kind == .example ? 152 : 106, zoom: 2.6)
@@ -161,8 +166,8 @@ private struct JourneyTeachingCard: View {
                 }.buttonStyle(.plain).accessibilityLabel("Fånga Milos uppmärksamhet").accessibilityHint("Milo lutar sig nyfiket mot dig")
             }.padding(.horizontal, 18)
             VStack(alignment: .leading, spacing: 20) {
-                Text(step.instruction).font(.title3.weight(.semibold)).fixedSize(horizontal: false, vertical: true)
-                Button("Lyssna på uppgiften", systemImage: "speaker.wave.2") { speak(step.instruction, false) }
+                Text(instruction).font(.title3.weight(.semibold)).fixedSize(horizontal: false, vertical: true)
+                Button("Lyssna på uppgiften", systemImage: "speaker.wave.2") { speak(instruction, false) }
                     .font(.subheadline).disabled(!course.native.hasVoice)
                 if showsTarget {
                     Text(step.target).font(step.kind == .scriptChoice ? .system(.largeTitle, design: .rounded).bold() : .title.bold())

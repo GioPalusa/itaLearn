@@ -18,6 +18,8 @@ struct JourneyPreview: View {
             else if ready {
                 if arguments.contains("--journey-setup"), store.journey.discovery?.stage != .finished { JourneySetupView(service: DiscoveryPreviewService()) }
                 else if arguments.contains("--journey-lesson"), let session = store.journey.sessions.first { JourneyLessonView(sessionID: session.id) }
+                else if arguments.contains("--journey-practice") { PracticeHubView() }
+                else if arguments.contains("--journey-start") { JourneyStartView(track: .foundations, service: JourneyStartPreviewService()) }
                 else { JourneyTodayView() }
             } else { ProgressView() }
         }
@@ -33,7 +35,7 @@ struct JourneyPreview: View {
                 try store.updateJourney { progress in
                     progress.profile = JourneyProfile(reading: arguments.contains("--journey-script") ? .newScript : .comfortable, goal: "Beställa lunch på resan", interests: "Mat och små kaféer")
                     if arguments.contains("--discovery-fresh") { progress.profile = nil }
-                    if arguments.contains("--journey-lesson") {
+                    if arguments.contains("--journey-lesson") || arguments.contains("--journey-practice") {
                         var pack = FoundationContent.welcome(course: settings.course)!
                         if arguments.contains("--journey-script") {
                             pack.title = "Lär känna あ"
@@ -64,6 +66,22 @@ struct JourneyPreview: View {
         }
     }
 }
+
+/// Delayed, local generation makes the loading composition inspectable without credentials.
+private struct JourneyStartPreviewService: JourneyService {
+    var requiresAPIKey: Bool { false }
+
+    func generate(_ request: JourneyRequest) async throws -> JourneyPack {
+        try await Task.sleep(for: .seconds(ProcessInfo.processInfo.arguments.contains("--journey-loading") ? 20 : 1))
+        guard let pack = FoundationContent.welcome(course: request.course) else { throw LearningValidationError.invalidResponse }
+        return pack
+    }
+
+    func evaluate(course: LanguageCourse, step: JourneyStep, answer: String) async throws -> JourneyEvaluation {
+        throw LearningValidationError.invalidResponse
+    }
+}
+
 /// Deterministic UI fixture only. Production always uses OpenAIDiscoveryService.
 private struct DiscoveryPreviewService: JourneyDiscoveryService {
     var requiresAPIKey: Bool { false }

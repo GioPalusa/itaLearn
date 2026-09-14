@@ -137,60 +137,92 @@ struct JourneyStartView: View {
     @Environment(LearningStore.self) private var store
     @Environment(TutorSettings.self) private var settings
     @Environment(OpenAIAccess.self) private var access
-    @State private var coach = JourneyCoach()
+    @Environment(\.dynamicTypeSize) private var dynamicTypeSize
+    @State private var coach: JourneyCoach
     @State private var topic: String
     @State private var minutes = 5
     @State private var showConnection = false
+    @State private var showsCustomTopic = false
     @State private var milo = MiloController()
     let track: JourneyTrack
-    init(track: JourneyTrack, topic: String = "") { self.track = track; _topic = State(initialValue: topic) }
+
+    init(track: JourneyTrack, topic: String = "", service: any JourneyService = OpenAIJourneyService()) {
+        self.track = track
+        _topic = State(initialValue: topic)
+        _coach = State(initialValue: JourneyCoach(service: service))
+    }
 
     private var canStartGreeting: Bool {
         track == .foundations && store.journey.profile?.startingExperience == .new && store.journey.sessions.isEmpty && FoundationContent.welcome(course: settings.course) != nil
     }
+    private var connected: Bool { access.hasKey || !coach.requiresAPIKey }
+    private var trimmedTopic: String { topic.trimmingCharacters(in: .whitespacesAndNewlines) }
+    private var focusTitle: String {
+        if !trimmedTopic.isEmpty { return trimmedTopic }
+        if track == .foundations {
+            return store.journey.profile?.startingExperience.isExperienced == true
+                ? "Koppla skriften till det du redan kan"
+                : "Ljud och tecken du får användning för"
+        }
+        let goal = store.journey.profile?.goal.trimmingCharacters(in: .whitespacesAndNewlines) ?? ""
+        return goal.isEmpty ? "En vardagssituation som passar dig" : goal
+    }
+    private var startTitle: String {
+        if !connected, canStartGreeting { return "Börja med en första hälsning" }
+        if !connected { return "Anslut och starta" }
+        return "Börja med Milo · \(minutes) min"
+    }
+
     var body: some View {
         ScrollView {
-            VStack(alignment: .leading, spacing: 24) {
-                Button { milo.wave() } label: {
-                    MiloStage(controller: milo, size: 230, floorClearance: 0)
-                }.buttonStyle(.plain).accessibilityLabel("Hälsa på din guide Milo")
-                VStack(alignment: .leading, spacing: 10) {
-                    Text(track.title).font(.title.bold())
-                    if store.journey.profile?.startingExperience.isExperienced == true {
-                        Text(track == .foundations ? "Du kan redan använda språket. Vi kopplar ljud och tecken till situationer du förstår." : "Du får en hel situation att ta dig an, med utrymme för egna svar. Exempel och tips finns när du vill ha dem.")
-                            .foregroundStyle(.secondary)
-                    } else {
-                        Text(track == .foundations ? "Vi upptäcker några ljud och tecken i taget, i ord som betyder något för dig." : "Milo visar först. Sedan provar du med stöd, och tar ett litet steg själv när du är redo.")
-                            .foregroundStyle(.secondary)
-                    }
-                }
-                if let profile = store.journey.profile {
-                    Text("Utifrån ditt mål: \(profile.goal)").font(.headline)
-                    Text(profile.startingExperience.title).font(.subheadline).foregroundStyle(.secondary)
-                    if track == .foundations || !store.journey.allowsSupportedWriting {
-                        Label("Du kan svara genom att välja och lyssna. Inget skrivkrav.", systemImage: "hand.tap").font(.subheadline)
-                    }
-                }
-                TextField("Vad vill du öva på? (valfritt)", text: $topic, axis: .vertical).textFieldStyle(.roundedBorder).lineLimit(2...4)
-                Picker("Tid idag", selection: $minutes) {
-                    ForEach([3, 5, 10], id: \.self) { Text("\($0) min").tag($0) }
-                }.pickerStyle(.segmented)
-                if let error = coach.errorMessage { Text(error).foregroundStyle(.red) }
+            VStack(alignment: .leading, spacing: 20) {
                 if coach.isWorking {
-                    ProgressView("Milo förbereder ditt nästa steg…")
-                    Button("Avbryt") { coach.cancel() }
+                    JourneyGenerationLoadingView(focus: focusTitle) { coach.cancel() }
                 } else {
-                    if canStartGreeting {
-                        Button("Prova min första hälsning") { start(greeting: true) }.buttonStyle(.borderedProminent).controlSize(.large)
-                        Text("Ett kort smakprov som fungerar utan anslutning.").font(.footnote).foregroundStyle(.secondary)
+                    JourneyStartHero(track: track, milo: milo)
+
+                    VStack(alignment: .leading, spacing: 10) {
+                        Text("MILOS FÖRSLAG").font(.caption.bold()).tracking(1.4).foregroundStyle(LanguLearn.magenta)
+                        Text(focusTitle).font(.title2.bold()).fixedSize(horizontal: false, vertical: true)
+                        Text(track == .foundations
+                             ? "Lyssna, välj och upptäck i din takt."
+                             : "En kort situation som bygger vidare på din plan.")
+                            .font(.body).foregroundStyle(.secondary)
                     }
-                    Button(access.hasKey ? "Skapa min stund" : "Anslut för personliga lektioner") {
-                        if access.hasKey { start(greeting: false) } else { showConnection = true }
-                    }.buttonStyle(.borderedProminent).controlSize(.large).disabled(topic.count > 400)
+                    .padding(22).frame(maxWidth: .infinity, alignment: .leading)
+                    .background(.white, in: .rect(cornerRadius: 26))
+
+                    JourneyDurationPicker(minutes: $minutes)
+
+                    if let error = coach.errorMessage {
+                        Label(error, systemImage: "exclamationmark.bubble.fill")
+                            .font(.subheadline).foregroundStyle(LanguLearn.red)
+                            .padding(16).frame(maxWidth: .infinity, alignment: .leading)
+                            .background(LanguLearn.red.opacity(0.08), in: .rect(cornerRadius: 18))
+                    }
+
+                    Button(startTitle) {
+                        if connected { start(greeting: false) }
+                        else if canStartGreeting { start(greeting: true) }
+                        else { showConnection = true }
+                    }
+                    .buttonStyle(LanguLearnPrimaryButtonStyle(background: AnyShapeStyle(LanguLearn.brandGradient)))
+                    .disabled(topic.count > 400)
+
+                    if canStartGreeting, connected {
+                        Button("Börja direkt med en kort hälsning") { start(greeting: true) }
+                            .font(.subheadline.weight(.semibold)).frame(maxWidth: .infinity, minHeight: 44)
+                    }
+
+                    JourneyCustomTopicEditor(topic: $topic, isExpanded: $showsCustomTopic)
                 }
-                Text("Ett lektionspaket förbereds åt gången. Du kan sedan lyssna, välja svar och öppna tips utan fler AI-anrop. Fria skrivsvar skickas för återkoppling.").font(.footnote).foregroundStyle(.secondary)
-            }.padding(24).frame(maxWidth: 720).frame(maxWidth: .infinity)
-        }.langulearnCanvas().navigationTitle("Din nästa stund").navigationBarTitleDisplayMode(.inline)
+            }
+            .padding(dynamicTypeSize.isAccessibilitySize ? 16 : 22)
+            .padding(.bottom, 36)
+            .frame(maxWidth: 720).frame(maxWidth: .infinity)
+        }
+        .id(coach.isWorking)
+        .langulearnCanvas().navigationTitle("Din nästa stund").navigationBarTitleDisplayMode(.inline)
         .task { minutes = store.journey.profile?.minutes ?? 5 }
         .onDisappear { coach.cancel() }
         .miloLifetime(milo)
@@ -204,6 +236,134 @@ struct JourneyStartView: View {
         coach.perform { try store.updateJourney { $0.profile?.minutes = minutes } }
         guard coach.errorMessage == nil else { return }
         coach.start(store: store, course: settings.course, track: track, topic: topic, tone: settings.tone.modelInstruction, firstGreeting: greeting)
+    }
+}
+
+private struct JourneyStartHero: View {
+    let track: JourneyTrack
+    let milo: MiloController
+    @Environment(\.dynamicTypeSize) private var dynamicTypeSize
+
+    var body: some View {
+        let layout = dynamicTypeSize.isAccessibilitySize
+            ? AnyLayout(VStackLayout(alignment: .leading, spacing: 8))
+            : AnyLayout(HStackLayout(alignment: .center, spacing: 8))
+        layout {
+            VStack(alignment: .leading, spacing: 8) {
+                Text(track == .foundations ? "LÄR KÄNNA SPRÅKET" : "DIN NÄSTA SCEN")
+                    .font(.caption.bold()).tracking(1.4).foregroundStyle(LanguLearn.purple)
+                Text("Redo när du är.").font(.largeTitle.bold())
+                Text("Milo har valt en bra start. Du behöver inte fylla i något.")
+                    .font(.body).foregroundStyle(.secondary).fixedSize(horizontal: false, vertical: true)
+            }.frame(maxWidth: .infinity, alignment: .leading)
+            Button { milo.enthusiastic() } label: {
+                MiloAvatarView(controller: milo, size: 156, zoom: 2.6)
+            }
+            .buttonStyle(.plain).accessibilityLabel("Milo är redo")
+            .frame(maxWidth: dynamicTypeSize.isAccessibilitySize ? .infinity : nil)
+        }
+        .padding(22)
+        .background(
+            LinearGradient(colors: [LanguLearn.cyan.opacity(0.16), LanguLearn.purple.opacity(0.12)], startPoint: .topLeading, endPoint: .bottomTrailing),
+            in: .rect(cornerRadius: 30)
+        )
+    }
+}
+
+private struct JourneyDurationPicker: View {
+    @Binding var minutes: Int
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: 10) {
+            Text("Hur länge har du?").font(.subheadline.bold())
+            HStack(spacing: 10) {
+                ForEach([3, 5, 10], id: \.self) { choice in
+                    Button { minutes = choice } label: {
+                        Text("\(choice) min").font(.subheadline.bold())
+                            .frame(maxWidth: .infinity, minHeight: 44)
+                            .foregroundStyle(minutes == choice ? .white : LanguLearn.purple)
+                            .background(minutes == choice ? LanguLearn.purple : LanguLearn.purple.opacity(0.09), in: .capsule)
+                    }
+                    .buttonStyle(.plain)
+                    .accessibilityAddTraits(minutes == choice ? .isSelected : [])
+                }
+            }
+        }
+    }
+}
+
+private struct JourneyCustomTopicEditor: View {
+    @Binding var topic: String
+    @Binding var isExpanded: Bool
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: 12) {
+            Button {
+                withAnimation(LanguLearnMotion.move) { isExpanded.toggle() }
+            } label: {
+                HStack {
+                    Label("Jag vill välja något annat", systemImage: "slider.horizontal.3")
+                    Spacer()
+                    Image(systemName: "chevron.down").rotationEffect(.degrees(isExpanded ? 180 : 0))
+                }
+                .font(.subheadline.weight(.semibold)).foregroundStyle(LanguLearn.purple)
+                .frame(minHeight: 44).contentShape(.rect)
+            }.buttonStyle(.plain)
+
+            if isExpanded {
+                Text("Skriv en situation eller något du vill kunna göra.")
+                    .font(.subheadline).foregroundStyle(.secondary)
+                TextField("Till exempel: beställa på ett kafé", text: $topic, axis: .vertical)
+                    .textFieldStyle(.roundedBorder).lineLimit(2...4)
+                Text("Valfritt · \(topic.count) / 400").font(.caption).foregroundStyle(.secondary)
+            }
+        }
+        .padding(18).background(.white.opacity(0.72), in: .rect(cornerRadius: 22))
+    }
+}
+
+private struct JourneyGenerationLoadingView: View {
+    let focus: String
+    let cancel: () -> Void
+    @Environment(\.accessibilityReduceMotion) private var reduceMotion
+    @State private var phase = 0
+    private let messages: [LocalizedStringResource] = [
+        "Milo väljer en situation som passar dig",
+        "Milo bygger små steg och tydliga exempel",
+        "Milo ser till att du kan få hjälp längs vägen"
+    ]
+
+    var body: some View {
+        VStack(spacing: 22) {
+            ZStack {
+                Circle().fill(LanguLearn.purple.opacity(0.08)).frame(width: 226, height: 226)
+                Circle().stroke(LanguLearn.cyan.opacity(0.22), lineWidth: 2).frame(width: 252, height: 252)
+                    .scaleEffect(reduceMotion ? 1 : (phase.isMultiple(of: 2) ? 0.96 : 1.04))
+                Image("MiloThinking").resizable().scaledToFit().frame(width: 218, height: 218)
+                    .scaleEffect(reduceMotion ? 1 : (phase.isMultiple(of: 2) ? 0.985 : 1.015))
+                    .rotationEffect(.degrees(reduceMotion ? 0 : (phase.isMultiple(of: 2) ? -0.7 : 0.7)))
+                    .offset(y: reduceMotion ? 0 : (phase.isMultiple(of: 2) ? 2 : -2))
+                    .accessibilityHidden(true)
+            }
+            VStack(spacing: 11) {
+                Text("Milo tänker").font(.largeTitle.bold())
+                MiloThinkingDots()
+                Text(messages[phase % messages.count]).font(.title3.weight(.medium)).multilineTextAlignment(.center)
+                Text(focus).font(.subheadline).foregroundStyle(.secondary).multilineTextAlignment(.center).lineLimit(3)
+            }
+            .contentTransition(.numericText())
+            Button("Pausa här", action: cancel).frame(minHeight: 44)
+            Text("Din plan och dina val finns kvar.").font(.footnote).foregroundStyle(.secondary)
+        }
+        .padding(.top, 20).frame(maxWidth: .infinity)
+        .task {
+            guard !reduceMotion else { return }
+            while !Task.isCancelled {
+                try? await Task.sleep(for: .milliseconds(1200))
+                guard !Task.isCancelled else { return }
+                withAnimation(.easeInOut(duration: 0.45)) { phase = (phase + 1) % messages.count }
+            }
+        }
     }
 }
 

@@ -20,7 +20,11 @@ struct JourneyPracticeMaterial {
 
     init(progress: JourneyProgress, course: LanguageCourse) {
         let learned = progress.sessions.reversed().flatMap(\.pack.steps)
-        let fallback = FoundationContent.welcome(course: course)?.steps ?? []
+        // A confident learner with no Journey history should not be dropped into
+        // the beginner greeting deck. Their first guided scene seeds richer games.
+        let fallback = progress.profile?.startingExperience.isExperienced == true
+            ? []
+            : FoundationContent.welcome(course: course)?.steps ?? []
         var seen = Set<String>()
         cards = (learned + fallback).filter { step in
             let key = JourneyStep.normalized(step.target) + "|" + JourneyStep.normalized(step.translation)
@@ -194,7 +198,7 @@ private struct QuickFlashcardRound: View {
 
             if revealed {
                 Button("Lyssna", systemImage: "speaker.wave.2.fill", action: speak)
-                    .font(.headline).buttonStyle(.bordered)
+                    .font(.headline).buttonStyle(.bordered).controlSize(.large)
                 HStack(spacing: 12) {
                     Button("Öva igen") { rate(false) }.buttonStyle(LanguLearnSecondaryButtonStyle(tint: LanguLearn.magenta, fill: LanguLearn.magenta.opacity(0.10)))
                     Button("Den satt!") { rate(true) }.buttonStyle(LanguLearnSecondaryButtonStyle(tint: LanguLearn.deepGreen, fill: LanguLearn.green.opacity(0.14)))

@@ -53,6 +53,7 @@ final class JourneyCoach {
     private var generation = UUID()
 
     init(service: any JourneyService = OpenAIJourneyService()) { self.service = service }
+    var requiresAPIKey: Bool { service.requiresAPIKey }
 
     func cancel() { generation = UUID(); task?.cancel(); task = nil; isWorking = false }
 

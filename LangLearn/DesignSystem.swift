@@ -153,7 +153,7 @@ struct LanguLearnPrimaryButtonStyle: ButtonStyle {
     }
 }
 
-/// The 38 pt tinted capsule used for the secondary pair under a correction.
+/// A tinted secondary capsule with an accessible 44 pt minimum hit target.
 struct LanguLearnSecondaryButtonStyle: ButtonStyle {
     var tint: Color = LanguLearn.purple
     var fill: Color = LanguLearn.purple.opacity(0.10)
@@ -162,7 +162,7 @@ struct LanguLearnSecondaryButtonStyle: ButtonStyle {
         configuration.label
             .font(.il(14, .semibold))
             .foregroundStyle(tint)
-            .frame(maxWidth: .infinity, minHeight: 38)
+            .frame(maxWidth: .infinity, minHeight: 44)
             .background(fill, in: .capsule)
             .scaleEffect(configuration.isPressed ? 0.98 : 1)
             .animation(.spring(duration: 0.2), value: configuration.isPressed)

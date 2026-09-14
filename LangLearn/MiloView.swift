@@ -65,13 +65,40 @@ struct MiloLoadingView: View {
             if showsMascot { MiloAvatarView(mood: .thinking, size: 56) }
             VStack(alignment: .leading, spacing: 8) {
                 Text(message).font(.subheadline.weight(.medium))
-                ProgressView().accessibilityLabel(Text(message))
+                MiloThinkingDots()
             }
             Spacer(minLength: 0)
         }
         .padding(14)
         .background(LanguLearn.purple.opacity(0.06), in: .rect(cornerRadius: 22))
         .accessibilityElement(children: .combine)
+    }
+}
+
+/// A calm, branded activity cue used while Milo composes or evaluates.
+/// It avoids the system spinner and can sit beside the one live rig on screen.
+struct MiloThinkingDots: View {
+    @Environment(\.accessibilityReduceMotion) private var reduceMotion
+    @State private var active = 0
+
+    var body: some View {
+        HStack(spacing: 7) {
+            ForEach(0..<3, id: \.self) { dot in
+                Circle().fill(LanguLearn.purple)
+                    .frame(width: dot == active ? 10 : 7, height: dot == active ? 10 : 7)
+                    .opacity(dot == active ? 1 : 0.25)
+            }
+        }
+        .frame(height: 12)
+        .accessibilityLabel("Milo arbetar")
+        .task {
+            guard !reduceMotion else { return }
+            while !Task.isCancelled {
+                try? await Task.sleep(for: .milliseconds(420))
+                guard !Task.isCancelled else { return }
+                withAnimation(.easeInOut(duration: 0.25)) { active = (active + 1) % 3 }
+            }
+        }
     }
 }
 

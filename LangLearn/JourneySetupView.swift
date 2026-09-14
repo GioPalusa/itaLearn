@@ -190,17 +190,12 @@ struct JourneySetupView: View {
                     Circle().fill(.white.opacity(0.7)).frame(width: 232, height: 232)
                     Circle().stroke(LanguLearn.purple.opacity(0.12), lineWidth: 1).frame(width: 260, height: 260)
                     MiloView(mood: .thinking, size: 232, zoom: 2.6)
-                    Image(systemName: "ellipsis.bubble.fill")
-                        .font(.title).foregroundStyle(LanguLearn.purple)
-                        .padding(14).background(.white, in: Circle())
-                        .offset(x: 84, y: -80).accessibilityHidden(true)
                 }.padding(.top, 12)
                 VStack(spacing: 12) {
                     Text("Jag funderar på ditt nästa steg").font(.title2.bold())
                     Text("Jag tar med mig det du berättar och hittar en situation som passar dig.")
                         .font(.body).foregroundStyle(.secondary)
-                    ProgressView().tint(LanguLearn.purple).padding(.top, 8)
-                        .accessibilityLabel("Milo funderar")
+                    MiloThinkingDots().padding(.top, 8)
                 }.multilineTextAlignment(.center)
                 if let answer = draft.pending?.text, !answer.isEmpty {
                     VStack(alignment: .leading, spacing: 8) {

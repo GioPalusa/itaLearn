@@ -68,8 +68,13 @@ nonisolated struct JourneyRequest: Encodable, Sendable {
 }
 
 nonisolated protocol JourneyService: Sendable {
+    var requiresAPIKey: Bool { get }
     func generate(_ request: JourneyRequest) async throws -> JourneyPack
     func evaluate(course: LanguageCourse, step: JourneyStep, answer: String) async throws -> JourneyEvaluation
+}
+
+nonisolated extension JourneyService {
+    var requiresAPIKey: Bool { true }
 }
 
 nonisolated struct OpenAIJourneyService: JourneyService {
@@ -89,6 +94,7 @@ nonisolated struct OpenAIJourneyService: JourneyService {
         Adapt to recentDifficulty: tooEasy means a more open task or richer situation, not just more items; tooHard means smaller steps and clearer examples while retaining the person's goal; justRight maintains challenge. Keep this change within reading/accessibility constraints. The number of steps follows time, not proficiency.
         Use 3–4 steps for 3 minutes, 4–5 for 5 minutes, 6–8 for 10 minutes. Start with an example that teaches what the following question needs.
         Build from demonstration to supported recognition to a small new application. Never test unexplained words or script units.
+        Write every instruction as a direct learner action. Never call an example "a model" or "modellen"; say "example/exemplet" and state exactly whether the learner should listen, read, choose, build, say or write.
         If allowsWriting is false, do not use write or build. This field reflects the learner's starting point and recent recognition, not a formal proficiency estimate. When it becomes true after early recognition, introduce only tiny supported writing tasks with a model example available. Use meaningChoice, listeningChoice, scriptChoice and optional say.
         Foundations: no write/build, teach at most 2–3 units. If reading is not comfortable include scriptChoice. Use inventory.units for scriptChoice.target. Respect inventory.guidance.
         For scriptChoice, show the target unit, explain its role in a familiar whole word, and ask the learner to match it among other units. Every choice text is exactly an inventory unit; correctChoiceID points to the choice whose text equals target. Do not put the correct answer in instruction or hints[0].
