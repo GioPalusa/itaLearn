@@ -1,13 +1,15 @@
 import SwiftUI
 
-/// The Öva tab: every way into practice for the lesson the learner is on, plus
-/// the language-level drills that do not belong to any single lesson.
+/// A game shelf and the guided path live side by side. Quick rounds reuse
+/// learned material immediately; longer activities can still ask Milo for help.
 struct PracticeHubView: View {
     @Environment(LearningStore.self) private var store
     @Environment(TutorSettings.self) private var settings
-    @State private var planner = LearningChat()
 
-    private var lesson: PlannedLesson? {
+    private var material: JourneyPracticeMaterial {
+        JourneyPracticeMaterial(progress: store.journey, course: settings.course)
+    }
+    private var oldLesson: PlannedLesson? {
         guard let plan = store.state.activePlan else { return nil }
         return plan.lessons.first {
             !plan.completedLessonIDs.contains($0.id)
@@ -15,159 +17,184 @@ struct PracticeHubView: View {
         }
     }
 
-    /// Read without creating: opening this tab should not start a lesson session.
-    private var session: LessonSession? {
-        guard let lesson else { return nil }
-        return store.state.sessions.last { $0.lessonID == lesson.id }
-    }
-    private var practice: PracticeProgress? { session?.practice }
-
     var body: some View {
         ScrollView {
-            VStack(alignment: .leading, spacing: 12) {
-                if let lesson {
-                    // The tab opens with its host rather than a grey instruction.
-                    MiloWhisper(text: "Välj hur du vill öva. Jag är med hela vägen.")
-                        .padding(.horizontal, 2).padding(.bottom, 2)
-
-                    NavigationLink { LessonOverviewView(lesson: lesson) } label: {
-                        row("Fortsätt lektionen", lesson.title,
-                            icon: "bubble.left.and.bubble.right", tint: LanguLearn.purple)
+            VStack(alignment: .leading, spacing: 26) {
+                PracticeShelfHero(language: settings.targetLanguage.displayName)
+                GuidedLessonShelfCard(session: store.journey.activeSession, track: store.journey.recommendedTrack)
+                QuickGameShelf(material: material)
+                OpenPracticeShelf()
+                if let oldLesson {
+                    NavigationLink { LessonPracticeView(lesson: oldLesson) } label: {
+                        Label("Öppna mina tidigare ordkort och meningar", systemImage: "archivebox.fill")
+                            .font(.headline).foregroundStyle(LanguLearn.purple)
+                            .padding(20).frame(maxWidth: .infinity, alignment: .leading)
+                            .background(.white, in: .rect(cornerRadius: 22))
                     }.buttonStyle(.plain)
-
-                    NavigationLink { cardsDestination(lesson) } label: {
-                        row("Ordkort", cardsCaption,
-                            icon: "rectangle.on.rectangle.angled", tint: LanguLearn.cyan)
-                    }.buttonStyle(.plain)
-
-                    NavigationLink { sentencesDestination(lesson) } label: {
-                        row("Bygg meningar", sentencesCaption,
-                            icon: "square.grid.3x1.below.line.grid.1x2", tint: LanguLearn.magenta)
-                    }.buttonStyle(.plain)
-
-                    pronounLink
-                    freeChatLink
-                    writingLink
-                } else {
-                    MiloWhisper(text: "Du har gått igenom planen. Välj hur du vill fortsätta, eller öva vidare under tiden.")
-                        .padding(.horizontal, 2).padding(.bottom, 2)
-                    pronounLink
-                    freeChatLink
-                    writingLink
-                    PlanDirectionPicker(planner: planner).langulearnCard()
-                    NavigationLink("Testa mina kunskaper igen") { AdaptiveChatView(mode: .assessment) }
-                        .buttonStyle(LanguLearnSecondaryButtonStyle())
                 }
+                NavigationLink { JourneyExploreView() } label: {
+                    HStack {
+                        VStack(alignment: .leading, spacing: 5) {
+                            Text("Byt spår eller välj en egen situation").font(.headline)
+                            Text("När du vill styra mer själv").font(.subheadline).foregroundStyle(.secondary)
+                        }
+                        Spacer()
+                        RowChevron()
+                    }
+                    .padding(.horizontal, 4).contentShape(.rect)
+                }.buttonStyle(.plain)
             }
-            .padding(20).padding(.bottom, 40)
+            .padding(20).padding(.bottom, 44)
             .frame(maxWidth: 760).frame(maxWidth: .infinity)
         }
-        .langulearnCanvas()
-        .navigationTitle("Öva")
+        .background(
+            LinearGradient(colors: [Color(red: 0.96, green: 0.94, blue: 0.99), LanguLearn.canvas], startPoint: .top, endPoint: .center)
+                .ignoresSafeArea()
+        )
+        .navigationTitle("Spela")
     }
+}
 
-    private var pronounLink: some View {
-        NavigationLink { PronounGameView() } label: {
-            row("Pronomenspelet", pronounCaption, icon: "person.2.wave.2", tint: LanguLearn.green)
-        }.buttonStyle(.plain)
-    }
+private struct PracticeShelfHero: View {
+    let language: String
+    @State private var milo = MiloController()
 
-    private var freeChatLink: some View {
-        NavigationLink { AdaptiveChatView(mode: .freeChat) } label: {
-            // The one row that leads to Milo himself wears his face instead of a
-            // symbol, so it reads as a person to talk to rather than a feature.
-            row("Chatta fritt med Milo", freeChatCaption,
-                icon: "bubble.left.and.text.bubble.right", tint: LanguLearn.purple, showsMilo: true)
-        }.buttonStyle(.plain)
-    }
-
-    private var writingLink: some View {
-        NavigationLink { WritingDeskView() } label: {
-            row("Skriv och få respons", writingCaption,
-                icon: "square.and.pencil", tint: LanguLearn.magenta)
-        }.buttonStyle(.plain)
-    }
-
-    // MARK: - Where each row goes
-    //
-    // Flashcards and sentences need a generated pack. When there is none yet the
-    // row leads to the screen that makes one, rather than to an empty game.
-
-    @ViewBuilder private func cardsDestination(_ lesson: PlannedLesson) -> some View {
-        if let practice, let id = session?.id, !practice.pack.flashcards.isEmpty {
-            FlashcardPracticeView(sessionID: id, cards: practice.pack.flashcards, lessonTitle: lesson.title)
-        } else {
-            LessonPracticeView(lesson: lesson)
+    var body: some View {
+        HStack(alignment: .center, spacing: 8) {
+            VStack(alignment: .leading, spacing: 9) {
+                Text("SNABBT ELLER GUIDAT").font(.caption.bold()).tracking(1.4).foregroundStyle(LanguLearn.magenta)
+                Text("Vad känns kul nu?").font(.largeTitle.bold())
+                Text("Spela direkt med ord du mött, eller fortsätt din lektion i \(language.lowercased()).")
+                    .font(.body).foregroundStyle(.secondary).fixedSize(horizontal: false, vertical: true)
+            }
+            .frame(maxWidth: .infinity, alignment: .leading)
+            Button { milo.enthusiastic() } label: {
+                MiloAvatarView(controller: milo, size: 142, zoom: 2.6)
+            }
+            .buttonStyle(.plain).accessibilityLabel("Milo vill spela")
         }
+        .miloLifetime(milo)
     }
+}
 
-    @ViewBuilder private func sentencesDestination(_ lesson: PlannedLesson) -> some View {
-        if let practice, let id = session?.id, !practice.pack.puzzles.isEmpty {
-            SentencePracticeView(sessionID: id, puzzles: practice.pack.puzzles, lessonTitle: lesson.title)
-        } else {
-            LessonPracticeView(lesson: lesson)
-        }
-    }
+private struct GuidedLessonShelfCard: View {
+    let session: JourneySession?
+    let track: JourneyTrack
 
-    // MARK: - Captions
-
-    private var cardsCaption: String {
-        guard let practice else { return "Skapa kort från lektionen" }
-        return "\(practice.knownCardIDs.count) av \(practice.pack.flashcards.count) kan du"
-    }
-
-    private var sentencesCaption: String {
-        guard let practice else { return "Skapa meningar från lektionen" }
-        if practice.hasUnfinishedSentence { return "Fortsätt där du slutade" }
-        return "\(practice.solvedPuzzleIDs.count) av \(practice.pack.puzzles.count) lösta"
-    }
-
-    private var pronounCaption: String {
-        guard let pronouns = store.state.pronouns else {
-            return "Lär dig vem som gör vad i \(settings.targetLanguage.displayName.lowercased())"
-        }
-        if pronouns.isComplete { return "Klart · längsta svit \(pronouns.bestStreak)" }
-        return "\(pronouns.solvedRoundIDs.count) av \(pronouns.game.rounds.count) klara"
-    }
-
-    private var freeChatCaption: String {
-        let turns = store.state.freeChat?.messages.filter { $0.role == .user }.count ?? 0
-        return turns == 0
-            ? "Prata om vad du vill, i din takt"
-            : "Fortsätt samtalet · \(turns) svar hittills"
-    }
-
-    private var writingCaption: String {
-        let count = store.state.writings?.count ?? 0
-        return count == 0
-            ? "Skriv en text och få den rättad"
-            : "\(count) \(count == 1 ? "text" : "texter") lästa av Milo"
-    }
-
-    private func row(_ title: LocalizedStringKey, _ caption: String,
-                     icon: String, tint: Color, showsMilo: Bool = false) -> some View {
-        HStack(spacing: 14) {
-            Group {
-                if showsMilo {
-                    MiloAvatarView(mood: .still, size: 44)
-                } else {
-                    Image(systemName: icon)
-                        .font(.system(size: 19, weight: .medium))
-                        .foregroundStyle(tint)
-                        .frame(width: 44, height: 44)
-                        .background(tint.opacity(0.12), in: .rect(cornerRadius: 13))
+    var body: some View {
+        NavigationLink {
+            if let session { JourneyLessonView(sessionID: session.id) }
+            else { JourneyStartView(track: track) }
+        } label: {
+            HStack(spacing: 18) {
+                Image(systemName: session == nil ? "play.fill" : "arrow.right")
+                    .font(.title2.bold()).foregroundStyle(.white)
+                    .frame(width: 58, height: 58).background(.white.opacity(0.18), in: .circle)
+                VStack(alignment: .leading, spacing: 5) {
+                    Text(session == nil ? "Starta en guidad lektion" : "Fortsätt din guidade lektion")
+                        .font(.title3.bold()).foregroundStyle(.white)
+                    Text(session?.pack.title ?? "Milo har ett nästa steg åt dig")
+                        .font(.subheadline).foregroundStyle(.white.opacity(0.8)).lineLimit(2)
                 }
+                Spacer(minLength: 0)
             }
-            VStack(alignment: .leading, spacing: 2) {
-                Text(title).font(.il(17, .semibold)).foregroundStyle(LanguLearn.ink)
-                Text(caption).font(.il(14)).foregroundStyle(LanguLearn.inkSecondary)
-                    .lineLimit(2).multilineTextAlignment(.leading)
-            }
-            Spacer(minLength: 8)
-            RowChevron()
+            .padding(20).frame(maxWidth: .infinity, alignment: .leading)
+            .background(
+                LinearGradient(colors: [LanguLearn.purple, Color(red: 0.45, green: 0.25, blue: 0.72)], startPoint: .topLeading, endPoint: .bottomTrailing),
+                in: .rect(cornerRadius: 28)
+            )
+            .shadow(color: LanguLearn.purple.opacity(0.22), radius: 14, y: 8)
         }
-        .langulearnCard()
+        .buttonStyle(.plain)
+    }
+}
+
+private struct QuickGameShelf: View {
+    let material: JourneyPracticeMaterial
+    private let columns = [GridItem(.flexible(), spacing: 12), GridItem(.flexible(), spacing: 12)]
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: 14) {
+            HStack(alignment: .firstTextBaseline) {
+                Text("Snabbspel").font(.title2.bold())
+                Spacer()
+                Text("1–3 min").font(.subheadline.weight(.semibold)).foregroundStyle(LanguLearn.purple)
+            }
+            LazyVGrid(columns: columns, spacing: 12) {
+                NavigationLink { JourneyQuickPlayView(game: .cards, steps: material.cards) } label: {
+                    GameTile(title: "Ordblixten", caption: "Vänd och minns", symbol: "rectangle.on.rectangle.angled.fill", color: LanguLearn.cyan, available: !material.cards.isEmpty)
+                }.buttonStyle(.plain).disabled(material.cards.isEmpty)
+
+                NavigationLink { JourneyQuickPlayView(game: .listening, steps: material.cards) } label: {
+                    GameTile(title: "Lyssna & hitta", caption: "Öra före text", symbol: "waveform.circle.fill", color: LanguLearn.purple, available: !material.cards.isEmpty)
+                }.buttonStyle(.plain).disabled(material.cards.isEmpty)
+
+                NavigationLink { JourneyQuickPlayView(game: .build, steps: material.builds) } label: {
+                    GameTile(title: "Bygg frasen", caption: material.builds.isEmpty ? "Öppnas av lektioner" : "Ord i rätt ordning", symbol: "square.grid.3x1.below.line.grid.1x2", color: LanguLearn.magenta, available: !material.builds.isEmpty)
+                }.buttonStyle(.plain).disabled(material.builds.isEmpty)
+
+                NavigationLink { PronounGameView() } label: {
+                    GameTile(title: "Vem gör vad?", caption: "Pronomenduellen", symbol: "person.2.fill", color: LanguLearn.green, available: true)
+                }.buttonStyle(.plain)
+            }
+            if material.cards.isEmpty {
+                Text("Din första guidade lektion ger spelen ord att använda.")
+                    .font(.footnote).foregroundStyle(.secondary)
+            }
+        }
+    }
+}
+
+private struct GameTile: View {
+    let title: LocalizedStringResource
+    let caption: LocalizedStringResource
+    let symbol: String
+    let color: Color
+    let available: Bool
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: 13) {
+            Image(systemName: symbol).font(.title2).symbolRenderingMode(.hierarchical)
+                .foregroundStyle(color).frame(width: 48, height: 48)
+                .background(color.opacity(0.13), in: .rect(cornerRadius: 16))
+            Spacer(minLength: 0)
+            Text(title).font(.headline).foregroundStyle(.primary).fixedSize(horizontal: false, vertical: true)
+            Text(caption).font(.caption).foregroundStyle(.secondary).fixedSize(horizontal: false, vertical: true)
+        }
+        .padding(17).frame(maxWidth: .infinity, minHeight: 168, alignment: .leading)
+        .background(.white.opacity(available ? 1 : 0.58), in: .rect(cornerRadius: 24))
+        .overlay { RoundedRectangle(cornerRadius: 24).strokeBorder(color.opacity(available ? 0.14 : 0.06), lineWidth: 1) }
+        .opacity(available ? 1 : 0.66)
         .contentShape(.rect)
         .accessibilityElement(children: .combine)
+    }
+}
+
+private struct OpenPracticeShelf: View {
+    var body: some View {
+        VStack(alignment: .leading, spacing: 14) {
+            Text("Mer med Milo").font(.title2.bold())
+            HStack(spacing: 12) {
+                NavigationLink { AdaptiveChatView(mode: .freeChat) } label: {
+                    OpenPlayButton(title: "Prata fritt", symbol: "bubble.left.and.text.bubble.right.fill", tint: LanguLearn.purple)
+                }.buttonStyle(.plain)
+                NavigationLink { WritingDeskView() } label: {
+                    OpenPlayButton(title: "Skriv en rad", symbol: "pencil.and.scribble", tint: LanguLearn.magenta)
+                }.buttonStyle(.plain)
+            }
+        }
+    }
+}
+
+private struct OpenPlayButton: View {
+    let title: LocalizedStringResource
+    let symbol: String
+    let tint: Color
+
+    var body: some View {
+        Label(title, systemImage: symbol).font(.subheadline.bold()).foregroundStyle(tint)
+            .padding(.horizontal, 15).padding(.vertical, 14)
+            .frame(maxWidth: .infinity, minHeight: 54)
+            .background(tint.opacity(0.10), in: .capsule)
     }
 }

@@ -58,8 +58,8 @@ private struct MainTabs: View {
             Tab("Idag", systemImage: "sun.max", value: .plan) {
                 NavigationStack { JourneyTodayView() }
             }
-            Tab("Upptäck", systemImage: "sparkles", value: .practice) {
-                NavigationStack { JourneyExploreView() }
+            Tab("Spela", systemImage: "gamecontroller.fill", value: .practice) {
+                NavigationStack { PracticeHubView() }
             }
             Tab("Min resa", systemImage: "books.vertical", value: .progress) {
                 NavigationStack { JourneyLibraryView() }
