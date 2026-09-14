@@ -235,6 +235,7 @@ nonisolated struct JourneySession: Codable, Identifiable, Equatable, Sendable {
 
 nonisolated struct JourneyProgress: Codable, Equatable, Sendable {
     var profile: JourneyProfile?
+    var discovery: JourneyDiscovery?
     var sessions: [JourneySession] = []
     var observations: [JourneyObservation] = []
     var phrases: [JourneyPhrase] = []

@@ -53,6 +53,26 @@ struct OpenAIClientTests {
         return data
     }
 
+    @Test func discoveryUsesBoundedStrictResponsesAndValidatesReturnedData() async throws {
+        StubURLProtocol.install { request in
+            let body = try #require(JSONSerialization.jsonObject(with: Self.body(request)) as? [String: Any])
+            #expect(body["max_output_tokens"] as? Int == 2500)
+            #expect(body["store"] as? Bool == false)
+            let format = try #require((body["text"] as? [String: Any])?["format"] as? [String: Any])
+            #expect(format["name"] as? String == "journey_discovery_v1")
+            #expect(format["strict"] as? Bool == true)
+            let payload = String(decoding: try JSONEncoder().encode(discoveryProbe()), as: UTF8.self)
+            return (200, try JSONSerialization.data(withJSONObject: ["status": "completed", "output": [
+                ["type": "message", "content": [["type": "output_text", "text": payload]]]
+            ]]))
+        }
+        let service = OpenAIDiscoveryService(client: client())
+        var request = try discoveryRequest()
+        #expect(try await service.reply(to: request).mode == .write)
+        request.reading = .newScript
+        await #expect(throws: LearningValidationError.self) { try await service.reply(to: request) }
+    }
+
     @Test func guidedPackRoundTripsThroughResponsesAndRejectsWrongCourse() async throws {
         StubURLProtocol.install { request in
             let body = try #require(JSONSerialization.jsonObject(with: Self.body(request)) as? [String: Any])
