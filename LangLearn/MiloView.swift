@@ -62,7 +62,7 @@ struct MiloLoadingView: View {
     var body: some View {
         HStack(spacing: 14) {
             // A loading row must never silently introduce a second live rig.
-            if showsMascot { MiloAvatarView(mood: .still, size: 56) }
+            if showsMascot { MiloAvatarView(mood: .thinking, size: 56) }
             VStack(alignment: .leading, spacing: 8) {
                 Text(message).font(.subheadline.weight(.medium))
                 ProgressView().accessibilityLabel(Text(message))

@@ -27,8 +27,10 @@ struct JourneySetupView: View {
                 VStack(alignment: .leading, spacing: 24) {
                     Color.clear.frame(height: 1).id("moment")
                     if let discovery {
-                        DiscoveryMiloMoment(milo: milo, title: title(discovery), caption: caption(discovery), compact: isTyping) {
-                            milo.speak(discovery.reply?.prompt ?? title(discovery), in: settings.nativeLanguage)
+                        if !coach.isWorking {
+                            DiscoveryMiloMoment(milo: milo, title: title(discovery), caption: caption(discovery), compact: isTyping) {
+                                milo.speak(discovery.reply?.prompt ?? title(discovery), in: settings.nativeLanguage)
+                            }
                         }
                         if discovery.pending == nil, let prompt = discovery.reply?.prompt {
                             Text(prompt).font(.title3.weight(.medium))
@@ -183,11 +185,34 @@ struct JourneySetupView: View {
 
     @ViewBuilder private func conversation(_ draft: JourneyDiscovery) -> some View {
         if coach.isWorking {
-            VStack(alignment: .leading, spacing: 16) {
-                ProgressView("Milo hittar en situation för dig…")
-                Text(draft.pending?.text ?? "").font(.callout).foregroundStyle(.secondary)
+            VStack(spacing: 24) {
+                ZStack {
+                    Circle().fill(.white.opacity(0.7)).frame(width: 232, height: 232)
+                    Circle().stroke(LanguLearn.purple.opacity(0.12), lineWidth: 1).frame(width: 260, height: 260)
+                    MiloView(mood: .thinking, size: 232, zoom: 2.6)
+                    Image(systemName: "ellipsis.bubble.fill")
+                        .font(.title).foregroundStyle(LanguLearn.purple)
+                        .padding(14).background(.white, in: Circle())
+                        .offset(x: 84, y: -80).accessibilityHidden(true)
+                }.padding(.top, 12)
+                VStack(spacing: 12) {
+                    Text("Jag funderar på ditt nästa steg").font(.title2.bold())
+                    Text("Jag tar med mig det du berättar och hittar en situation som passar dig.")
+                        .font(.body).foregroundStyle(.secondary)
+                    ProgressView().tint(LanguLearn.purple).padding(.top, 8)
+                        .accessibilityLabel("Milo funderar")
+                }.multilineTextAlignment(.center)
+                if let answer = draft.pending?.text, !answer.isEmpty {
+                    VStack(alignment: .leading, spacing: 8) {
+                        Label("Det här tar jag med mig", systemImage: "quote.bubble")
+                            .font(.caption.weight(.semibold)).foregroundStyle(LanguLearn.purple)
+                        Text(answer).font(.callout).lineLimit(4)
+                    }.frame(maxWidth: .infinity, alignment: .leading)
+                        .padding(20).background(.white.opacity(0.8), in: .rect(cornerRadius: 24))
+                }
                 Button("Pausa här") { coach.cancel() }.frame(minHeight: 44)
-            }
+                Text("Ditt svar finns kvar om du pausar.").font(.footnote).foregroundStyle(.secondary)
+            }.frame(maxWidth: .infinity)
         } else if !connected {
             VStack(alignment: .leading, spacing: 16) {
                 Text("För att följa upp det du berättar behöver Milo en anslutning till OpenAI. Din text och relevant studiehistorik skickas när du börjar samtalet.")

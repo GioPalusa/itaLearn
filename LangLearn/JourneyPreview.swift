@@ -68,7 +68,7 @@ struct JourneyPreview: View {
 private struct DiscoveryPreviewService: JourneyDiscoveryService {
     var requiresAPIKey: Bool { false }
     func reply(to request: DiscoveryRequest) async throws -> DiscoveryReply {
-        try await Task.sleep(for: .milliseconds(400))
+        try await Task.sleep(for: .milliseconds(ProcessInfo.processInfo.arguments.contains("--journey-loading") ? 20000 : 400))
         let listening = request.reading != .comfortable
         let japanese = request.course.target.code == "ja"
         var reply = DiscoveryReply(targetLanguage: request.course.target.code, explanationLanguage: request.course.native.code,

@@ -93,7 +93,10 @@ nonisolated struct OpenAIClient: Sendable {
                 let envelope = try JSONDecoder().decode(ResponseEnvelope.self, from: data)
                 Self.debug("\(context) status=\(envelope.status) incomplete=\(envelope.incomplete_details?.reason ?? "none") outputTokens=\(envelope.usage?.output_tokens ?? 0) reasoningTokens=\(envelope.usage?.output_tokens_details?.reasoning_tokens ?? 0)")
                 let content = envelope.output.flatMap { $0.content ?? [] }
-                if content.contains(where: { $0.type == "refusal" }) { throw OpenAIError.refused }
+                if content.contains(where: { $0.type == "refusal" }) {
+                    Self.debug("\(context) rejected: provider refusal; retry=false")
+                    throw OpenAIError.refused
+                }
                 if envelope.status != "completed" {
                     let reason = envelope.incomplete_details?.reason
                     if envelope.status == "incomplete", ["max_output_tokens", "max_tokens"].contains(reason ?? "") {

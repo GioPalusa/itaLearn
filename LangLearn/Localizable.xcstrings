@@ -354,6 +354,9 @@
     "Det här passar mig" : {
 
     },
+    "Det här tar jag med mig" : {
+
+    },
     "Det här är för svårt" : {
 
     },
@@ -443,6 +446,9 @@
 
     },
     "Ditt nästa steg" : {
+
+    },
+    "Ditt svar finns kvar om du pausar." : {
 
     },
     "Ditt svar hjälper Milo att anpassa nästa stund." : {
@@ -543,9 +549,6 @@
 
     },
     "En liten rättning" : {
-
-    },
-    "En liten situation, ingen examen. Hjälp och hoppade frågor sänker inte automatiskt din startnivå." : {
 
     },
     "En liten stund som räknas." : {
@@ -788,6 +791,9 @@
     "Jag börjar från noll — vi tar det tillsammans" : {
 
     },
+    "Jag funderar på ditt nästa steg" : {
+
+    },
     "Jag förklarar för dig på" : {
 
     },
@@ -807,6 +813,9 @@
 
     },
     "Jag lär mig" : {
+
+    },
+    "Jag tar med mig det du berättar och hittar en situation som passar dig." : {
 
     },
     "Jag tar med mig det du berättar…" : {
@@ -1008,9 +1017,6 @@
     "Låt dina samtal ta nya vägar." : {
 
     },
-    "Låt oss hitta din första utmaning." : {
-
-    },
     "MER ÖVNING" : {
 
     },
@@ -1030,6 +1036,9 @@
 
     },
     "Milo bygger på karaktären Snow av Blender Studio (CC BY 4.0)." : {
+
+    },
+    "Milo funderar" : {
 
     },
     "Milo funderar på vad du behöver…" : {
@@ -1293,9 +1302,6 @@
 
     },
     "Prova en gång till" : {
-
-    },
-    "Prova ett svar…" : {
 
     },
     "Prova ett uttryck eller låt Milo läsa en hälsning." : {
