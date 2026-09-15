@@ -24,7 +24,7 @@ struct JourneyTodayView: View {
                     }.buttonStyle(.plain)
                 }
                 JourneyTrackLink(track: store.journey.recommendedTrack == .foundations ? .mission : .foundations)
-                Text("Du väljer riktningen. Milo hjälper dig att hitta nästa lilla steg.")
+                Text("Du väljer riktningen. Milo hjälper dig att hitta nästa steg.")
                     .font(.footnote).foregroundStyle(.secondary)
             }.padding(24).frame(maxWidth: 720).frame(maxWidth: .infinity)
         }

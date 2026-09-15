@@ -55,7 +55,7 @@ struct JourneyLessonView: View {
                         if let error = milo.narrator.errorMessage { Text(error).font(.footnote).foregroundStyle(.red) }
                         if milo.narrator.isSpeaking || milo.narrator.isPreparing { Button("Stoppa ljudet", systemImage: "stop.fill") { milo.stop() } }
                         if step.kind == .example || session.canAdvance {
-                            Button(session.cursor == session.pack.steps.count - 1 ? "Se vad jag har övat" : "Nästa lilla steg", systemImage: "arrow.right") {
+                            Button(session.cursor == session.pack.steps.count - 1 ? "Se vad jag har övat" : "Nästa steg", systemImage: "arrow.right") {
                                 milo.stop()
                                 edit { try $0.advance() }
                             }.buttonStyle(.borderedProminent).controlSize(.large).frame(maxWidth: .infinity)

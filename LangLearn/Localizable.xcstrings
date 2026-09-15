@@ -1,6 +1,12 @@
 {
   "sourceLanguage" : "sv",
   "strings" : {
+    "· %@" : {
+
+    },
+    "· %lld min" : {
+
+    },
     "\"Artigheten sitter. Nästa steg: fråga om priset.\"" : {
 
     },
@@ -10,7 +16,13 @@
     "\"Snyggt! Artigheten är i hamn — nu kör vi på priserna!\"" : {
 
     },
+    "/%lld" : {
+
+    },
     "%@" : {
+
+    },
+    "%@ · Byt språk" : {
 
     },
     "%@ TILL MÅLET" : {
@@ -22,32 +34,6 @@
           "stringUnit" : {
             "state" : "new",
             "value" : "%1$@ tipsar: %2$@"
-          }
-        }
-      }
-    },
-    "%@ · %@ · %@" : {
-      "localizations" : {
-        "sv" : {
-          "stringUnit" : {
-            "state" : "new",
-            "value" : "%1$@ · %2$@ · %3$@"
-          }
-        }
-      }
-    },
-    "%@ · Byt språk" : {
-
-    },
-    "%@! Milo här." : {
-
-    },
-    "%@! Så säger man hej på %@." : {
-      "localizations" : {
-        "sv" : {
-          "stringUnit" : {
-            "state" : "new",
-            "value" : "%1$@! Så säger man hej på %2$@."
           }
         }
       }
@@ -88,6 +74,19 @@
     "%@, redan använt" : {
 
     },
+    "%@! Milo här." : {
+
+    },
+    "%@! Så säger man hej på %@." : {
+      "localizations" : {
+        "sv" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "%1$@! Så säger man hej på %2$@."
+          }
+        }
+      }
+    },
     "%@s bedömning" : {
 
     },
@@ -104,10 +103,10 @@
         }
       }
     },
-    "%lld / 2000 tecken" : {
+    "%lld / 500" : {
 
     },
-    "%lld / 500" : {
+    "%lld / 2000 tecken" : {
 
     },
     "%lld av %lld" : {
@@ -158,9 +157,6 @@
     "%lld/5" : {
 
     },
-    "/%lld" : {
-
-    },
     "1–3 min" : {
 
     },
@@ -171,6 +167,15 @@
 
     },
     "Alla rundor klara" : {
+
+    },
+    "Ändra det jag berättade" : {
+
+    },
+    "Ändra din startpunkt och dina mål i Min resa. En frivillig kunskapskoll finns under Upptäck." : {
+
+    },
+    "Ändra mitt svar" : {
 
     },
     "Animation" : {
@@ -206,6 +211,18 @@
     "Applåderar" : {
 
     },
+    "Återställ din plan" : {
+
+    },
+    "Återställ plan från senaste kunskapskoll" : {
+
+    },
+    "Återställ planen" : {
+
+    },
+    "av %lld" : {
+
+    },
     "Avatarens storlek" : {
 
     },
@@ -239,13 +256,31 @@
     "Berätta om dig och %@. Vad har du provat — och vad längtar du efter att kunna göra?" : {
 
     },
-    "Beställ något gott och fråga vad det kostar." : {
-
-    },
     "Blick och tal" : {
 
     },
     "Blunda" : {
+
+    },
+    "Börja direkt med en kort hälsning" : {
+
+    },
+    "Börja från noll eller bygg på det du kan" : {
+
+    },
+    "Börja lära med Milo" : {
+
+    },
+    "Börja lektion %lld" : {
+
+    },
+    "Börja med ett språk. Du kan lägga till fler senare – varje språk får en egen studieplan." : {
+
+    },
+    "Börja om meningen" : {
+
+    },
+    "Börja samtalet" : {
 
     },
     "Bra övat — här är din sammanfattning" : {
@@ -266,52 +301,25 @@
     "Byt" : {
 
     },
-    "Byt OpenAI API-nyckel" : {
+    "Byt eller lägg till språk" : {
 
     },
-    "Byt eller lägg till språk" : {
+    "Byt OpenAI API-nyckel" : {
 
     },
     "Byt plan" : {
 
     },
-    "Byt språk eller lägg till ett nytt" : {
+    "Byt spår eller välj en egen situation" : {
 
     },
-    "Byt spår eller välj en egen situation" : {
+    "Byt språk eller lägg till ett nytt" : {
 
     },
     "Byt till den här planen? Din nuvarande plan arkiveras." : {
 
     },
-    "Börja direkt med en kort hälsning" : {
-
-    },
-    "Börja från noll eller bygg på det du kan" : {
-
-    },
-    "Börja lektion %lld" : {
-
-    },
-    "Börja lära med Milo" : {
-
-    },
-    "Börja med ett språk. Du kan lägga till fler senare – varje språk får en egen studieplan." : {
-
-    },
-    "Börja om meningen" : {
-
-    },
-    "Börja samtalet" : {
-
-    },
-    "DIN NÄSTA SCEN" : {
-
-    },
-    "DIN VÄRLD" : {
-
-    },
-    "DU ÄR HÄR" : {
+    "Då tar vi första steget tillsammans." : {
 
     },
     "Dans" : {
@@ -329,13 +337,19 @@
     "Den satt!" : {
 
     },
-    "Det Milo vet om mig" : {
-
-    },
     "Det du har skrivit finns kvar." : {
 
     },
     "Det fungerar här" : {
+
+    },
+    "Det här är för svårt" : {
+
+    },
+    "Det här är jag" : {
+
+    },
+    "Det här är vår start. Vi justerar efter det du provar och hur det känns." : {
 
     },
     "Det här fungerar redan" : {
@@ -356,16 +370,10 @@
     "Det här tar jag med mig" : {
 
     },
-    "Det här är för svårt" : {
-
-    },
-    "Det här är jag" : {
-
-    },
-    "Det här är vår start. Vi justerar efter det du provar och hur det känns." : {
-
-    },
     "Det kunde jag" : {
+
+    },
+    "Det Milo vet om mig" : {
 
     },
     "Det tar vi med oss. Skriv gärna det du kan, eller be om en enklare uppgift direkt." : {
@@ -377,13 +385,13 @@
     "Din API-nyckel är sparad" : {
 
     },
-    "Din fråga till Milo" : {
-
-    },
     "Din första guidade lektion ger spelen ord att använda." : {
 
     },
     "Din första stund väntar under Idag." : {
+
+    },
+    "Din fråga till Milo" : {
 
     },
     "Din kunskapskoll" : {
@@ -392,13 +400,16 @@
     "Din lärare Milo" : {
 
     },
+    "DIN NÄSTA SCEN" : {
+
+    },
+    "Din nästa stund" : {
+
+    },
     "Din nuvarande plan arkiveras när du byter, så du kan gå tillbaka igen. Avklarade lektioner och sparade samtal följer med varje plan." : {
 
     },
     "Din nya studieplan är klar" : {
-
-    },
-    "Din nästa stund" : {
 
     },
     "Din plan och dina val finns kvar." : {
@@ -418,6 +429,9 @@
       }
     },
     "Din studieplan, dina kunskapskollar och samtal sparas lokalt. För varje svar skickar appen bara den aktuella lektionen, en kort lärandesammanfattning och de senaste meddelandena till OpenAI. Kunskapskollen använder sina sex svar och din nuvarande plan." : {
+
+    },
+    "DIN VÄRLD" : {
 
     },
     "Dina avklarade lektioner ligger kvar och går att repetera." : {
@@ -453,6 +467,9 @@
     "Ditt nästa steg" : {
 
     },
+    "Ditt svar är sparat. Fortsätt när du vill." : {
+
+    },
     "Ditt svar finns kvar om du pausar." : {
 
     },
@@ -462,13 +479,19 @@
     "Ditt svar och hur svårt det känns hjälper Milo att hitta en bättre start för dig." : {
 
     },
-    "Ditt svar är sparat. Fortsätt när du vill." : {
+    "Dölj exempel" : {
 
     },
     "Dra ett ord till en plats, eller tryck för att lägga sist." : {
 
     },
     "Du använder textstöd" : {
+
+    },
+    "DU ÄR HÄR" : {
+
+    },
+    "Du är på väg mot: %@" : {
 
     },
     "Du behöver inte bevisa något. Skriv bara vad du vill kunna använda språket till." : {
@@ -499,6 +522,12 @@
     "Du har klarat hela planen" : {
 
     },
+    "Du kan ändra din riktning i Min resa. Dina svar sparas med ditt språk och hjälper Milo att välja kommande uppgifter." : {
+
+    },
+    "Du kan ändra dina val i Inställningar" : {
+
+    },
     "Du kan ansluta OpenAI senare för personliga lektioner." : {
 
     },
@@ -506,12 +535,6 @@
 
     },
     "Du kan säga det högt för dig själv. Mikrofonen används inte." : {
-
-    },
-    "Du kan ändra din riktning i Min resa. Dina svar sparas med ditt språk och hjälper Milo att välja kommande uppgifter." : {
-
-    },
-    "Du kan ändra dina val i Inställningar" : {
 
     },
     "Du och Milo" : {
@@ -523,25 +546,10 @@
     "Du tog dig igenom %lld steg. Så här gick dina försök:" : {
 
     },
-    "Du väljer riktningen. Milo hjälper dig att hitta nästa lilla steg." : {
+    "Du väljer riktningen. Milo hjälper dig att hitta nästa steg." : {
 
     },
     "Du väljer vad du vill kunna göra och hur bekväm du är med ljud och tecken. Sedan hittar vi en lagom start." : {
-
-    },
-    "Du är på väg mot: %@" : {
-
-    },
-    "Då tar vi första steget tillsammans." : {
-
-    },
-    "Dölj exempel" : {
-
-    },
-    "EN START SOM PASSAR DIG" : {
-
-    },
-    "ENTAL" : {
 
     },
     "En gång till" : {
@@ -565,9 +573,6 @@
     "En ny kunskapskoll kan ge en uppdaterad plan. Dina tidigare studier sparas." : {
 
     },
-    "En paus på kaféet" : {
-
-    },
     "En resa" : {
 
     },
@@ -575,6 +580,12 @@
 
     },
     "En situation i taget." : {
+
+    },
+    "EN START SOM PASSAR DIG" : {
+
+    },
+    "ENTAL" : {
 
     },
     "Entusiastisk" : {
@@ -586,7 +597,13 @@
     "Ett ord eller en fråga, om du vill…" : {
 
     },
-    "FLERTAL" : {
+    "Få en förklaring eller ett tips utan att skicka ditt svar" : {
+
+    },
+    "Fånga Milos uppmärksamhet" : {
+
+    },
+    "Färdigheter" : {
 
     },
     "Farlig zon" : {
@@ -598,55 +615,7 @@
     "Fira med Milo" : {
 
     },
-    "Formulera mig själv" : {
-
-    },
-    "Fortsätt" : {
-
-    },
-    "Fortsätt din guidade lektion" : {
-
-    },
-    "Fortsätt där du var" : {
-
-    },
-    "Fortsätt lektion %lld" : {
-
-    },
-    "Fortsätt med Milo" : {
-
-    },
-    "Fortsätt min kunskapskoll" : {
-
-    },
-    "Fortsätt på din väg" : {
-
-    },
-    "Fortsätt öva med Milo" : {
-
-    },
-    "Framsteg" : {
-
-    },
-    "Friare uttryck och nyanser" : {
-
-    },
-    "Fråga %lld av 6" : {
-
-    },
-    "Fråga Milo" : {
-
-    },
-    "Funderar" : {
-
-    },
-    "Färdigheter" : {
-
-    },
-    "Få en förklaring eller ett tips utan att skicka ditt svar" : {
-
-    },
-    "Fånga Milos uppmärksamhet" : {
+    "FLERTAL" : {
 
     },
     "För att följa upp det du berättar behöver Milo en anslutning till OpenAI. Din text och relevant studiehistorik skickas när du börjar samtalet." : {
@@ -673,10 +642,7 @@
     "Förklaringar på" : {
 
     },
-    "Förstå det jag hör" : {
-
-    },
-    "Förstå det jag läser" : {
+    "Formulera mig själv" : {
 
     },
     "Försök igen" : {
@@ -688,6 +654,57 @@
     "Försök skicka samma svar igen" : {
 
     },
+    "Förstå det jag hör" : {
+
+    },
+    "Förstå det jag läser" : {
+
+    },
+    "Fortsätt" : {
+
+    },
+    "Fortsätt där du var" : {
+
+    },
+    "Fortsätt din guidade lektion" : {
+
+    },
+    "Fortsätt lektion %lld" : {
+
+    },
+    "Fortsätt med Milo" : {
+
+    },
+    "Fortsätt min kunskapskoll" : {
+
+    },
+    "Fortsätt öva med Milo" : {
+
+    },
+    "Fortsätt på din väg" : {
+
+    },
+    "Fråga %lld av 6" : {
+
+    },
+    "Fråga Milo" : {
+
+    },
+    "Framsteg" : {
+
+    },
+    "Friare uttryck och nyanser" : {
+
+    },
+    "Funderar" : {
+
+    },
+    "Gå över scenen" : {
+
+    },
+    "Går" : {
+
+    },
     "Ge mig en ledtråd" : {
 
     },
@@ -695,12 +712,6 @@
 
     },
     "Glad" : {
-
-    },
-    "Gå över scenen" : {
-
-    },
-    "Går" : {
 
     },
     "Gör din första skrivövning så visas sammanfattningen här." : {
@@ -712,13 +723,13 @@
     "Gör om introduktionen" : {
 
     },
-    "HISTORIK" : {
+    "Hälsa på Milo" : {
 
     },
-    "HUR SÄGER DU?" : {
+    "Här syns vad du har provat, hur mycket stöd du använde och vad du kan återvända till." : {
 
     },
-    "Hej! Jag är Milo." : {
+    "Här vill jag börja med dig." : {
 
     },
     "Hej, %@!" : {
@@ -727,10 +738,16 @@
     "Hej, du!" : {
 
     },
+    "Hej! Jag är Milo." : {
+
+    },
     "Hela Milo" : {
 
     },
     "Hela vardagssituationer" : {
+
+    },
+    "HISTORIK" : {
 
     },
     "Hitta nyanserna. Gör språket till ditt." : {
@@ -754,19 +771,13 @@
     "Hur kändes nivån?" : {
 
     },
-    "Hur länge har du?" : {
-
-    },
     "Hur lång stund vill du börja med?" : {
 
     },
-    "Hälsa på Milo" : {
+    "Hur länge har du?" : {
 
     },
-    "Här syns vad du har provat, hur mycket stöd du använde och vad du kan återvända till." : {
-
-    },
-    "Här vill jag börja med dig." : {
+    "HUR SÄGER DU?" : {
 
     },
     "Idag" : {
@@ -787,19 +798,22 @@
     "Inte riktigt" : {
 
     },
+    "Jag är här. Vi tar det tillsammans." : {
+
+    },
     "Jag börjar från noll" : {
 
     },
     "Jag börjar från noll — vi tar det tillsammans" : {
 
     },
-    "Jag funderar på ditt nästa steg" : {
-
-    },
     "Jag förklarar för dig på" : {
 
     },
     "Jag förstod" : {
+
+    },
+    "Jag funderar på ditt nästa steg" : {
 
     },
     "Jag har provat att säga det" : {
@@ -811,13 +825,13 @@
     "Jag känner igen skriften" : {
 
     },
+    "Jag lär mig" : {
+
+    },
     "Jag lyssnar bara idag" : {
 
     },
     "Jag lyssnar. Ta det i din takt." : {
-
-    },
-    "Jag lär mig" : {
 
     },
     "Jag tar med mig det du berättar och hittar en situation som passar dig." : {
@@ -838,22 +852,22 @@
     "Jag vill ha hjälp att läsa" : {
 
     },
-    "Jag vill kunna prata mer med människor som är viktiga för mig." : {
+    "Jag vill känna mig hemma på resan och kunna prata med dem jag möter." : {
 
     },
-    "Jag vill känna mig hemma på resan och kunna prata med dem jag möter." : {
+    "Jag vill kunna prata mer med människor som är viktiga för mig." : {
 
     },
     "Jag vill välja något annat" : {
 
     },
-    "Jag är här. Vi tar det tillsammans." : {
-
-    },
-    "KUNDE" : {
-
-    },
     "Kamerafokus" : {
+
+    },
+    "Känna igen tecken" : {
+
+    },
+    "Känns tecknen bekanta?" : {
 
     },
     "Klar" : {
@@ -886,22 +900,70 @@
     "Korta fraser i vardagen" : {
 
     },
+    "KUNDE" : {
+
+    },
     "Kunde inte öppna dina studier" : {
 
     },
     "Kunskapskollar" : {
 
     },
-    "Känna igen tecken" : {
+    "Lägg först" : {
 
     },
-    "Känns tecknen bekanta?" : {
+    "Lägg till din OpenAI API-nyckel i Inställningar för att få hjälp av Milo." : {
+
+    },
+    "Lägg till din OpenAI API-nyckel i Inställningar för att få respons." : {
+
+    },
+    "Lägg till din OpenAI API-nyckel i Inställningar för att fortsätta planen." : {
+
+    },
+    "Lägg till din OpenAI API-nyckel i Inställningar för att skapa fler meningar." : {
+
+    },
+    "Lägg till din OpenAI API-nyckel i Inställningar för att skapa fler övningar." : {
+
+    },
+    "Lägg till din OpenAI API-nyckel i Inställningar för att skapa spelet." : {
+
+    },
+    "Lägg till språk" : {
+
+    },
+    "Lägger till det du säger i textrutan" : {
 
     },
     "Lagom" : {
 
     },
     "LanguLearn" : {
+
+    },
+    "Lär känna mig igen" : {
+
+    },
+    "LÄR KÄNNA SPRÅKET" : {
+
+    },
+    "Läs mer" : {
+
+    },
+    "Låst tills lektionen före är klar" : {
+
+    },
+    "Låt dina samtal ta nya vägar." : {
+
+    },
+    "Låt Milo läsa frågan" : {
+
+    },
+    "Låt Milo prata" : {
+
+    },
+    "Låt Milo tala" : {
 
     },
     "Lek och repetera" : {
@@ -953,16 +1015,19 @@
     "Lyssna på %@" : {
 
     },
+    "Lyssna på alternativ: %@" : {
+
+    },
+    "Lyssna på återkopplingen" : {
+
+    },
+    "Lyssna på förklaringen" : {
+
+    },
     "Lyssna på Milo" : {
 
     },
     "Lyssna på Milos %@" : {
-
-    },
-    "Lyssna på alternativ: %@" : {
-
-    },
-    "Lyssna på förklaringen" : {
 
     },
     "Lyssna på situationen" : {
@@ -974,103 +1039,62 @@
     "Lyssna på uppgiften" : {
 
     },
-    "Lyssna på återkopplingen" : {
-
-    },
     "Lyssna, välj och upptäck i din takt." : {
 
     },
-    "LÄR KÄNNA SPRÅKET" : {
-
-    },
-    "Lägg först" : {
-
-    },
-    "Lägg till din OpenAI API-nyckel i Inställningar för att fortsätta planen." : {
-
-    },
-    "Lägg till din OpenAI API-nyckel i Inställningar för att få hjälp av Milo." : {
-
-    },
-    "Lägg till din OpenAI API-nyckel i Inställningar för att få respons." : {
-
-    },
-    "Lägg till din OpenAI API-nyckel i Inställningar för att skapa fler meningar." : {
-
-    },
-    "Lägg till din OpenAI API-nyckel i Inställningar för att skapa fler övningar." : {
-
-    },
-    "Lägg till din OpenAI API-nyckel i Inställningar för att skapa spelet." : {
-
-    },
-    "Lägg till språk" : {
-
-    },
-    "Lägger till det du säger i textrutan" : {
-
-    },
-    "Lär känna mig igen" : {
-
-    },
-    "Läs mer" : {
-
-    },
-    "Låst tills lektionen före är klar" : {
-
-    },
-    "Låt Milo läsa frågan" : {
-
-    },
-    "Låt Milo prata" : {
-
-    },
-    "Låt Milo tala" : {
-
-    },
-    "Låt dina samtal ta nya vägar." : {
-
-    },
-    "MER ÖVNING" : {
-
-    },
-    "MILO · DIN SPRÅKLÄRARE" : {
-
-    },
-    "MILOS FÖRSLAG" : {
-
-    },
-    "MILOS VAL" : {
-
-    },
-    "MINNS DU?" : {
+    "Människor" : {
 
     },
     "Mer med Milo" : {
 
     },
+    "MER ÖVNING" : {
+
+    },
     "Milo" : {
+
+    },
+    "Milo · %lld av %lld svar" : {
+      "localizations" : {
+        "sv" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "Milo · %1$lld av %2$lld svar"
+          }
+        }
+      }
+    },
+    "MILO · DIN SPRÅKLÄRARE" : {
+
+    },
+    "Milo · Fritt samtal" : {
+
+    },
+    "Milo är en AI-lärare i LanguLearn. Svaren skapas med artificiell intelligens." : {
+
+    },
+    "Milo är redo" : {
 
     },
     "Milo arbetar" : {
 
     },
-    "Milo bygger pronomenspelet…" : {
-
-    },
     "Milo bygger på karaktären Snow av Blender Studio (CC BY 4.0)." : {
 
     },
+    "Milo bygger pronomenspelet…" : {
+
+    },
     "Milo bygger små steg och tydliga exempel" : {
+
+    },
+    "Milo förklarar på %@. Det språket kan du byta i Inställningar." : {
 
     },
     "Milo funderar på vad du behöver…" : {
 
     },
     "Milo funderar…" : {
-
-    },
-    "Milo förklarar på %@. Det språket kan du byta i Inställningar." : {
 
     },
     "Milo gav ett tips" : {
@@ -1097,9 +1121,6 @@
     "Milo hjälper dig…" : {
 
     },
-    "Milo lutar sig nyfiket mot dig" : {
-
-    },
     "Milo läser din text…" : {
 
     },
@@ -1109,10 +1130,16 @@
     "Milo läser på %@" : {
 
     },
+    "Milo lutar sig nyfiket mot dig" : {
+
+    },
     "Milo planerar dina tio lektioner…" : {
 
     },
     "Milo rättar bara det som faktiskt är fel och behåller din röst." : {
+
+    },
+    "Milo säger en mening på språket du har valt" : {
 
     },
     "Milo ser till att du kan få hjälp längs vägen" : {
@@ -1136,13 +1163,10 @@
     "Milo skriver nya rundor…" : {
 
     },
-    "Milo säger en mening på språket du har valt" : {
+    "Milo tänker" : {
 
     },
     "Milo tittar på din mening…" : {
-
-    },
-    "Milo tänker" : {
 
     },
     "Milo undervisar på %@ och förklarar på %@. Varje språk har sin egen studieplan: byter du språk ligger dina nuvarande studier kvar och kommer tillbaka när du byter tillbaka." : {
@@ -1158,6 +1182,9 @@
     "Milo utgår från den här lektionen och undviker meningar du redan har. Detta använder ditt OpenAI API-konto." : {
 
     },
+    "Milo väljer en situation som passar dig" : {
+
+    },
     "Milo vid din sida" : {
 
     },
@@ -1170,38 +1197,22 @@
     "Milo vinkar tillbaka" : {
 
     },
-    "Milo väljer en situation som passar dig" : {
-
-    },
-    "Milo · %lld av %lld svar" : {
-      "localizations" : {
-        "sv" : {
-          "stringUnit" : {
-            "state" : "new",
-            "value" : "Milo · %1$lld av %2$lld svar"
-          }
-        }
-      }
-    },
-    "Milo · Fritt samtal" : {
-
-    },
-    "Milo är en AI-lärare i LanguLearn. Svaren skapas med artificiell intelligens." : {
-
-    },
-    "Milo är redo" : {
-
-    },
     "Milo, hjälp mig igång" : {
 
     },
     "Milos avatar" : {
 
     },
+    "MILOS FÖRSLAG" : {
+
+    },
     "Milos respons" : {
 
     },
     "Milos studio" : {
+
+    },
+    "MILOS VAL" : {
 
     },
     "Min resa" : {
@@ -1222,16 +1233,43 @@
     "Mina texter" : {
 
     },
+    "MINNS DU?" : {
+
+    },
     "Mitt lärande" : {
 
     },
-    "Människor" : {
+    "När du väljer fortsätter samtalet med AI. Det du berättat och relevant studiehistorik skickas till OpenAI." : {
 
     },
-    "NU" : {
+    "När du vill styra mer själv" : {
+
+    },
+    "Nästa" : {
+
+    },
+    "Nästa fras" : {
+
+    },
+    "Nästa lektion: %@" : {
+
+    },
+    "Nästa mening" : {
+
+    },
+    "Nästa steg" : {
+
+    },
+    "Nästan – prova en annan ordning." : {
+
+    },
+    "Nästan — prova igen" : {
 
     },
     "Nollställ ansiktet" : {
+
+    },
+    "NU" : {
 
     },
     "Nu börjar vi" : {
@@ -1246,43 +1284,13 @@
     "Nybörjare" : {
 
     },
-    "Nyckeln sparas i Nyckelringen på den här enheten. Dina meddelanden och relevant lärandehistorik skickas till OpenAI när du ber Milo om ett svar. Studieplanen och samtalen sparas lokalt i appen." : {
-
-    },
     "Nyckeln är sparad. Anslutningen kontrolleras vid nästa svar." : {
 
     },
+    "Nyckeln sparas i Nyckelringen på den här enheten. Dina meddelanden och relevant lärandehistorik skickas till OpenAI när du ber Milo om ett svar. Studieplanen och samtalen sparas lokalt i appen." : {
+
+    },
     "Nyfiken" : {
-
-    },
-    "När du vill styra mer själv" : {
-
-    },
-    "När du väljer fortsätter samtalet med AI. Det du berättat och relevant studiehistorik skickas till OpenAI." : {
-
-    },
-    "Nästa" : {
-
-    },
-    "Nästa fras" : {
-
-    },
-    "Nästa lektion: %@" : {
-
-    },
-    "Nästa lilla steg" : {
-
-    },
-    "Nästa mening" : {
-
-    },
-    "Nästa steg" : {
-
-    },
-    "Nästan – prova en annan ordning." : {
-
-    },
-    "Nästan — prova igen" : {
 
     },
     "Okej, en liten paus för ett leende." : {
@@ -1303,6 +1311,36 @@
     "OpenAI:s datavillkor" : {
 
     },
+    "Öppna" : {
+
+    },
+    "Öppna den från språket där du började." : {
+
+    },
+    "Öppna inställningar" : {
+
+    },
+    "Öppna lektionen" : {
+
+    },
+    "Öppna Milos karaktärsstudio" : {
+
+    },
+    "Öppna min studieplan" : {
+
+    },
+    "Öppna mina tidigare ordkort och meningar" : {
+
+    },
+    "Öppna mina tidigare övningar" : {
+
+    },
+    "Öppnas av lektioner" : {
+
+    },
+    "Öra före text" : {
+
+    },
     "Ord i rätt ordning" : {
 
     },
@@ -1319,6 +1357,33 @@
 
     },
     "Ordkorten hjälper dig att minnas. Prova några efter lektionen." : {
+
+    },
+    "Öva" : {
+
+    },
+    "Öva i små samtal, få hjälp när du fastnar och bygg vidare på det du kan." : {
+
+    },
+    "Öva igen" : {
+
+    },
+    "ÖVA IGEN" : {
+
+    },
+    "Öva innehållet med stegvis guidning" : {
+
+    },
+    "Öva med Milo" : {
+
+    },
+    "ÖVA MED MILO" : {
+
+    },
+    "Öva med ordkort och meningar" : {
+
+    },
+    "Öva ord och bygg meningar från din lektion. När övningarna är skapade kan du spela utan internet." : {
 
     },
     "Passet är sparat. Öva vidare innan du går till nästa lektion." : {
@@ -1369,10 +1434,10 @@
     "Prova mitt svar" : {
 
     },
-    "Prova nästa gång" : {
+    "Prova något enklare" : {
 
     },
-    "Prova något enklare" : {
+    "Prova nästa gång" : {
 
     },
     "Radera alla mina studier" : {
@@ -1385,12 +1450,6 @@
 
     },
     "Rak" : {
-
-    },
-    "Redo när du är." : {
-
-    },
-    "Rundan är klar!" : {
 
     },
     "Rätt!" : {
@@ -1411,10 +1470,28 @@
     "Rättat i din text" : {
 
     },
+    "Redo när du är." : {
+
+    },
     "Röst eller diktering saknas för det här språket på din enhet. Du kan alltid läsa och skriva med Milo." : {
 
     },
-    "SNABBT ELLER GUIDAT" : {
+    "Rundan är klar!" : {
+
+    },
+    "Så hanterar OpenAI API-data" : {
+
+    },
+    "Så här tänker jag" : {
+
+    },
+    "Så ser din %@ ut" : {
+
+    },
+    "SÄG DET PÅ %@" : {
+
+    },
+    "Säg gärna att du inte vet. Då hittar vi en bra plats att börja." : {
 
     },
     "Sammanfattning" : {
@@ -1483,13 +1560,13 @@
     "Skriv och få respons" : {
 
     },
-    "Skriv precis som du vill, på ditt språk eller språket du lär dig. Vi hittar en start genom att prova tillsammans." : {
-
-    },
     "Skriv på %@" : {
 
     },
     "Skriv på %@…" : {
+
+    },
+    "Skriv precis som du vill, på ditt språk eller språket du lär dig. Vi hittar en start genom att prova tillsammans." : {
 
     },
     "Små bevis på att du lär dig." : {
@@ -1504,10 +1581,16 @@
     "Snabbspel" : {
 
     },
+    "SNABBT ELLER GUIDAT" : {
+
+    },
     "Snow-modell och lokal systemröst. Studion gör inga API-anrop." : {
 
     },
     "Snygg snabbrunda!" : {
+
+    },
+    "Sök språk" : {
 
     },
     "Spara användbara uttryck inne i lektionen." : {
@@ -1555,6 +1638,12 @@
     "Språk: %@" : {
 
     },
+    "Stäng" : {
+
+    },
+    "Stäng spelet" : {
+
+    },
     "Stanna" : {
 
     },
@@ -1580,10 +1669,10 @@
     "Stoppa" : {
 
     },
-    "Stoppa Milo" : {
+    "Stoppa ljudet" : {
 
     },
-    "Stoppa ljudet" : {
+    "Stoppa Milo" : {
 
     },
     "Stoppa uppläsningen" : {
@@ -1595,12 +1684,6 @@
     "Styr ansiktet manuellt" : {
 
     },
-    "Stäng" : {
-
-    },
-    "Stäng spelet" : {
-
-    },
     "Subjektspronomen är de småord som avgör vem meningen handlar om. Milo bygger ett spel för %@: du får meningar med ett hål och väljer vem som gör saken." : {
 
     },
@@ -1608,24 +1691,6 @@
 
     },
     "Svit: %lld rätt i rad" : {
-
-    },
-    "SÄG DET PÅ %@" : {
-
-    },
-    "Säg gärna att du inte vet. Då hittar vi en bra plats att börja." : {
-
-    },
-    "Så hanterar OpenAI API-data" : {
-
-    },
-    "Så här tänker jag" : {
-
-    },
-    "Så ser din %@ ut" : {
-
-    },
-    "Sök språk" : {
 
     },
     "Ta bort API-nyckeln" : {
@@ -1637,13 +1702,16 @@
     "Ta bort nyckeln från den här enheten? Dina studier finns kvar." : {
 
     },
+    "Tänk när orden kommer av sig själva." : {
+
+    },
     "Tar bort dina studieplaner på alla språk, med lektioner, samtal, övningar och kunskapskollar, från den här enheten. Din API-nyckel påverkas inte. Det går inte att ångra." : {
 
     },
-    "Tecknen känns bekanta" : {
+    "Tecknen är nya för mig" : {
 
     },
-    "Tecknen är nya för mig" : {
+    "Tecknen känns bekanta" : {
 
     },
     "Testa mina kunskaper igen" : {
@@ -1700,13 +1768,10 @@
     "Tryck för ett nytt studietips" : {
 
     },
-    "Tryck på Milo för att fira tillsammans." : {
-
-    },
     "Tryck på mig så säger jag en mening." : {
 
     },
-    "Tänk när orden kommer av sig själva." : {
+    "Tryck på Milo för att fira tillsammans." : {
 
     },
     "Uppskattat från dina skriftliga svar, %@" : {
@@ -1716,9 +1781,6 @@
 
     },
     "Upptäck" : {
-
-    },
-    "VI PROVAR OSS FRAM" : {
 
     },
     "Vad betyder det?" : {
@@ -1736,13 +1798,43 @@
     "Vad vill du ha hjälp med?" : {
 
     },
-    "Vad vill du våga idag?" : {
-
-    },
     "Vad vill du öppna dörren till?" : {
 
     },
+    "Vad vill du våga idag?" : {
+
+    },
     "Valfritt · %lld / 400" : {
+
+    },
+    "Välj ditt språk" : {
+
+    },
+    "Välj ditt språk i nästa steg" : {
+
+    },
+    "Välj en situation, eller låt ditt eget mål styra." : {
+
+    },
+    "Välj en start, eller skriv om vad du vill." : {
+
+    },
+    "Välj min start först" : {
+
+    },
+    "Välj olika språk för att lära dig och för förklaringarna." : {
+
+    },
+    "Välj språket du vill lära dig först." : {
+
+    },
+    "Vänd kortet" : {
+
+    },
+    "Vänd och minns" : {
+
+    },
+    "Väntar lugnt" : {
 
     },
     "Varm" : {
@@ -1752,6 +1844,9 @@
 
     },
     "Vi använder din sparade nyckel när du börjar samtalet. Samtalen debiteras ditt API-konto." : {
+
+    },
+    "Vi återkommer till det du övat. Ett rätt svar idag behöver få växa till något du minns imorgon." : {
 
     },
     "Vi börjar där du är." : {
@@ -1772,10 +1867,10 @@
     "Vi provar en gång till tillsammans." : {
 
     },
-    "Vi tar det steg för steg" : {
+    "VI PROVAR OSS FRAM" : {
 
     },
-    "Vi återkommer till det du övat. Ett rätt svar idag behöver få växa till något du minns imorgon." : {
+    "Vi tar det steg för steg" : {
 
     },
     "Vilket språk är du nyfiken på?" : {
@@ -1814,10 +1909,10 @@
     "Visa min studieplan" : {
 
     },
-    "Visa nästa ledtråd" : {
+    "Visa något" : {
 
     },
-    "Visa något" : {
+    "Visa nästa ledtråd" : {
 
     },
     "Visa svenska" : {
@@ -1829,10 +1924,10 @@
     "Visa textstöd" : {
 
     },
-    "Visar Milos tips igen" : {
+    "Visar ett nytt studietips" : {
 
     },
-    "Visar ett nytt studietips" : {
+    "Visar Milos tips igen" : {
 
     },
     "Visar något" : {
@@ -1845,120 +1940,6 @@
 
     },
     "Visar välkomsten och språkvalet igen. Dina studier och din sparade nyckel påverkas inte." : {
-
-    },
-    "Välj ditt språk" : {
-
-    },
-    "Välj ditt språk i nästa steg" : {
-
-    },
-    "Välj en situation, eller låt ditt eget mål styra." : {
-
-    },
-    "Välj en start, eller skriv om vad du vill." : {
-
-    },
-    "Välj min start först" : {
-
-    },
-    "Välj olika språk för att lära dig och för förklaringarna." : {
-
-    },
-    "Välj språket du vill lära dig först." : {
-
-    },
-    "Vänd kortet" : {
-
-    },
-    "Vänd och minns" : {
-
-    },
-    "Väntar lugnt" : {
-
-    },
-    "av %lld" : {
-
-    },
-    "· %@" : {
-
-    },
-    "· %lld min" : {
-
-    },
-    "Ändra det jag berättade" : {
-
-    },
-    "Ändra din startpunkt och dina mål i Min resa. En frivillig kunskapskoll finns under Upptäck." : {
-
-    },
-    "Ändra mitt svar" : {
-
-    },
-    "Återställ din plan" : {
-
-    },
-    "Återställ plan från senaste kunskapskoll" : {
-
-    },
-    "Återställ planen" : {
-
-    },
-    "ÖVA IGEN" : {
-
-    },
-    "ÖVA MED MILO" : {
-
-    },
-    "Öppna" : {
-
-    },
-    "Öppna Milos karaktärsstudio" : {
-
-    },
-    "Öppna den från språket där du började." : {
-
-    },
-    "Öppna inställningar" : {
-
-    },
-    "Öppna lektionen" : {
-
-    },
-    "Öppna min studieplan" : {
-
-    },
-    "Öppna mina tidigare ordkort och meningar" : {
-
-    },
-    "Öppna mina tidigare övningar" : {
-
-    },
-    "Öppnas av lektioner" : {
-
-    },
-    "Öra före text" : {
-
-    },
-    "Öva" : {
-
-    },
-    "Öva i små samtal, få hjälp när du fastnar och bygg vidare på det du kan." : {
-
-    },
-    "Öva igen" : {
-
-    },
-    "Öva innehållet med stegvis guidning" : {
-
-    },
-    "Öva med Milo" : {
-
-    },
-    "Öva med ordkort och meningar" : {
-
-    },
-    "Öva ord och bygg meningar från din lektion. När övningarna är skapade kan du spela utan internet." : {
 
     }
   },
